@@ -1,0 +1,368 @@
+<title>Mari Takayama</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+/* Layout: 白いナビ → 写真の帯 → 色面（スレートブルー／モーブ）が交互に続く、写真主役の一枚ページ。
+   参考サイトの配色を踏襲した単一テーマ（ダークモードでも同じ見た目） */
+:root {
+  --paper: #ffffff;
+  --ink: #2c2a30;
+  --ink-soft: #6a6670;
+  --stage: #2d2b2f;       /* トップ写真の背景に合わせた暗いグレー */
+  --slate: #6f83a6;       /* About・Gallery の青 */
+  --mauve: #a8979a;       /* Works・Interview のモーブ */
+  --rose: #bd9597;        /* Interview のカード */
+  --on-color: #ffffff;
+  --font-display: "Cormorant Garamond", "EB Garamond", Garamond, "Times New Roman", serif;
+  --font-body: "EB Garamond", Garamond, "Times New Roman", serif;
+  --step--1: 0.9375rem;
+  --step-0: 1.125rem;
+  --step-1: 1.5rem;
+  --step-2: clamp(1.75rem, 3vw, 2.25rem);
+  --step-3: clamp(2.5rem, 6vw, 4.25rem);
+  --step-4: clamp(3rem, 9vw, 6.5rem);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--font-body); font-size: var(--step-0); line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 10; background: var(--paper);
+}
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+a:focus-visible, button:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+
+.wrap {
+  max-width: 76rem; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* ナビ */
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--paper); border-bottom: 1px solid #ecebee;
+}
+header.top ul {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 0.25rem clamp(1.25rem, 4vw, 3rem);
+  list-style: none; margin: 0; padding-block: 1.1rem;
+}
+header.top a {
+  font-family: var(--font-display); font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+  letter-spacing: 0.06em; text-decoration: none; color: var(--ink);
+}
+header.top a:hover { color: var(--slate); }
+
+/* トップ */
+.hero { background: var(--stage); color: var(--on-color); text-align: center; position: relative; overflow: hidden; }
+.hero-photo { position: relative; }
+.hero-photo img { width: 100%; height: clamp(14rem, 34vw, 30rem); object-fit: cover; object-position: 50% 30%; }
+.hero-photo::after {
+  content: ""; position: absolute; inset: 40% 0 0;
+  background: linear-gradient(to bottom, transparent, var(--stage));
+}
+.hero .wrap { position: relative; padding-block: 0 clamp(3.5rem, 8vw, 6rem); margin-top: clamp(-5rem, -6vw, -2rem); }
+.hero .kicker { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); letter-spacing: 0.04em; }
+.hero h1 { margin: 0.1em 0 0.15em; font-family: var(--font-display); font-weight: 500; font-size: var(--step-4); line-height: 1; letter-spacing: 0.02em; text-wrap: balance; }
+.hero .sub { margin: 0; font-size: var(--step-1); font-style: italic; opacity: 0.9; }
+
+/* 写真付きの見出し帯（WORKS / GALLERY） */
+.banner { position: relative; overflow: hidden; color: var(--on-color); }
+.banner img { width: 100%; height: clamp(9rem, 17vw, 16rem); object-fit: cover; object-position: 30% 35%; }
+.banner.works { background: #3a3a3a; }
+.banner.gallery { background: #120c0c; }
+.banner.gallery img { object-position: 40% 50%; }
+.banner::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,0.45), transparent 55%); z-index: 1; }
+.banner .wrap { position: absolute; inset: 0; display: flex; align-items: center; z-index: 2; left: 0; right: 0; }
+.banner h2, .plain-banner h2 {
+  margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-3);
+  letter-spacing: 0.08em; text-transform: uppercase; line-height: 1;
+}
+
+/* About */
+.about { background: var(--slate); color: var(--on-color); }
+.about .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(2rem, 6vw, 6rem); align-items: center; padding-block: clamp(3rem, 6vw, 5rem); }
+.about img { width: 100%; aspect-ratio: 805 / 898; object-fit: cover; }
+.about h2, .row h3 { margin: 0 0 0.5rem; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); letter-spacing: 0.03em; }
+.about p { margin: 0 0 1em; max-width: 34em; }
+.about .meta { list-style: none; padding: 0; margin: 1.75rem 0 0; display: grid; gap: 0.35rem; border-top: 1px solid rgba(255,255,255,0.4); padding-top: 1.25rem; }
+.about .meta li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 1rem; }
+.about .meta span { font-size: var(--step--1); letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.8; }
+
+/* Works */
+.works-body { background: var(--mauve); color: var(--on-color); }
+.works-body .wrap { padding-block: clamp(3rem, 6vw, 5rem); display: grid; gap: clamp(3rem, 6vw, 5rem); }
+.row { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: clamp(2rem, 6vw, 5rem); align-items: center; }
+.row.flip { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); }
+.row.flip .row-photo { order: -1; }
+.row p { margin: 0; max-width: 34em; }
+.row .tag { display: block; font-size: var(--step--1); letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.85; margin-bottom: 0.25rem; }
+.row-photo img { width: 100%; object-fit: cover; }
+.row-photo.tall img { aspect-ratio: 562 / 888; max-height: 38rem; }
+.row-photo.wide img { aspect-ratio: 566 / 422; }
+.more { text-align: center; }
+.more a {
+  display: inline-block; font-family: var(--font-display); font-size: var(--step-1); text-decoration: none;
+  background: #6e6a70; color: var(--on-color); padding: 0.35em 1.4em; border-radius: 6px 6px 0 0;
+}
+.more a:hover { background: var(--ink); }
+
+/* Gallery */
+.gallery-body { background: var(--slate); }
+.gallery-body .wrap { padding-block: clamp(2.5rem, 5vw, 4rem); }
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(0.75rem, 2vw, 2.25rem); }
+.grid button { all: unset; cursor: zoom-in; display: block; }
+.grid button:focus-visible { outline: 2px solid var(--on-color); outline-offset: 4px; }
+.grid img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; transition: transform 0.4s ease, filter 0.4s ease; }
+.grid button:hover img { transform: scale(1.02); filter: brightness(1.05); }
+@media (prefers-reduced-motion: reduce) { .grid img { transition: none; } }
+
+.lightbox {
+  position: fixed; inset: 0; z-index: 20; background: rgba(20, 18, 22, 0.92);
+  display: grid; place-items: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.lightbox img { max-height: 86vh; width: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.lightbox button {
+  position: absolute; background: none; border: 0; color: #fff; font-family: var(--font-display);
+  font-size: 2.25rem; line-height: 1; cursor: pointer; padding: 0.5rem 0.75rem;
+}
+.lb-close { top: calc(env(safe-area-inset-top, 0px) + 0.5rem); right: calc(env(safe-area-inset-right, 0px) + 0.75rem); }
+.lb-prev { left: calc(env(safe-area-inset-left, 0px) + 0.5rem); top: 50%; transform: translateY(-50%); }
+.lb-next { right: calc(env(safe-area-inset-right, 0px) + 0.5rem); top: 50%; transform: translateY(-50%); }
+
+/* Interview */
+.interview { background: var(--mauve); color: var(--on-color); }
+.plain-banner .wrap { padding-block: clamp(3rem, 7vw, 5.5rem) clamp(2rem, 4vw, 3rem); border-bottom: 1px solid rgba(255,255,255,0.35); }
+.qa { max-width: 52rem; margin: 0 auto; display: grid; gap: 1.75rem; padding-block: clamp(2.5rem, 5vw, 4rem) clamp(3rem, 6vw, 5rem); }
+.qa article { background: var(--rose); padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1.25rem, 3vw, 2.75rem); }
+.qa h3 { margin: 0 0 0.75rem; font-family: var(--font-display); font-weight: 600; font-size: var(--step-1); line-height: 1.35; }
+.qa h3 span { display: block; font-size: var(--step--1); letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.85; font-weight: 500; }
+.qa p { margin: 0; }
+
+/* Footer */
+footer { background: var(--paper); color: var(--ink); }
+footer .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2rem; align-items: end; padding-block: clamp(2.5rem, 5vw, 4rem); }
+footer nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+footer nav a { font-family: var(--font-display); font-size: var(--step-1); letter-spacing: 0.06em; text-decoration: none; }
+footer nav a:hover { color: var(--slate); }
+.sign { text-align: right; display: grid; gap: 0.5rem; justify-items: end; }
+.sign .name { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); line-height: 1.1; }
+.sign .mail { margin: 0; font-family: var(--font-display); font-size: var(--step-1); word-break: break-all; user-select: all; }
+.copy { font: inherit; font-size: var(--step--1); background: none; color: var(--ink-soft); border: 1px solid #d9d7dc; padding: 0.2em 0.9em; cursor: pointer; }
+.copy:hover { color: var(--ink); border-color: var(--ink); }
+.social { display: flex; gap: 1.25rem; margin-top: 0.75rem; }
+.social a { color: var(--ink); display: block; }
+.social a:hover { color: var(--slate); }
+.social svg { width: 30px; height: 30px; display: block; }
+.legal { text-align: center; font-size: var(--step--1); color: var(--ink-soft); padding-bottom: 2rem; margin: 0; }
+
+@media (max-width: 760px) {
+  .about .wrap, .row, .row.flip { grid-template-columns: 1fr; }
+  .row.flip .row-photo { order: 0; }
+  .row-photo.tall img { max-height: 28rem; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  footer .wrap { grid-template-columns: 1fr; }
+  .sign { text-align: left; justify-items: start; }
+}
+</style>
+
+<header class="top">
+  <nav class="wrap" aria-label="Main">
+    <ul>
+      <li><a href="#home">Home</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#works">Works</a></li>
+      <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#interview">Interview</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <section class="hero" id="home">
+    <div class="hero-photo"><img src="img/hero.jpg" alt="Mari Takayama dancing in a black leotard against a dark backdrop"></div>
+    <div class="wrap">
+      <p class="kicker">Welcome to Explore</p>
+      <h1>Mari Takayama</h1>
+      <p class="sub">Professional ballet dancer based in NYC</p>
+    </div>
+  </section>
+
+  <section class="about" id="about">
+    <div class="wrap">
+      <img src="img/about.jpg" alt="Portrait of Mari Takayama">
+      <div>
+        <h2>About me</h2>
+        <p>Mari Takayama is a Japanese ballet dancer based in New York City. Trained in classical ballet from early childhood, she performs on stage, teaches, and creates dance projects that connect her Japanese roots with life in New York.</p>
+        <p>She believes dance belongs to everyone, from the theater to the park.</p>
+        <ul class="meta">
+          <li><span>Based in</span>New York City</li>
+          <li><span>From</span>Japan</li>
+          <li><span>Style</span>Classical ballet · Contemporary</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="works">
+    <div class="banner works">
+      <img src="img/works.jpg" alt="">
+      <div class="wrap"><h2>Works</h2></div>
+    </div>
+    <div class="works-body">
+      <div class="wrap">
+        <div class="row">
+          <div>
+            <h3><span class="tag">Teaching</span>Lesson</h3>
+            <p>Private and group ballet lessons for children and adults. Each class starts at the barre and builds clean, strong technique step by step, with attention to each dancer's body and goals.</p>
+          </div>
+          <div class="row-photo tall"><img src="img/lesson.jpg" alt="Mari correcting a student's pointe at the barre"></div>
+        </div>
+        <div class="row flip">
+          <div class="row-photo wide"><img src="img/taiso.jpg" alt="A group doing Radio Taiso exercises on the grass in Central Park"></div>
+          <div>
+            <h3><span class="tag">Community</span>Radio Taiso</h3>
+            <p>Japanese morning exercise, shared outdoors in New York. Anyone can join, whatever their age or experience. It is a simple way to move together and start the day.</p>
+          </div>
+        </div>
+        <p class="more"><a href="#gallery">and more</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="gallery">
+    <div class="banner gallery">
+      <img src="img/gallery-banner.jpg" alt="">
+      <div class="wrap"><h2>Gallery</h2></div>
+    </div>
+    <div class="gallery-body">
+      <div class="wrap">
+        <div class="grid" id="grid">
+          <button type="button" aria-label="Open photo 1"><img src="img/g01.jpg" alt="Posing en pointe in a greenhouse" loading="lazy"></button>
+          <button type="button" aria-label="Open photo 2"><img src="img/g02.jpg" alt="In a black and gold tutu beside a red stage curtain" loading="lazy"></button>
+          <button type="button" aria-label="Open photo 3"><img src="img/g03.jpg" alt="Leaping in white on a snowy mountain" loading="lazy"></button>
+          <button type="button" aria-label="Open photo 4"><img src="img/g04.jpg" alt="High kick on a rooftop above Manhattan" loading="lazy"></button>
+          <button type="button" aria-label="Open photo 5"><img src="img/g05.jpg" alt="Smiling portrait" loading="lazy"></button>
+          <button type="button" aria-label="Open photo 6"><img src="img/g06.jpg" alt="In a white lace dress in the snow" loading="lazy"></button>
+          <button type="button" aria-label="Open photo 7"><img src="img/g07.jpg" alt="Headshot with red lips" loading="lazy"></button>
+          <button type="button" aria-label="Open photo 8"><img src="img/g08.jpg" alt="Arabesque with a flowing kimono" loading="lazy"></button>
+          <button type="button" aria-label="Open photo 9"><img src="img/g09.jpg" alt="Dancing with a fan and silk on stage" loading="lazy"></button>
+          <button type="button" aria-label="Open photo 10"><img src="img/g10.jpg" alt="In a white tutu among falling red leaves" loading="lazy"></button>
+          <button type="button" aria-label="Open photo 11"><img src="img/g11.jpg" alt="Dancing at dusk in front of a lit hotel" loading="lazy"></button>
+          <button type="button" aria-label="Open photo 12"><img src="img/g12.jpg" alt="In a pink kimono at Bethesda Terrace" loading="lazy"></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="interview" id="interview">
+    <div class="plain-banner"><div class="wrap"><h2>Interview</h2></div></div>
+    <div class="wrap">
+      <div class="qa">
+        <article>
+          <h3><span>Beginnings</span>How did you start ballet?</h3>
+          <p>Write your answer here.</p>
+        </article>
+        <article>
+          <h3><span>New York</span>Why did you move to New York?</h3>
+          <p>Write your answer here.</p>
+        </article>
+        <article>
+          <h3><span>Teaching</span>What do you value most in your lessons?</h3>
+          <p>Write your answer here.</p>
+        </article>
+        <article>
+          <h3><span>Next</span>What would you like to do next?</h3>
+          <p>Write your answer here.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="contact">
+  <div class="wrap">
+    <nav aria-label="Footer">
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="sign">
+      <p class="name">Mari Takayama</p>
+      <p class="mail" id="mail">maritakayama.official@gmail.com</p>
+      <button class="copy" id="copy-mail" type="button">Copy email</button>
+      <div class="social">
+        <a href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg></a>
+        <a href="https://www.facebook.com/" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-1.6 19.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 12 2z"/></svg></a>
+        <a href="https://www.linkedin.com/" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm2.3 7.3V18h2.5v-7.7H6.3zm1.3-3.8a1.4 1.4 0 1 0 0 2.9 1.4 1.4 0 0 0 0-2.9zM10.8 10.3V18h2.5v-3.8c0-1 .2-2 1.5-2s1.3 1.2 1.3 2.1V18h2.5v-4.2c0-2.1-.5-3.7-2.9-3.7-1.2 0-1.9.6-2.2 1.2v-1h-2.7z"/></svg></a>
+        <a href="https://www.youtube.com/" target="_blank" rel="noopener" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8zM10 15V9l5.2 3-5.2 3z"/></svg></a>
+      </div>
+    </div>
+  </div>
+  <p class="legal">© 2026 Mari Takayama</p>
+</footer>
+
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <img id="lb-img" src="" alt="">
+  <button class="lb-close" id="lb-close" type="button" aria-label="Close">×</button>
+  <button class="lb-prev" id="lb-prev" type="button" aria-label="Previous photo">‹</button>
+  <button class="lb-next" id="lb-next" type="button" aria-label="Next photo">›</button>
+</div>
+
+<script>
+// メールアドレスのコピー
+document.getElementById('copy-mail').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  const mail = document.getElementById('mail');
+  try {
+    await navigator.clipboard.writeText(mail.textContent);
+    btn.textContent = 'Copied';
+  } catch {
+    const r = document.createRange(); r.selectNodeContents(mail);
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    btn.textContent = 'Selected. Press ⌘C to copy';
+  }
+  setTimeout(() => { btn.textContent = 'Copy email'; }, 2400);
+});
+
+// ギャラリーの拡大表示
+(() => {
+  const items = [...document.querySelectorAll('#grid button')];
+  const box = document.getElementById('lightbox');
+  const img = document.getElementById('lb-img');
+  let i = 0, opener = null;
+  function show(n) {
+    i = (n + items.length) % items.length;
+    const src = items[i].querySelector('img');
+    img.src = src.src; img.alt = src.alt;
+  }
+  function open(n) { opener = items[n]; show(n); box.hidden = false; document.getElementById('lb-close').focus(); }
+  function close() { box.hidden = true; opener && opener.focus(); }
+  items.forEach((b, n) => b.addEventListener('click', () => open(n)));
+  document.getElementById('lb-close').addEventListener('click', close);
+  document.getElementById('lb-prev').addEventListener('click', () => show(i - 1));
+  document.getElementById('lb-next').addEventListener('click', () => show(i + 1));
+  box.addEventListener('click', (e) => { if (e.target === box) close(); });
+  addEventListener('keydown', (e) => {
+    if (box.hidden) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowLeft') show(i - 1);
+    if (e.key === 'ArrowRight') show(i + 1);
+  });
+})();
+</script>
