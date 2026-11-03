@@ -72,13 +72,19 @@ header.top a:hover { color: var(--slate); }
 
 /* トップ */
 .hero { background: var(--stage); color: var(--on-color); text-align: center; position: relative; overflow: hidden; }
-.hero-photo { position: relative; }
-.hero-photo img { width: 100%; height: clamp(22rem, 55vw, 42rem); object-fit: contain; object-position: center; }
-
-.hero .wrap { position: relative; padding-block: 1.5rem clamp(3.5rem, 8vw, 6rem); }
+/* 写真を全面に敷き、文字を中央（胴のあたり）に重ねる */
+.hero { height: max(26rem, min(56.25vw, 88vh)); display: grid; }
+.hero-photo { position: absolute; inset: 0; }
+.hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
+.hero-photo::after { content: ""; position: absolute; inset: 0; background: rgba(20, 18, 24, 0.12); }
+.hero .wrap { position: relative; align-self: center; width: 100%; padding-block: 18% 0; text-shadow: 0 1px 18px rgba(0, 0, 0, 0.35); }
 .hero .kicker { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); letter-spacing: 0.04em; }
-.hero h1 { margin: 0.1em 0 0.15em; font-family: var(--font-display); font-weight: 500; font-size: var(--step-4); line-height: 1; letter-spacing: 0.02em; text-wrap: balance; }
-.hero .sub { margin: 0; font-size: var(--step-1); font-style: italic; opacity: 0.9; }
+.hero h1 { margin: 0.15em 0 0.35em; font-family: var(--font-display); font-weight: 600; font-size: var(--step-4); line-height: 1; letter-spacing: 0.02em; text-wrap: balance; }
+.hero .sub { margin: 0; font-size: var(--step-1); }
+@media (max-width: 760px) {
+  .hero { height: 125vw; }
+  .hero .wrap { padding-block: 30% 0; }
+}
 
 /* 写真付きの見出し帯（WORKS / GALLERY） */
 .banner { position: relative; overflow: hidden; color: var(--on-color); }
