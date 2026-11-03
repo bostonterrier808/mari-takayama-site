@@ -82,9 +82,9 @@ header.top a:hover { color: var(--slate); }
 .hero h1 { margin: 0.15em 0 0.35em; font-family: var(--font-display); font-weight: 600; font-size: var(--step-4); line-height: 1; letter-spacing: 0.02em; text-wrap: balance; }
 .hero .sub { margin: 0; font-size: var(--step-1); }
 @media (max-width: 760px) {
-  /* スマホでは文字を小さくして写真の下側（床のあたり）に置き、踊る姿を見せる */
+  /* スマホでは文字を小さくして写真の上側（背景の空いた部分）に置き、踊る姿を見せる */
   .hero { height: 125vw; }
-  .hero .wrap { align-self: end; padding-block: 0 1rem; }
+  .hero .wrap { align-self: start; padding-block: 1.25rem 0; }
   .hero .kicker { font-size: 1.05rem; }
   .hero h1 { font-size: 2.25rem; margin: 0.1em 0 0.2em; }
   .hero .sub { font-size: 0.95rem; }
