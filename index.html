@@ -86,8 +86,9 @@ header.top a:hover { color: var(--slate); }
   .hero { height: auto; display: flex; flex-direction: column; background: #252224; } /* 写真の上端と同じ色 */
   .hero-photo::after { display: none; }
   .hero .wrap { order: 0; position: relative; z-index: 1; padding-block: 1.25rem 0; }
-  .hero-photo { order: 1; position: relative; inset: auto; margin-top: -2.5rem; height: 78vw; overflow: hidden; }
-  .hero-photo img { height: auto; object-fit: fill; -webkit-mask-image: linear-gradient(to bottom, transparent, #000 20%); mask-image: linear-gradient(to bottom, transparent, #000 20%); }
+  .hero-photo { order: 1; position: relative; inset: auto; margin-top: -2.5rem; height: 95vw; overflow: hidden; }
+  /* 写真を画面幅の130%で表示（左右の空いた背景だけを切り、全身は収める） */
+  .hero-photo img { width: 130%; max-width: none; margin-left: -15%; height: auto; object-fit: fill; -webkit-mask-image: linear-gradient(to bottom, transparent, #000 20%); mask-image: linear-gradient(to bottom, transparent, #000 20%); }
   .hero .kicker { font-size: 1.05rem; }
   .hero h1 { font-size: 2.25rem; margin: 0.1em 0 0.2em; }
   .hero .sub { font-size: 0.95rem; }
