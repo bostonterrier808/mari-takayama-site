@@ -83,7 +83,8 @@ header.top a:hover { color: var(--slate); }
 .hero .sub { margin: 0; font-size: var(--step-1); }
 @media (max-width: 760px) {
   /* スマホでは文字を写真の上に分けて置き（手と重ならない）、写真の下の床部分は少し削る */
-  .hero { height: auto; display: flex; flex-direction: column; }
+  .hero { height: auto; display: flex; flex-direction: column; background: #252224; } /* 写真の上端と同じ色 */
+  .hero-photo::after { display: none; }
   .hero .wrap { order: 0; position: relative; z-index: 1; padding-block: 1.25rem 0; }
   .hero-photo { order: 1; position: relative; inset: auto; margin-top: -2.5rem; height: 78vw; overflow: hidden; }
   .hero-photo img { height: auto; object-fit: fill; -webkit-mask-image: linear-gradient(to bottom, transparent, #000 20%); mask-image: linear-gradient(to bottom, transparent, #000 20%); }
