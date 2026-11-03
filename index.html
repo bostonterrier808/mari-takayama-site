@@ -72,10 +72,14 @@ header.top a:hover { color: var(--slate); }
 
 /* トップ */
 .hero { background: var(--stage); color: var(--on-color); text-align: center; position: relative; overflow: hidden; }
-/* 写真を全面に敷き、文字を中央（胴のあたり）に重ねる */
-.hero { height: max(26rem, min(56.25vw, 88vh)); display: grid; }
-.hero-photo { position: absolute; inset: 0; }
-.hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
+/* 写真全体を見切れずに中央に置き、左右は写真の端の色に溶け込ませる。文字は中央（胴のあたり）に重ねる */
+.hero { height: max(26rem, min(56.25vw, 88vh)); display: grid; background: #232124; }
+.hero-photo { position: absolute; inset: 0; display: flex; justify-content: center; }
+.hero-photo img {
+  width: auto; height: 100%; max-width: none; flex-shrink: 0; object-fit: contain;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
 .hero-photo::after { content: ""; position: absolute; inset: 0; background: rgba(20, 18, 24, 0.12); }
 .hero .wrap { position: relative; align-self: center; width: 100%; padding-block: 18% 0; text-shadow: 0 1px 18px rgba(0, 0, 0, 0.35); }
 .hero .kicker { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); letter-spacing: 0.04em; }
@@ -86,7 +90,7 @@ header.top a:hover { color: var(--slate); }
   .hero { height: auto; display: flex; flex-direction: column; background: #252224; } /* 写真の上端と同じ色 */
   .hero-photo::after { display: none; }
   .hero .wrap { order: 0; position: relative; z-index: 1; padding-block: 1.25rem 0; }
-  .hero-photo { order: 1; position: relative; inset: auto; margin-top: -4.75rem; height: 108vw; overflow: hidden; }
+  .hero-photo { order: 1; position: relative; inset: auto; display: block; margin-top: -4.75rem; height: 108vw; overflow: hidden; }
   /* 写真を画面幅の130%で表示（左右の空いた背景だけを切り、全身は収める） */
   .hero-photo img { width: 130%; max-width: none; margin-left: -15%; height: auto; object-fit: fill; -webkit-mask-image: linear-gradient(to bottom, transparent, #000 20%); mask-image: linear-gradient(to bottom, transparent, #000 20%); }
   .hero .kicker { font-size: 1.05rem; }
