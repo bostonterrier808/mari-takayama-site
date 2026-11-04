@@ -32,14 +32,17 @@
 .inspector-open .preview-frame { margin-right: 0; }
 .preview-frame iframe { flex: 0 0 auto; }
 @media (max-width: 760px) {
-  .inspector-open .layout { grid-template-columns: minmax(0, 1fr); gap: 8px; }
-  .inspector-open .layout .preview { height: max(200px, calc(100dvh - 195px - 30dvh - 8px)); }
+  .inspector-open .layout { grid-template-columns: minmax(0, 1fr) minmax(130px, 34vw); gap: 6px; }
+  .inspector-open .layout .preview { height: max(200px, calc(100dvh - 195px)); }
   .inspector-open .layout > div:first-child {
-    grid-column: 1;
-    grid-row: 2;
-    height: 30dvh;
-    min-height: 110px;
+    grid-column: 2;
+    grid-row: 1;
+    height: max(200px, calc(100dvh - 195px));
+    padding: 6px;
+    overflow-x: hidden;
   }
+  .inspector-open .preview-frame iframe { max-width: 100%; }
+  .inspector-open .layout > div:first-child :is(input, select, button, textarea) { max-width: 100%; }
 }
 </style>
 </head>
