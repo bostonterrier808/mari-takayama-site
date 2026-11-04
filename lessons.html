@@ -52,8 +52,17 @@
       <label><input type="checkbox" name="times" value="Evening"> Evening</label>
       <label><input type="checkbox" name="times" value="Flexible"> Flexible</label>
     </fieldset>
-    <label>What would you like to work on? <span class="help">(optional)</span>
-      <textarea name="goals" rows="3" maxlength="700" placeholder="For example: ballet basics, turns, or pointe preparation"></textarea>
+    <fieldset>
+      <legend>What would you like to work on?</legend>
+      <span class="help">Optional. Choose any that apply.</span><br>
+      <label><input type="checkbox" name="focus" value="Ballet basics"> Ballet basics</label>
+      <label><input type="checkbox" name="focus" value="Posture and alignment"> Posture and alignment</label>
+      <label><input type="checkbox" name="focus" value="Turns and jumps"> Turns and jumps</label>
+      <label><input type="checkbox" name="focus" value="Pointe preparation"> Pointe preparation</label>
+      <label><input type="checkbox" name="focus" value="Help me choose"> Help me choose</label>
+    </fieldset>
+    <label>Anything else? <span class="help">(optional)</span>
+      <textarea name="goals" rows="2" maxlength="700"></textarea>
     </label>
     <div class="actions">
       <button class="primary" type="submit" value="email">Open email draft</button>
@@ -88,7 +97,7 @@ form.addEventListener('submit', event => {
   const days = values.getAll('days').join(', ') || 'Flexible';
   const times = values.getAll('times').join(', ') || 'Flexible';
   const experience = values.get('experience');
-  const goals = values.get('goals').trim();
+  const goals = [...values.getAll('focus'), values.get('goals').trim()].filter(Boolean).join(', ');
   message.value = [
     'Hi Mari, I’d like to ask about a private ballet lesson.',
     '',
