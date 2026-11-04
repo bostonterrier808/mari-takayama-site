@@ -45,6 +45,42 @@
   .inspector-open .layout > div:first-child :is(input, select, button, textarea) { max-width: 100%; }
 }
 </style>
+<style>
+/* The inspector scrolls independently of the preview. */
+.inspector-open .layout > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  scrollbar-gutter: stable;
+  container-type: inline-size;
+}
+.inspector-open .layout > div:first-child > * { flex-shrink: 0; }
+.layout > div:first-child > .status-panel { order: 1; }
+.layout > div:first-child .panel { padding: 8px; margin: 0; }
+.layout > div:first-child .panel h2 { font-size: 14px; margin: 0 0 6px; }
+.layout > div:first-child .panel h3 { font-size: 12px; margin: 4px 0; }
+.layout > div:first-child .hint { font-size: 11px; margin: 4px 0 8px; }
+.layout > div:first-child .settings,
+.layout > div:first-child .effect-controls,
+.layout > div:first-child .replace-controls { gap: 7px; }
+.layout > div:first-child label { min-width: 0; overflow-wrap: anywhere; }
+.layout > div:first-child :is(button, input, select, textarea) {
+  font-size: 12px;
+  min-width: 0;
+  max-width: 100%;
+}
+.layout > div:first-child :is(button, input:not([type=range]), select, textarea) { padding: 4px 6px; }
+#inspector-close { top: -8px; min-height: 30px; margin: 0; }
+.box-inspector select { margin-bottom: 0; }
+.box-inspector input[type=color] { height: 28px; padding: 2px; }
+@container (min-width: 185px) {
+  .box-inspector .settings { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .box-inspector .settings > label:first-child, #box-reset { grid-column: 1 / -1; }
+}
+</style>
 </head>
 <body>
 <header><div><div class="eyebrow">MARI TAKAYAMA</div><h1>サイトを直接編集</h1><p class="hint" style="margin:4px 0 0">動かす・大きくする・並べ方を変える</p></div><div class="actions"><a class="button" href="./" target="_blank" rel="noopener">公開サイトを見る ↗</a><button id="publish" class="primary" disabled>公開するには</button></div></header><div class="device-bar"><strong>編集する表示：</strong><button id="edit-desktop" aria-pressed="true">パソコン用</button><button id="edit-mobile" aria-pressed="false">スマホ用</button><button id="inline-select" class="canvas-action" aria-pressed="true">写真を選ぶ</button><button id="inline-crop" class="canvas-action" aria-pressed="false">写真の中を動かす</button><button id="inline-move" class="canvas-action" aria-pressed="false">枠を動かす</button><button id="inline-box" aria-pressed="false">枠・背景</button><button id="inline-layout">グリッド・形の例</button><button id="inline-text" class="canvas-action" aria-pressed="false">文章・フォント</button><button id="restore-positions">先ほどの写真位置に戻す</button><button id="inline-undo">元に戻す</button><span id="device-note" class="hint">パソコン用の配置・サイズ・エフェクトを編集中</span></div>
