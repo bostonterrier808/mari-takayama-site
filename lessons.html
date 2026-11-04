@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mari’s Private Ballet Lessons</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f5f1f2; color: #2c2a30; font: 16px/1.55 system-ui, sans-serif; }
+  main { max-width: 690px; margin: auto; padding: 24px 16px 44px; }
+  h1 { font: normal clamp(2rem, 6vw, 3.2rem)/1.12 Georgia, serif; margin: 18px 0 12px; }
+  a { color: #3a4d6e; }
+  form { background: white; padding: clamp(14px, 4vw, 28px); border: 1px solid #ded6d9; border-radius: 12px; }
+  label, legend { font-weight: 600; }
+  label { display: block; margin: 0 0 14px; }
+  fieldset { min-width: 0; margin: 0 0 15px; padding: 10px 12px; border: 1px solid #ded6d9; border-radius: 7px; }
+  fieldset label { display: inline-flex; align-items: center; gap: 4px; margin: 3px 12px 3px 0; font-weight: 400; }
+  input:not([type=checkbox]), select, textarea { display: block; width: 100%; padding: 9px; margin-top: 4px; border: 1px solid #a6a2ab; border-radius: 5px; color: inherit; background: #fff; font: inherit; }
+  .help { color: #59535c; font-size: 14px; font-weight: 400; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  button, .action { padding: 10px 13px; border-radius: 6px; border: 1px solid #526887; color: #344766; background: white; font: inherit; cursor: pointer; }
+  button.primary { background: #526887; color: white; }
+  #result { margin-top: 16px; }
+  #status:empty { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <a href="./#works">← Mari Takayama · Works</a>
+  <h1>Mari’s Private Ballet Lessons</h1>
+  <p>Tell Mari a little about yourself and when you’re usually free. Mari will check her schedule and studio availability, then reply with possible times. Your lesson is confirmed once you agree on a time together.</p>
+  <form id="inquiry">
+    <label>Your name <input name="name" autocomplete="name" required maxlength="100"></label>
+    <label>Ballet experience
+      <select name="experience">
+        <option value="">Choose if you’d like</option>
+        <option>New to ballet</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option>
+      </select>
+    </label>
+    <fieldset>
+      <legend>Days that usually work</legend>
+      <span class="help">Optional. Choose as many as you like.</span><br>
+      <label><input type="checkbox" name="days" value="Weekdays"> Weekdays</label>
+      <label><input type="checkbox" name="days" value="Weekends"> Weekends</label>
+      <label><input type="checkbox" name="days" value="Flexible"> Flexible</label>
+    </fieldset>
+    <fieldset>
+      <legend>Preferred time of day</legend>
+      <span class="help">Optional. New York time.</span><br>
+      <label><input type="checkbox" name="times" value="Morning"> Morning</label>
+      <label><input type="checkbox" name="times" value="Afternoon"> Afternoon</label>
+      <label><input type="checkbox" name="times" value="Evening"> Evening</label>
+      <label><input type="checkbox" name="times" value="Flexible"> Flexible</label>
+    </fieldset>
+    <label>What would you like to work on? <span class="help">(optional)</span>
+      <textarea name="goals" rows="3" maxlength="700" placeholder="For example: ballet basics, turns, or pointe preparation"></textarea>
+    </label>
+    <div class="actions">
+      <button class="primary" type="submit" value="email">Open email draft</button>
+      <button type="submit" value="copy">Prepare message to copy</button>
+    </div>
+    <p class="help">Send the draft from your email app, or copy the message and paste it into a DM. The form prepares a message for you to send.</p>
+    <div id="result" hidden>
+      <label>Your inquiry message<textarea id="message" rows="8" readonly></textarea></label>
+      <button type="button" id="copy">Copy message</button>
+      <p id="status" role="status"></p>
+    </div>
+  </form>
+  <p class="help">Email <a href="mailto:maritakayama.official@gmail.com">maritakayama.official@gmail.com</a></p>
+</main>
+<script>
+const form = document.querySelector('#inquiry');
+const message = document.querySelector('#message');
+const result = document.querySelector('#result');
+const status = document.querySelector('#status');
+form.addEventListener('submit', event => {
+  event.preventDefault();
+  const values = new FormData(form);
+  const name = values.get('name').trim();
+  if (!name) {
+    form.elements.name.focus();
+    return;
+  }
+  const days = values.getAll('days').join(', ') || 'Flexible';
+  const times = values.getAll('times').join(', ') || 'Flexible';
+  const experience = values.get('experience');
+  const goals = values.get('goals').trim();
+  message.value = [
+    'Hi Mari, I’d like to ask about a private ballet lesson.',
+    '',
+    'Name: ' + name,
+    experience && 'Ballet experience: ' + experience,
+    'Days that usually work: ' + days,
+    'Preferred times (New York): ' + times,
+    goals && 'Lesson goals: ' + goals,
+    '',
+    'Please let me know what times might work. Thank you!'
+  ].filter(line => line !== false).filter((line, index) => line || index === 1).join('\n');
+  result.hidden = false;
+  status.textContent = '';
+  if (event.submitter?.value === 'email') {
+    const subject = encodeURIComponent('Private ballet lesson inquiry');
+    location.href = 'mailto:maritakayama.official@gmail.com?subject=' + subject + '&body=' + encodeURIComponent(message.value);
+  } else {
+    message.focus();
+  }
+});
+document.querySelector('#copy').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(message.value);
+    status.textContent = 'Copied. Paste the message into your email or DM.';
+  } catch {
+    message.focus();
+    message.select();
+    status.textContent = 'Select and copy the message above.';
+  }
+});
+</script>
+</body>
+</html>
