@@ -23,6 +23,19 @@
   button.primary { background: #526887; color: white; }
   #result { margin-top: 16px; }
   #status:empty { display: none; }
+
+.choice-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+fieldset.choice-group .choice {
+  display: flex; align-items: center; gap: 9px; margin: 0; padding: 12px;
+  border: 1px solid #c9c3cc; border-radius: 7px; cursor: pointer; font-weight: 400;
+}
+.choice input[type=radio], .choice input[type=checkbox] {
+  display: inline-block; width: 18px; height: 18px; margin: 0; padding: 0;
+  flex-shrink: 0; accent-color: #526887;
+}
+.choice:has(input:checked) { background: #edf1f7; border-color: #526887; }
+.choice:focus-within { outline: 2px solid #526887; outline-offset: 2px; }
+@media(max-width:420px) { .choice-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -41,18 +54,9 @@
         <option value="declined">Prefer not to say</option>
       </select>
     </label>
-    <label>Ballet experience
-      <select name="experience">
-        <option value="">Choose if you’d like</option>
-        <option>New to ballet</option><option>First time dancing</option>
-        <option>Beginner</option><option>Intermediate</option><option>Advanced</option>
-        <option>Singer</option><option>Dancer</option><option>Ballet dancer</option>
-        <option value="Other">Other</option>
-      </select>
-    </label>
-    <label id="experience-other" hidden>Tell us about your experience (optional)
-      <input name="experienceOther" maxlength="150">
-    </label>
+<fieldset class="choice-group"><legend>Have you taken ballet before?</legend><p class="help">Optional. Choose one.</p><div class="choice-grid"><label class="choice"><input type="radio" name="experience" value="No ballet experience"><span>I’m new to ballet</span></label><label class="choice"><input type="radio" name="experience" value="Some ballet experience"><span>I’ve taken some classes</span></label><label class="choice"><input type="radio" name="experience" value="Regular ballet training"><span>I train regularly</span></label><label class="choice"><input type="radio" name="experience" value="Not sure"><span>I’m not sure</span></label></div></fieldset>
+<fieldset class="choice-group"><legend>Are you a performer?</legend><p class="help">Optional. Choose any that apply, or skip this question.</p><div class="choice-grid"><label class="choice"><input type="checkbox" name="background" value="Singer"><span>Singer</span></label><label class="choice"><input type="checkbox" name="background" value="Dancer"><span>Dancer</span></label><label class="choice"><input type="checkbox" name="background" value="Ballet dancer"><span>Ballet dancer</span></label><label class="choice"><input type="checkbox" name="background" value="Other"><span>Other</span></label></div></fieldset>
+<label id="experience-other" hidden>Other background (optional)<input name="experienceOther" maxlength="150" placeholder="Tell us a little about your background"></label>
     <fieldset>
       <legend>Days that usually work</legend>
       <span class="help">Optional. Choose as many as you like.</span><br>
@@ -102,11 +106,12 @@ const form = document.querySelector('#inquiry');
 const message = document.querySelector('#message');
 const result = document.querySelector('#result');
 const status = document.querySelector('#status');
-const experienceSelect = form.elements.experience;
 function showOtherExperience() {
-  document.querySelector("#experience-other").hidden = experienceSelect.value !== "Other";
+  document.querySelector('#experience-other').hidden =
+    !form.querySelector('[name="background"][value="Other"]').checked;
 }
-experienceSelect.addEventListener("change", showOtherExperience);
+form.querySelectorAll('[name="background"]').forEach(input =>
+  input.addEventListener('change', showOtherExperience));
 showOtherExperience();
 form.addEventListener('submit', event => {
   event.preventDefault();
@@ -120,7 +125,8 @@ form.addEventListener('submit', event => {
   const times = values.getAll('times').join(', ') || 'Flexible';
   const selectedExperience = values.get("experience");
   const otherExperience = values.get("experienceOther").trim();
-  const experience = selectedExperience === "Other" && otherExperience ? "Other: " + otherExperience : selectedExperience;
+  const experience = selectedExperience;
+  const background = values.getAll("background").map(value => value === "Other" && otherExperience ? "Other: " + otherExperience : value).join(", ");
   const goals = [...values.getAll('focus'), values.get('goals').trim()].filter(Boolean).join(', ');
   message.value = [
     'Hi Mari, I’d like to ask about a private ballet lesson.',
@@ -128,6 +134,7 @@ form.addEventListener('submit', event => {
     'Name: ' + name,
     values.get("ageGroup") && values.get("ageGroup") !== "declined" && "Student’s age group: " + values.get("ageGroup"),
     experience && 'Ballet experience: ' + experience,
+    background && 'Performance background: ' + background,
     'Days that usually work: ' + days,
     'Preferred times (New York): ' + times,
     goals && 'Lesson goals: ' + goals,
