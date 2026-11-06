@@ -10,7 +10,7 @@
 
 <style>
 /* Keep controls beside the canvas so they never cover its content. */
-.inspector-open .layout {
+.layout:not([hidden]) {
   display: grid;
   grid-template-columns: minmax(0, 1fr) clamp(220px, 24vw, 300px);
   gap: 10px;
@@ -28,12 +28,12 @@
   min-height: 0;
   box-shadow: none;
 }
-.inspector-open .layout .preview { grid-column: 1; grid-row: 1; height: calc(100dvh - 155px); min-height: 0; }
+.layout:not([hidden]) .preview { grid-column: 1; grid-row: 1; height: calc(100dvh - 155px); min-height: 0; }
 .inspector-open .preview-frame { margin-right: 0; }
 .preview-frame iframe { flex: 0 0 auto; }
 @media (max-width: 760px) {
-  .inspector-open .layout { grid-template-columns: minmax(0, 1fr) minmax(130px, 34vw); gap: 6px; }
-  .inspector-open .layout .preview { height: max(200px, calc(100dvh - 195px)); }
+  .layout:not([hidden]) { grid-template-columns: minmax(0, 1fr) minmax(130px, 34vw); gap: 6px; }
+  .layout:not([hidden]) .preview { height: max(200px, calc(100dvh - 195px)); }
   .inspector-open .layout > div:first-child {
     grid-column: 2;
     grid-row: 1;
@@ -41,7 +41,7 @@
     padding: 6px;
     overflow-x: hidden;
   }
-  .inspector-open .preview-frame iframe { max-width: 100%; }
+  .preview-frame iframe { max-width: 100%; }
   .inspector-open .layout > div:first-child :is(input, select, button, textarea) { max-width: 100%; }
 }
 </style>
