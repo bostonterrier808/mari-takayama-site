@@ -12,7 +12,7 @@
 /* Keep controls beside the canvas so they never cover its content. */
 .layout:not([hidden]) {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(220px, 24vw, 300px);
+  grid-template-columns: minmax(0, 1fr) clamp(190px, 20vw, 250px);
   gap: 10px;
   align-items: stretch;
 }
@@ -32,7 +32,7 @@
 .inspector-open .preview-frame { margin-right: 0; }
 .preview-frame iframe { flex: 0 0 auto; }
 @media (max-width: 760px) {
-  .layout:not([hidden]) { grid-template-columns: minmax(0, 1fr) minmax(130px, 34vw); gap: 6px; }
+  .layout:not([hidden]) { grid-template-columns: minmax(0, 1fr) minmax(120px, 29vw); gap: 6px; }
   .layout:not([hidden]) .preview { height: max(200px, calc(100dvh - 195px)); }
   .inspector-open .layout > div:first-child {
     grid-column: 2;
