@@ -265,6 +265,40 @@ function alignmentGuides(img) {
   doc.body.append(layer);
   const width=doc.documentElement.clientWidth,height=win.innerHeight;
   const peers=[...doc.querySelectorAll('main img')].filter(el=>el!==img).map(el=>el.getBoundingClientRect()).filter(r=>r.width&&r.height&&r.bottom>0&&r.top<height);
+  const textRects=[...doc.querySelectorAll('main p,main h1,main h2,main h3,main li,main .tag')].filter(el=>el.textContent.trim()&&!el.contains(img)).map(el=>{const range=doc.createRange();range.selectNodeContents(el);return range.getBoundingClientRect()}).filter(r=>r.width&&r.height&&r.bottom>0&&r.top<height);
+  function spacing(r){
+    const cx=(r.left+r.right)/2,cy=(r.top+r.bottom)/2;
+    const obstacles=[...peers,...textRects];
+    let left=0,right=width,top=null,bottom=null;
+    const section=img.closest('section');
+    if(section){const s=section.getBoundingClientRect();top=s.top;bottom=s.bottom;}
+    for(const p of obstacles){
+      if(p.bottom>r.top+2&&p.top<r.bottom-2){
+        if(p.right<=cx&&p.right>left)left=p.right;
+        if(p.left>=cx&&p.left<right)right=p.left;
+      }
+      if(p.right>r.left+2&&p.left<r.right-2){
+        if(p.bottom<=cy&&(top===null||p.bottom>top))top=p.bottom;
+        if(p.top>=cy&&(bottom===null||p.top<bottom))bottom=p.top;
+      }
+    }
+    function measure(axis,a,b,start,end,cross){
+      if(b-a<end-start-4)return;
+      const center=(a+b)/2,aligned=Math.abs((start+end)/2-center)<=4;
+      const color=aligned?'#df287e':'#b65b00';
+      line(axis,center,aligned?'余白が同じです':'端と端の中央',aligned);
+      for(const [from,to]of [[a,start],[end,b]]){
+        if(to<from)return;
+        const bar=doc.createElement('div');
+        Object.assign(bar.style,{position:'absolute',color,boxSizing:'border-box',font:'11px/1.5 system-ui',textAlign:'center',whiteSpace:'nowrap'});
+        if(axis==='x')Object.assign(bar.style,{left:from+'px',top:Math.max(24,Math.min(height-24,cross))+'px',width:(to-from)+'px',borderTop:'1px dashed '+color,borderLeft:'1px solid '+color,borderRight:'1px solid '+color});
+        else Object.assign(bar.style,{top:from+'px',left:Math.max(5,Math.min(width-70,cross))+'px',height:(to-from)+'px',borderLeft:'1px dashed '+color});
+        bar.textContent=Math.round(to-from)+' px';layer.append(bar);
+      }
+    }
+    measure('x',left,right,r.left,r.right,cy);
+    if(top!==null&&bottom!==null)measure('y',top,bottom,r.top,r.bottom,cx);
+  }
   function line(axis,value,label,aligned=false){
     const el=doc.createElement('div'),tag=doc.createElement('span');
     const color=aligned?'#df287e':'#2578d4';
@@ -279,8 +313,9 @@ function alignmentGuides(img) {
     layer.replaceChildren();
     const r=img.getBoundingClientRect(),xs=[r.left,(r.left+r.right)/2,r.right],ys=[r.top,(r.top+r.bottom)/2,r.bottom];
     line('x',width/2,Math.abs(xs[1]-width/2)<=6?'サイトの中央に揃っています':'サイトの中央',Math.abs(xs[1]-width/2)<=6);
+    spacing(r);
     const matches={x:[],y:[]};
-    for(const p of peers){
+    for(const p of [...peers,...textRects]){
       for(const [axis,own,targets] of [['x',xs,[p.left,(p.left+p.right)/2,p.right]],['y',ys,[p.top,(p.top+p.bottom)/2,p.bottom]]]){
         targets.forEach((v,i)=>{if(Math.abs(own[i]-v)<=6&&!matches[axis].some(x=>Math.abs(x-v)<2))matches[axis].push(v)});
       }
