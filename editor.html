@@ -206,13 +206,13 @@ function dragBox(event, box) {
     values = {...base};
     if (edge.x || edge.y) {
       if (edge.x) {
-        const width = Math.max(10,Math.min(100,Math.round((rect.width+dx*edge.x)*100/parentWidth)));
+        const width = Math.max(10,Math.min(100,Math.round((layoutWidth+dx*edge.x/scale)*100/parentWidth)));
         values.width = width;
         if (edge.x<0) values.x = x+Math.round(rect.width-width*parentWidth/100);
         box.style.setProperty('width',width+'%','important');
       }
       if (edge.y) {
-        values.height = Math.max(0,Math.min(1800,Math.round(rect.height+dy*edge.y)));
+        values.height = Math.max(0,Math.min(1800,Math.round(layoutHeight+dy*edge.y/scale)));
         if (edge.y<0) values.y = y+Math.round(rect.height-values.height);
         box.style.setProperty('height',values.height+'px','important');
       }
@@ -262,7 +262,12 @@ function beginFrame(e,img,item,resize,edge={x:1,y:1},host=resize?handle:img) {
   e.stopPropagation();
   const photo = item.p, before = clone(state), base = {...photo};
   const rect = img.getBoundingClientRect();
-  const parentWidth = img.parentElement.clientWidth || rect.width;
+  const computed = win.getComputedStyle(img);
+  const layoutWidth = parseFloat(computed.width) || img.offsetWidth || rect.width;
+  const layoutHeight = parseFloat(computed.height) || img.offsetHeight || rect.height;
+  const scale = rect.width / layoutWidth || 1;
+  const percentWidth = parseFloat(img.style.width);
+  const parentWidth = img.style.width.endsWith('%') && percentWidth > 0 ? layoutWidth * 100 / percentWidth : (img.parentElement.clientWidth || layoutWidth);
   const startX = e.clientX, startY = e.clientY, pointerId = e.pointerId;
   let moved = false;
   function move(event) {
