@@ -257,10 +257,42 @@ doc.addEventListener('pointermove',e=>{
 doc.addEventListener('pointerdown',pickBox,true);doc.addEventListener('click',pickBox,true);
 function positionHandle(img){if(!handle||!img.isConnected)return;const r=img.getBoundingClientRect();handle.style.left=(r.right-32)+'px';handle.style.top=(r.bottom-32)+'px'}
 function selectImage(img){const item=inlineRecord(img);if(!item)return null;inlineSelected=item.id;doc.querySelectorAll('[data-inline-selected]').forEach(x=>x.removeAttribute('data-inline-selected'));img.setAttribute('data-inline-selected','');if(item.kind==='gallery'){selected=item.id;renderSelected();openInspector('gallery')}else{$('other').value=item.id;renderOther();openInspector('other')}if(handle)handle.remove();handle=doc.createElement('button');handle.type='button';handle.textContent='↘';handle.setAttribute('aria-label','選択した写真の枠サイズを変更');Object.assign(handle.style,{position:'fixed',zIndex:'100',width:'32px',height:'32px',padding:'0',background:'#6f83a6',color:'white',border:'2px solid white',borderRadius:'5px',fontSize:'22px',cursor:'nwse-resize',touchAction:'none'});doc.body.append(handle);positionHandle(img);handle.onpointerdown=e=>beginFrame(e,img,item,true);return item}
+function alignmentGuides(img) {
+  const layer=doc.createElement('div');
+  layer.setAttribute('aria-hidden','true');
+  layer.dataset.alignmentGuides='';
+  Object.assign(layer.style,{position:'fixed',inset:'0',pointerEvents:'none',zIndex:'2147483646'});
+  doc.body.append(layer);
+  const width=doc.documentElement.clientWidth,height=win.innerHeight;
+  const peers=[...doc.querySelectorAll('main img')].filter(el=>el!==img).map(el=>el.getBoundingClientRect()).filter(r=>r.width&&r.height&&r.bottom>0&&r.top<height);
+  function line(axis,value,label,aligned=false){
+    const el=doc.createElement('div'),tag=doc.createElement('span');
+    const color=aligned?'#df287e':'#2578d4';
+    Object.assign(el.style,{position:'absolute',background:color,opacity:'0.95'});
+    if(axis==='x')Object.assign(el.style,{left:value+'px',top:'0',width:'1px',height:'100%'});
+    else Object.assign(el.style,{top:value+'px',left:'0',height:'1px',width:'100%'});
+    tag.textContent=label;
+    Object.assign(tag.style,{position:'absolute',left:'5px',top:'5px',background:color,color:'white',font:'11px/1.5 system-ui',padding:'2px 5px',borderRadius:'3px',whiteSpace:'nowrap'});
+    el.append(tag);layer.append(el);
+  }
+  return {update(){
+    layer.replaceChildren();
+    const r=img.getBoundingClientRect(),xs=[r.left,(r.left+r.right)/2,r.right],ys=[r.top,(r.top+r.bottom)/2,r.bottom];
+    line('x',width/2,Math.abs(xs[1]-width/2)<=6?'サイトの中央に揃っています':'サイトの中央',Math.abs(xs[1]-width/2)<=6);
+    const matches={x:[],y:[]};
+    for(const p of peers){
+      for(const [axis,own,targets] of [['x',xs,[p.left,(p.left+p.right)/2,p.right]],['y',ys,[p.top,(p.top+p.bottom)/2,p.bottom]]]){
+        targets.forEach((v,i)=>{if(Math.abs(own[i]-v)<=6&&!matches[axis].some(x=>Math.abs(x-v)<2))matches[axis].push(v)});
+      }
+    }
+    for(const axis of ['x','y'])for(const v of matches[axis].slice(0,4))if(axis!=='x'||Math.abs(v-width/2)>6)line(axis,v,axis==='x'?'縦に揃っています':'横に揃っています',true);
+  },remove(){layer.remove()}};
+}
 function beginFrame(e,img,item,resize,edge={x:1,y:1},host=resize?handle:img) {
   e.preventDefault();
   e.stopPropagation();
   const photo = item.p, before = clone(state), base = {...photo};
+  const guides=alignmentGuides(img);
   const rect = img.getBoundingClientRect();
   const computed = win.getComputedStyle(img);
   const layoutWidth = parseFloat(computed.width) || img.offsetWidth || rect.width;
@@ -304,12 +336,14 @@ function beginFrame(e,img,item,resize,edge={x:1,y:1},host=resize?handle:img) {
       const movingElement=item.kind==='gallery'?img.closest('button'):img;movingElement.style.setProperty('translate',photo.offsetX+'px '+photo.offsetY+'px','important');
     }
     positionHandle(img);
+    guides.update();
   }
   function finish(event) {
     if(event.pointerId!==pointerId)return;
     doc.removeEventListener('pointermove',move);
     doc.removeEventListener('pointerup',finish);
     doc.removeEventListener('pointercancel',finish);
+    guides.remove();
     if(event.type==='pointercancel') { state=before;preview();return; }
     if(moved) {
       history.push(before);
