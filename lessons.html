@@ -141,10 +141,24 @@ form.addEventListener('submit', event => {
     '',
     'Please let me know what times might work. Thank you!'
   ].filter(line => line !== false).filter((line, index) => line || index === 1).join('\n');
+  if(window.mariSiteLanguage==='ja'){
+    const t=value=>window.mariTranslate?.(value)||value;
+    message.value=[
+      'Mariさん、プライベート・バレエレッスンについて相談したいです。','',
+      'お名前：'+name,
+      values.get('ageGroup')&&values.get('ageGroup')!=='declined'&&'年齢層：'+t(values.get('ageGroup')),
+      experience&&'バレエ経験：'+({'No ballet experience':'初めてです','Some ballet experience':'習ったことがあります','Regular ballet training':'定期的にレッスンを受けています','Not sure':'よく分かりません'}[experience]||experience),
+      background&&'舞台・パフォーマンス経験：'+values.getAll('background').map(value=>value==='Other'&&otherExperience?'その他：'+otherExperience:t(value)).join('、'),
+      '都合のよい曜日：'+(values.getAll('days').map(t).join('、')||'相談できます'),
+      '希望の時間帯（ニューヨーク時間）：'+(values.getAll('times').map(t).join('、')||'相談できます'),
+      goals&&'レッスンの希望：'+[...values.getAll('focus').map(t),values.get('goals').trim()].filter(Boolean).join('、'),'',
+      'ご都合のよい日時を教えていただけますと幸いです。よろしくお願いいたします。'
+    ].filter(line=>line!==false).filter((line,index)=>line||index===1).join('\n');
+  }
   result.hidden = false;
   status.textContent = '';
   if (event.submitter?.value === 'email') {
-    const subject = encodeURIComponent('Private ballet lesson inquiry');
+    const subject = encodeURIComponent(window.mariSiteLanguage==='ja'?'個人バレエレッスンのお問い合わせ':'Private ballet lesson inquiry');
     location.href = 'mailto:maritakayama.official@gmail.com?subject=' + subject + '&body=' + encodeURIComponent(message.value);
   } else {
     message.focus();
@@ -153,13 +167,14 @@ form.addEventListener('submit', event => {
 document.querySelector('#copy').addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(message.value);
-    status.textContent = 'Copied. Paste the message into your email or DM.';
+    status.textContent = window.mariSiteLanguage==='ja'?'コピーしました。メールやDMに貼り付けて送信してください。':'Copied. Paste the message into your email or DM.';
   } catch {
     message.focus();
     message.select();
-    status.textContent = 'Select and copy the message above.';
+    status.textContent = window.mariSiteLanguage==='ja'?'上の文章を選択してコピーしてください。':'Select and copy the message above.';
   }
 });
 </script>
+<script src="site-language.js?v=1"></script>
 </body>
 </html>
