@@ -197,6 +197,18 @@ footer nav a:hover { color: var(--slate); }
   .sign { text-align: left; justify-items: start; }
 }
 .published-interview{margin:0 0 38px;padding:clamp(22px,4vw,40px);border:1px solid currentColor;border-radius:8px;background:rgba(255,255,255,.07)}.interview-publication{font:11px/1.6 Arial,sans-serif;letter-spacing:.13em;margin-bottom:13px;opacity:.8}.interview-feature-title{font-size:clamp(25px,3.5vw,38px);line-height:1.2;max-width:700px;margin-bottom:16px}.interview-feature-summary{font-size:18px;line-height:1.65;max-width:680px;margin-bottom:22px}.interview-feature-link{display:inline-block;padding:12px 18px;border:1px solid currentColor;border-radius:4px;color:inherit;text-decoration:none;font:14px/1.5 Arial,sans-serif}.interview-feature-link:hover{background:rgba(255,255,255,.15)}
+/* Readable Interview typography and contrast */
+#interview{background:#f4f0ec;color:#292632}
+#interview .plain-banner{color:#292632}
+#interview .published-interview,#interview .qa article{background:#fff;color:#292632;border:1px solid #d9d1cb;border-radius:8px}
+#interview .interview-publication{font-size:13px;line-height:1.7;color:#59515b;opacity:1;letter-spacing:.08em;font-weight:600}
+#interview .interview-feature-title{font-weight:600;font-size:clamp(28px,3.5vw,40px);line-height:1.25}
+#interview .interview-feature-summary,#interview .qa p{font-family:Arial,sans-serif;font-size:18px;line-height:1.8;color:#38323d}
+#interview .qa h3{color:#292632;font-weight:600}
+#interview .qa h3 span{color:#645466;opacity:1;font-weight:600}
+#interview .interview-feature-link{background:#45364d;color:#fff;border-color:#45364d;font-weight:600;font-size:15px;padding:14px 20px}
+#interview .interview-feature-link:hover{background:#302336}
+#interview .interview-feature-link:focus-visible{outline:3px solid #95632e;outline-offset:4px}
 </style>
 <style id="photo-layout">.grid { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: clamp(40px, 8vw, 160px); gap: 20px; align-items: stretch; } .grid button { min-height: 0; overflow: hidden; } .grid img { height: 100%; } @media (max-width: 760px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; align-items: start; } .grid button { grid-column: span 1 !important; grid-row: auto !important; } .grid img { height: auto !important; aspect-ratio: 3 / 4 !important; } }
 #grid button, .hero-photo, .about .wrap > img, .row-photo, .banner { overflow: hidden; }
