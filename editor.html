@@ -286,22 +286,22 @@ function alignmentGuides(img) {
       if(b-a<end-start-4)return;
       const center=(a+b)/2,aligned=Math.abs((start+end)/2-center)<=4;
       const color=aligned?'#df287e':'#b65b00';
-      line(axis,center,aligned?'余白が同じです':'端と端の中央',aligned);
+      line(axis,center,aligned?'余白が同じです':axis==='x'?'左右の端のあいだの中央':'上下の端のあいだの中央',aligned,color);
       for(const [from,to]of [[a,start],[end,b]]){
         if(to<from)return;
         const bar=doc.createElement('div');
         Object.assign(bar.style,{position:'absolute',color,boxSizing:'border-box',font:'11px/1.5 system-ui',textAlign:'center',whiteSpace:'nowrap'});
         if(axis==='x')Object.assign(bar.style,{left:from+'px',top:Math.max(24,Math.min(height-24,cross))+'px',width:(to-from)+'px',borderTop:'1px dashed '+color,borderLeft:'1px solid '+color,borderRight:'1px solid '+color});
         else Object.assign(bar.style,{top:from+'px',left:Math.max(5,Math.min(width-70,cross))+'px',height:(to-from)+'px',borderLeft:'1px dashed '+color});
-        bar.textContent=Math.round(to-from)+' px';layer.append(bar);
+        bar.textContent=(axis==='x'?(from===a?'左 ':'右 '):(from===a?'上 ':'下 '))+Math.round(to-from)+' px';layer.append(bar);
       }
     }
     measure('x',left,right,r.left,r.right,cy);
     if(top!==null&&bottom!==null)measure('y',top,bottom,r.top,r.bottom,cx);
   }
-  function line(axis,value,label,aligned=false){
+  function line(axis,value,label,aligned=false,guideColor){
     const el=doc.createElement('div'),tag=doc.createElement('span');
-    const color=aligned?'#df287e':'#2578d4';
+    const color=guideColor||(aligned?'#df287e':'#2578d4');
     Object.assign(el.style,{position:'absolute',background:color,opacity:'0.95'});
     if(axis==='x')Object.assign(el.style,{left:value+'px',top:'0',width:'1px',height:'100%'});
     else Object.assign(el.style,{top:value+'px',left:'0',height:'1px',width:'100%'});
