@@ -211,6 +211,26 @@ footer nav a:hover { color: var(--slate); }
 #interview .interview-feature-link:focus-visible{outline:3px solid #95632e;outline-offset:4px}
 .press-interview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-bottom:38px}.press-interview-grid .published-interview{margin:0;display:flex;flex-direction:column;padding:28px}.press-interview-grid .interview-feature-title{font-size:clamp(23px,2.4vw,29px)}.press-interview-grid .interview-feature-summary{font-size:17px}.press-interview-grid .interview-feature-link{align-self:flex-start;margin-top:auto}.press-interview-grid [lang=ja] .interview-feature-title{font-family:system-ui,sans-serif;line-height:1.6;font-weight:600}@media(max-width:760px){.press-interview-grid{grid-template-columns:minmax(0,1fr);gap:18px}.press-interview-grid .published-interview{padding:22px}}
 .press-language-nav{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 32px}.press-language-nav a{padding:11px 20px;border:1px solid #645466;border-radius:99px;background:#fff;color:#45364d;font:600 15px/1.5 Arial,sans-serif;text-decoration:none}.press-language-nav a:hover{background:#ede5ef}.press-language-group{scroll-margin-top:100px;margin-bottom:52px}.press-language-title{display:flex;gap:18px;align-items:center;font:600 clamp(25px,3vw,32px)/1.5 system-ui,sans-serif;color:#292632;margin-bottom:8px}.press-language-title span{font:400 13px/1.5 Arial,sans-serif;color:#655d68}.press-language-note{font:16px/1.7 system-ui,sans-serif;color:#59515b;margin-bottom:22px}.press-interview-grid{gap:24px}.press-interview-grid .interview-publication{font-size:12px;letter-spacing:.04em}.press-interview-grid .interview-feature-title{line-height:1.4}.press-interview-grid .published-interview{box-shadow:0 3px 12px #30233608}.press-interview-grid .interview-feature-summary{margin-bottom:24px}.press-language-group:lang(ja){font-family:system-ui,sans-serif}@media(max-width:760px){.press-language-title{align-items:baseline}.press-language-nav a{padding:10px 16px}.press-language-group{margin-bottom:36px}}
+/* Compact Interview cards */
+#interview .plain-banner{padding-block:24px}
+#interview .plain-banner h2{font-size:clamp(32px,4vw,48px)}
+#interview .press-language-nav{gap:9px;margin-bottom:22px}
+#interview .press-language-nav a{font-size:13px;padding:8px 15px}
+#interview .press-language-group{margin-bottom:34px}
+#interview .press-language-title{font-size:clamp(21px,2.5vw,26px);gap:12px;margin-bottom:5px}
+#interview .press-language-note{font-size:14px;margin-bottom:16px}
+#interview .press-interview-grid{gap:18px;margin-bottom:24px}
+#interview .press-interview-grid .published-interview{padding:22px}
+#interview .interview-publication{font-size:11px;line-height:1.6;margin-bottom:10px}
+#interview .press-interview-grid .interview-feature-title{font-size:clamp(21px,2vw,25px);line-height:1.4;margin-bottom:12px}
+#interview .press-interview-grid [lang=ja] .interview-feature-title{font-size:clamp(20px,1.9vw,23px);line-height:1.5}
+#interview .press-interview-grid .interview-feature-summary{font-size:15px;line-height:1.7;margin-bottom:18px}
+#interview .interview-feature-link{font-size:13px;padding:10px 15px}
+#interview .qa{gap:18px;padding-block:24px 40px}
+#interview .qa article{padding:22px}
+#interview .qa h3{font-size:22px}
+#interview .qa p{font-size:16px;line-height:1.7}
+@media(max-width:760px){#interview .press-interview-grid .published-interview{padding:18px}#interview .press-interview-grid{gap:14px}}
 </style>
 <style id="photo-layout">.grid { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: clamp(40px, 8vw, 160px); gap: 20px; align-items: stretch; } .grid button { min-height: 0; overflow: hidden; } .grid img { height: 100%; } @media (max-width: 760px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; align-items: start; } .grid button { grid-column: span 1 !important; grid-row: auto !important; } .grid img { height: auto !important; aspect-ratio: 3 / 4 !important; } }
 #grid button, .hero-photo, .about .wrap > img, .row-photo, .banner { overflow: hidden; }
