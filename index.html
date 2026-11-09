@@ -139,7 +139,7 @@ header.top a:hover { color: var(--slate); }
 .more a:hover { background: var(--ink); }
 
 /* Gallery */
-.gallery-body { background: var(--slate); }
+.gallery-body { background: radial-gradient(ellipse at top, #302932, #1b181e 70%); }
 .gallery-body .wrap { padding-block: clamp(2.5rem, 5vw, 4rem); }
 .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(0.75rem, 2vw, 2.25rem); }
 .grid button { all: unset; cursor: zoom-in; display: block; }
@@ -147,6 +147,29 @@ header.top a:hover { color: var(--slate); }
 .grid img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; transition: transform 0.4s ease, filter 0.4s ease; }
 .grid button:hover img { transform: scale(1.02); filter: brightness(1.05); }
 @media (prefers-reduced-motion: reduce) { .grid img { transition: none; } }
+
+#gallery .banner .wrap h2 { letter-spacing: 0.12em; text-shadow: 0 2px 24px rgba(0,0,0,0.6); }
+#gallery #grid { counter-reset: gallery-photo; }
+#gallery #grid > button {
+  position: relative;
+  counter-increment: gallery-photo;
+  outline: 1px solid rgba(246,229,210,0.22);
+  outline-offset: 2px;
+}
+#gallery #grid > button:hover,
+#gallery #grid > button:focus-visible { outline-color: #e7cfb4; }
+#gallery #grid > button::after {
+  content: counter(gallery-photo, decimal-leading-zero);
+  position: absolute;
+  right: 0.45rem;
+  bottom: 0.45rem;
+  padding: 0.2rem 0.35rem;
+  background: rgba(24,20,26,0.82);
+  color: #fff4e6;
+  font: 0.65rem/1.1 system-ui, sans-serif;
+  letter-spacing: 0.12em;
+  pointer-events: none;
+}
 
 .lightbox {
   position: fixed; inset: 0; z-index: 20; background: rgba(20, 18, 22, 0.92);
