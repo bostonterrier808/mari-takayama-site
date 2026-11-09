@@ -87,7 +87,7 @@
 <body>
 <header><div><div class="eyebrow">MARI TAKAYAMA</div><h1>サイトを直接編集</h1><p class="hint" style="margin:4px 0 0">動かす・大きくする・並べ方を変える</p></div><div class="actions"><a class="button" href="./" target="_blank" rel="noopener">公開サイトを見る ↗</a><button id="publish" class="primary" disabled>公開するには</button></div></header><div class="device-bar"><strong>編集する表示：</strong><button id="edit-desktop" aria-pressed="true">パソコン用</button><button id="edit-mobile" aria-pressed="false">スマホ用</button><button id="inline-select" class="canvas-action" aria-pressed="true">写真を選ぶ</button><button id="inline-crop" class="canvas-action" aria-pressed="false">写真の中を動かす</button><button id="inline-move" class="canvas-action" aria-pressed="false">枠を動かす</button><button id="inline-box" aria-pressed="false">枠・背景</button><button id="inline-interview" type="button">Interview記事を編集</button><button id="inline-layout">グリッド・形の例</button><button id="inline-text" class="canvas-action" aria-pressed="false">文章・フォント</button><button id="restore-positions">先ほどの写真位置に戻す</button><button id="inline-undo">元に戻す</button><span id="device-note" class="hint">パソコン用の配置・サイズ・エフェクトを編集中</span></div>
 <div id="load-error" class="panel" hidden><h2>サイトを読み込めませんでした</h2><p>インターネット接続を確認して、ページを再読み込みしてください。</p><button onclick="location.reload()">再読み込み</button></div>
-<p id="canvas-help">写真はタップで選択。中央を引くと移動、端や右下の ↘ を引くとサイズが変わります。文章はダブルクリックで編集できます。</p><main class="layout" id="app" hidden>
+<p id="canvas-help">写真はタップで選択。中央を引くと移動、四隅や上下左右の取っ手を引くとサイズが変わります。文章はダブルクリックで編集できます。</p><main class="layout" id="app" hidden>
 <div><button id="inspector-close">調整パネルを閉じる ✕</button>
 <div class="panel"><h2>グリッド・形の例</h2><p class="hint">見本を押すと、選択中のパソコン用／スマホ用の配置に反映します。</p><div class="shape-examples"><button id="template-square"><span class="shape-icon "><i></i><i></i><i></i><i></i><i></i><i></i></span>正方形・3列</button><button id="template-portrait"><span class="shape-icon vertical"><i></i><i></i><i></i><i></i><i></i><i></i></span>縦長・3列</button><button id="template-landscape"><span class="shape-icon wide"><i></i><i></i><i></i><i></i><i></i><i></i></span>横長・2列</button><button id="template-single"><span class="shape-icon wide"><i></i><i></i><i></i><i></i><i></i><i></i></span>大きい写真・1列</button></div><p class="hint" id="layout-help">写真を好きなマスへドラッグ。右下の「↘」を引っ張ると大きさを変えられます。写真が重なる場所には移動できません。</p><div class="layout-toggle"><button id="free-mode" aria-pressed="true">自由に配置する</button><button id="auto-mode" aria-pressed="false">自動で並べる</button></div><div class="controls"><label>パソコンの列数<select id="columns"><option value="2">2列</option><option value="3">3列</option><option value="4">4列</option><option value="5">5列</option></select></label><label>スマホの列数<select id="mobile"><option value="1">1列</option><option value="2">2列</option></select></label><label>写真の間隔<select id="gap"><option value="8">狭い</option><option value="20">標準</option><option value="36">広い</option></select></label></div><div class="crop-tools"><button id="frame-action" aria-pressed="true">枠を動かす</button><button id="crop-action" aria-pressed="false">枠の中の写真を動かす</button></div><p class="crop-hint">写真の「中を調整」を押すと、その写真だけを選んで表示位置を動かせます。</p><div id="photos" class="photos" aria-label="ギャラリーの写真"></div></div>
 <div class="panel"><h2>2. 選んだ写真を調整</h2><p class="hint">サイト上の写真をクリックして選んでください。</p><div class="settings"><strong id="selected-name"></strong><div class="replace-controls"><h3>この写真を差し替える</h3><label>サイト内の別の写真から選ぶ<select id="selected-replace"><option value="">写真を選択…</option></select></label><label>パソコンから新しい写真を選ぶ<input id="selected-upload" type="file" accept="image/jpeg,image/png,image/webp"></label><p class="hint">JPEG・PNG・WebPに対応。選んだ写真はこの枠だけに反映します。</p><label>写真の説明<input id="selected-alt" type="text" maxlength="240" placeholder="写真の内容を説明"></label><button id="selected-restore">差し替え前の写真に戻す</button><p id="selected-message" role="status" class="hint"></p></div><div class="crop-stage" id="selected-crop" tabindex="0" role="group" aria-label="選んだ写真の表示位置をドラッグで調整"><img id="selected-crop-img" alt=""></div><p class="crop-hint">この写真をドラッグすると、枠の位置を変えずに写真の見える部分を調整できます。</p><div class="effect-controls"><h3>色味・エフェクト</h3><label>仕上がり<select id="selected-preset"><option value="natural">自然</option><option value="warm">暖かい色</option><option value="cool">涼しい色</option><option value="mono">白黒</option><option value="soft">やわらかい</option></select></label><label>明るさ<input id="selected-fx-brightness" type="range" min="50" max="150" value="100" step="1"></label><label>コントラスト<input id="selected-fx-contrast" type="range" min="50" max="150" value="100" step="1"></label><label>鮮やかさ<input id="selected-fx-saturate" type="range" min="0" max="200" value="100" step="1"></label><label>色合い<input id="selected-fx-hue" type="range" min="-45" max="45" value="0" step="1"></label><label>ぼかし<input id="selected-fx-blur" type="range" min="0" max="12" value="0" step="0.5"></label><label>白黒<input id="selected-fx-grayscale" type="range" min="0" max="100" value="0" step="1"></label><label>セピア<input id="selected-fx-sepia" type="range" min="0" max="100" value="0" step="1"></label><label>ビューティー<input id="selected-fx-beauty" type="range" min="0" max="100" step="1" value="0"></label><p class="beauty-note">写真全体をやわらかく明るくする美肌風の効果です。顔の形は変えません。</p><button id="selected-fx-reset">エフェクトだけ元に戻す</button></div><label>写真の拡大<input id="zoom" type="range" min="1" max="3" step="0.05" value="1"></label><div id="position-controls" class="position-controls"><button id="move-left" aria-label="選んだ写真を左へ">←</button><button id="move-right" aria-label="選んだ写真を右へ">→</button><button id="move-up" aria-label="選んだ写真を上へ">↑</button><button id="move-down" aria-label="選んだ写真を下へ">↓</button><button id="grow" aria-label="選んだ写真を大きくする">＋</button><button id="shrink" aria-label="選んだ写真を小さくする">−</button></div><p class="hint">矢印や＋・−ボタンでも配置と大きさを変えられます。</p><div class="controls"><label>大きさ<select id="span"><option value="1">通常</option><option value="2">横に2枠分</option></select></label><label>写真の形<select id="ratio"><option value="3 / 4">縦長</option><option value="1 / 1">正方形</option><option value="4 / 3">横長</option><option value="auto">元の写真の形</option></select></label><label>写真の見せ方<select id="fit"><option value="cover">枠いっぱいにする</option><option value="contain">写真全体を見せる</option></select></label></div><label>左右の表示位置<input id="x" type="range" min="0" max="100" value="50"></label><label>上下の表示位置<input id="y" type="range" min="0" max="100" value="50"></label></div></div>
@@ -173,7 +173,7 @@ for(const id of ['frame-width','frame-height'])$(id).onchange=()=>{change(()=>{c
 
 function openInspector(kind){const reset=!document.body.classList.contains('inspector-open')||!document.body.classList.contains('inspector-'+kind);document.body.classList.remove('inspector-gallery','inspector-other','inspector-layout','inspector-text','inspector-box','inspector-interview');document.body.classList.add('inspector-open','inspector-'+kind);const drawer=document.querySelector('.layout>div:first-child');if(reset)drawer.scrollTop=0;resizePreview()}
 $('inspector-close').onclick=()=>{document.body.classList.remove('inspector-open');resizePreview()};$('inline-layout').onclick=()=>openInspector('layout');$('inline-undo').onclick=()=>{if(history.length){state=history.pop();render();save()}};
-for(const name of ['select','crop','move','box'])$('inline-'+name).onclick=()=>{inlineAction=name;for(const n of ['select','crop','move','box'])$('inline-'+n).setAttribute('aria-pressed',String(n===name));$('canvas-help').textContent=name==='box'?'編集したい枠や背景をクリックしてください。':name==='crop'?'写真をドラッグすると、枠の中の表示位置が変わります。':name==='move'?'写真をドラッグして枠を移動。右下の ↘ で大きさを変更できます。':'写真をクリックして色味・ぼかし・差し替えを調整できます。文章はダブルクリックで編集できます。';if(name==='box')showBoxes($('preview').contentDocument)};
+for(const name of ['select','crop','move','box'])$('inline-'+name).onclick=()=>{inlineAction=name;for(const n of ['select','crop','move','box'])$('inline-'+n).setAttribute('aria-pressed',String(n===name));$('canvas-help').textContent=name==='box'?'編集したい枠や背景をクリックしてください。':name==='crop'?'写真をドラッグすると、枠の中の表示位置が変わります。':name==='move'?'写真の中央をドラッグして移動。四隅や上下左右の取っ手で大きさを変更できます。':'写真をクリックして色味・ぼかし・差し替えを調整できます。文章はダブルクリックで編集できます。';if(name==='box')showBoxes($('preview').contentDocument)};
 function inlineRecord(img){const id=identity(img),gallery=state.photos.find(p=>p.src===id);if(gallery)return{p:gallery,kind:'gallery',id};if(!state.other[id]){const original=others.find(o=>o.src===id);if(!original)return null;state.other[id]=clone(original)}return{p:state.other[id],kind:'other',id}}
 function dragEdge(event, element) {
   const r = element.getBoundingClientRect();
@@ -191,13 +191,16 @@ function edgeCursor({x,y}) {
   return 'grab';
 }
 
-function dragBox(event, box) {
+function dragBox(event, box, edge = dragEdge(event,box), updateHandles = () => {}) {
   if (event.button!==0) return;
   const id = boxSelection, device = activeDevice;
-  const edge = dragEdge(event,box);
   const rect = box.getBoundingClientRect();
   const base = state.boxStyles?.[device]?.[id] || {};
-  const parentWidth = box.parentElement?.clientWidth || rect.width || 1;
+  const computed = box.ownerDocument.defaultView.getComputedStyle(box);
+  const layoutWidth = parseFloat(computed.width) || rect.width;
+  const layoutHeight = parseFloat(computed.height) || rect.height;
+  const scale = rect.width / layoutWidth || 1;
+  const parentWidth = base.width ? layoutWidth * 100 / base.width : box.parentElement?.clientWidth || layoutWidth || 1;
   const x = Number(base.x || 0), y = Number(base.y || 0);
   const pointer = event.pointerId;
   let values;
@@ -212,12 +215,12 @@ function dragBox(event, box) {
       if (edge.x) {
         const width = Math.max(10,Math.min(100,Math.round((layoutWidth+dx*edge.x/scale)*100/parentWidth)));
         values.width = width;
-        if (edge.x<0) values.x = x+Math.round(rect.width-width*parentWidth/100);
+        if (edge.x<0) values.x = x+Math.round((layoutWidth-width*parentWidth/100)*scale);
         box.style.setProperty('width',width+'%','important');
       }
       if (edge.y) {
         values.height = Math.max(0,Math.min(1800,Math.round(layoutHeight+dy*edge.y/scale)));
-        if (edge.y<0) values.y = y+Math.round(rect.height-values.height);
+        if (edge.y<0) values.y = y+Math.round((layoutHeight-values.height)*scale);
         box.style.setProperty('height',values.height+'px','important');
       }
     } else {
@@ -227,6 +230,7 @@ function dragBox(event, box) {
     values.x = safeNum(values.x,-600,600,0);
     values.y = safeNum(values.y,-600,600,0);
     box.style.setProperty('translate',values.x+'px '+values.y+'px','important');
+    updateHandles();
   }
   function finish(e) {
     if(e.pointerId!==pointer)return;
@@ -236,6 +240,7 @@ function dragBox(event, box) {
     if (e.type==='pointercancel') {
       if (beforeStyle===null) box.removeAttribute('style');
       else box.setAttribute('style',beforeStyle);
+      updateHandles();
     } else if (values) {
       change(()=>{
         state.boxStyles ||= {};
@@ -249,9 +254,9 @@ function dragBox(event, box) {
   pointerDocument.addEventListener('pointercancel',finish);
 }
 
-function bindInlineCanvas(frame){const doc=frame.contentDocument,win=frame.contentWindow;let handle=null;
+function bindInlineCanvas(frame){const doc=frame.contentDocument,win=frame.contentWindow;const handles=[];
 for(const [id,,element] of boxTargets(doc))element.dataset.boxTarget=id;
-function pickBox(e){if(inlineAction!=='box'||e.button!==0||e.target.closest('a'))return;const box=e.target.closest('[data-box-target]');if(!box)return;e.preventDefault();e.stopImmediatePropagation();boxSelection=box.dataset.boxTarget;if(e.type==='pointerdown')dragBox(e,box);else showBoxes(doc)}
+function pickBox(e){if(inlineAction!=='box'||e.button!==0||e.target.closest('a'))return;const box=e.target.closest('[data-box-target]');if(!box)return;e.preventDefault();e.stopImmediatePropagation();boxSelection=box.dataset.boxTarget;if(e.type==='pointerdown')dragBox(e,box,dragEdge(e,box),positionHandles);else showBoxes(doc)}
 doc.addEventListener('pointermove',e=>{
   const target = inlineAction==='box' ? e.target.closest('[data-box-target]') : e.target.closest('main img');
   if (!target || e.buttons) return;
@@ -259,8 +264,48 @@ doc.addEventListener('pointermove',e=>{
   target.style.cursor = inlineAction==='crop' ? 'move' : edgeCursor(edge);
 },true);
 doc.addEventListener('pointerdown',pickBox,true);doc.addEventListener('click',pickBox,true);
-function positionHandle(img){if(!handle||!img.isConnected)return;const r=img.getBoundingClientRect();handle.style.left=(r.right-32)+'px';handle.style.top=(r.bottom-32)+'px'}
-function selectImage(img){const item=inlineRecord(img);if(!item)return null;inlineSelected=item.id;doc.querySelectorAll('[data-inline-selected]').forEach(x=>x.removeAttribute('data-inline-selected'));img.setAttribute('data-inline-selected','');if(item.kind==='gallery'){selected=item.id;renderSelected();openInspector('gallery')}else{$('other').value=item.id;renderOther();openInspector('other')}if(handle)handle.remove();handle=doc.createElement('button');handle.type='button';handle.textContent='↘';handle.setAttribute('aria-label','選択した写真の枠サイズを変更');Object.assign(handle.style,{position:'fixed',zIndex:'100',width:'32px',height:'32px',padding:'0',background:'#6f83a6',color:'white',border:'2px solid white',borderRadius:'5px',fontSize:'22px',cursor:'nwse-resize',touchAction:'none'});doc.body.append(handle);positionHandle(img);handle.onpointerdown=e=>beginFrame(e,img,item,true);return item}
+function positionHandles() {
+  const target=doc.querySelector('[data-inline-selected]');
+  for(const {button,edge} of handles){
+    button.hidden=!target || (inlineAction==='crop' || inlineAction==='text');
+    if(button.hidden)continue;
+    const r=target.getBoundingClientRect();
+    const x=r.left+r.width*(edge.x+1)/2;
+    const y=r.top+r.height*(edge.y+1)/2;
+    button.hidden=x<-1||x>win.innerWidth+1||y<-1||y>win.innerHeight+1;
+    button.style.left=Math.max(8,Math.min(win.innerWidth-8,x))+'px';
+    button.style.top=Math.max(8,Math.min(win.innerHeight-8,y))+'px';
+  }
+}
+for(const [x,y,label] of [[-1,-1,'左上'],[0,-1,'上'],[1,-1,'右上'],[-1,0,'左'],[1,0,'右'],[-1,1,'左下'],[0,1,'下'],[1,1,'右下']]){
+  const edge={x,y};
+  const button=doc.createElement('button');
+  button.type='button';
+  button.tabIndex=-1;
+  button.hidden=true;
+  button.setAttribute('aria-label',label+'からサイズを変更');
+  button.title=label+'からサイズを変更';
+  Object.assign(button.style,{position:'fixed',zIndex:'1000',width:'18px',height:'18px',padding:'0',background:'#6f83a6',border:'2px solid white',borderRadius:'4px',transform:'translate(-50%, -50%)',cursor:edgeCursor(edge),touchAction:'none'});
+  button.onpointerdown=e=>{
+    if(e.button!==0)return;
+    const target=doc.querySelector('[data-inline-selected]');
+    if(!target)return;
+    e.preventDefault();
+    e.stopPropagation();
+    button.setPointerCapture(e.pointerId);
+    if(inlineAction==='box')dragBox(e,target,edge,positionHandles);
+    else {
+      const item=inlineRecord(target);
+      if(item)beginFrame(e,target,item,true,edge);
+    }
+  };
+  handles.push({button,edge});
+  doc.body.append(button);
+}
+new MutationObserver(positionHandles).observe(doc.body,{subtree:true,attributes:true,attributeFilter:['data-inline-selected']});
+new MutationObserver(positionHandles).observe($('inline-crop'),{attributes:true,attributeFilter:['aria-pressed']});
+win.addEventListener('resize',positionHandles);
+function selectImage(img){const item=inlineRecord(img);if(!item)return null;inlineSelected=item.id;doc.querySelectorAll('[data-inline-selected]').forEach(x=>x.removeAttribute('data-inline-selected'));img.setAttribute('data-inline-selected','');if(item.kind==='gallery'){selected=item.id;renderSelected();openInspector('gallery')}else{$('other').value=item.id;renderOther();openInspector('other')}positionHandles();return item}
 function alignmentGuides(img) {
   const layer=doc.createElement('div');
   layer.setAttribute('aria-hidden','true');
@@ -327,7 +372,7 @@ function alignmentGuides(img) {
     for(const axis of ['x','y'])for(const v of matches[axis].slice(0,4))if(axis!=='x'||Math.abs(v-width/2)>6)line(axis,v,axis==='x'?'縦に揃っています':'横に揃っています',true);
   },remove(){layer.remove()}};
 }
-function beginFrame(e,img,item,resize,edge={x:1,y:1},host=resize?handle:img) {
+function beginFrame(e,img,item,resize,edge={x:1,y:1}) {
   e.preventDefault();
   e.stopPropagation();
   const photo = item.p, before = clone(state), base = {...photo};
@@ -361,20 +406,26 @@ function beginFrame(e,img,item,resize,edge={x:1,y:1},host=resize?handle:img) {
       } else {
         if(photo.fit==='source')photo.fit=win.getComputedStyle(img).objectFit==='cover'?'cover':'contain';
         if(edge.x) {
-          photo.frameWidth=Math.max(10,Math.min(100,Math.round((rect.width+dx*edge.x)*100/parentWidth)));
+          photo.frameWidth=Math.max(10,Math.min(100,Math.round((layoutWidth+dx*edge.x/scale)*100/parentWidth)));
           img.style.setProperty('width',photo.frameWidth+'%','important');
         }
         if(edge.y) {
-          photo.frameHeight=Math.max(80,Math.min(1600,Math.round(rect.height+dy*edge.y)));
+          photo.frameHeight=Math.max(80,Math.min(1600,Math.round(layoutHeight+dy*edge.y/scale)));
           img.style.setProperty('height',photo.frameHeight+'px','important');
         }
       }
+      const movingElement=item.kind==='gallery'?img.closest('button'):img;
+      movingElement.style.setProperty('translate',(base.offsetX||0)+'px '+(base.offsetY||0)+'px','important');
+      const next=img.getBoundingClientRect();
+      photo.offsetX=Math.round((base.offsetX||0)+(edge.x<0?rect.right-next.right:edge.x>0?rect.left-next.left:0));
+      photo.offsetY=Math.round((base.offsetY||0)+(edge.y<0?rect.bottom-next.bottom:edge.y>0?rect.top-next.top:0));
+      movingElement.style.setProperty('translate',photo.offsetX+'px '+photo.offsetY+'px','important');
     } else {
       photo.offsetX=Math.round((base.offsetX||0)+dx);
       photo.offsetY=Math.round((base.offsetY||0)+dy);
       const movingElement=item.kind==='gallery'?img.closest('button'):img;movingElement.style.setProperty('translate',photo.offsetX+'px '+photo.offsetY+'px','important');
     }
-    positionHandle(img);
+    positionHandles();
     guides.update();
   }
   function finish(event) {
@@ -399,7 +450,7 @@ function beginFrame(e,img,item,resize,edge={x:1,y:1},host=resize?handle:img) {
 for(const img of doc.querySelectorAll('main img')){img.draggable=false;img.style.touchAction='none';img.onpointerdown=e=>{if(e.button!==0)return;const item=inlineRecord(img);if(!item)return;if(inlineAction==='crop'){startCrop(e,item.p,img,img,()=>{renderSelected();renderOther()});return}if(inlineAction==='move'||inlineAction==='select'){const edge=dragEdge(e,img);beginFrame(e,img,item,Boolean(edge.x||edge.y),edge,img)}};img.onclick=e=>{e.preventDefault();e.stopPropagation();if(!e.detail)selectImage(img)}}
 doc.addEventListener('click',e=>{const a=e.target.closest('a');if(a){e.preventDefault();const href=a.getAttribute('href');if(href?.startsWith('#')){const target=doc.getElementById(href.slice(1));if(target)win.scrollTo({top:target.offsetTop,behavior:'instant'})}else if(href){const url=new URL(href,doc.baseURI);if((url.origin===location.origin&&url.pathname===new URL('lessons.html',location.href).pathname)||(a.closest('.published-interview')&&url.protocol==='https:'))window.open(url.href,'_blank','noopener')}}},true);
 const texts=[...doc.querySelectorAll('p,h1,h2,h3,span.tag')].filter(el=>!el.children.length);texts.forEach((el,i)=>{el.onclick=e=>{e.stopPropagation();inlineTextSelected=i;inlineSelected=null;openInspector('text');$('text-content').value=el.textContent;const st=state.textStyles?.[i]||{};$('text-font').value=st.fontFamily||'';$('text-size').value=parseFloat(st.fontSize)||'';$('text-color').value=/^#[a-f0-9]{6}$/i.test(st.color||'')?st.color:'#ffffff';$('text-weight').value=st.fontWeight||'';};el.ondblclick=e=>{e.preventDefault();el.contentEditable='true';el.focus()};el.onblur=()=>{if(el.contentEditable!=='true')return;el.contentEditable='false';const text=el.textContent;if(text!==([...(parse(original).querySelectorAll('p,h1,h2,h3,span.tag'))].filter(x=>!x.children.length)[i]?.textContent)){change(()=>{state.textEdits=state.textEdits||{};state.textEdits[i]=text})}}});
-win.addEventListener('scroll',()=>{const img=doc.querySelector('[data-inline-selected]');if(img)positionHandle(img)});if(inlineSelected){const img=[...doc.querySelectorAll('main img')].find(x=>identity(x)===inlineSelected);if(img)selectImage(img)}}
+win.addEventListener('scroll',positionHandles);if(inlineSelected){const img=[...doc.querySelectorAll('main img')].find(x=>identity(x)===inlineSelected);if(img)selectImage(img)}}
 
 const previousPositions={"desktop":{"mode":"free","columns":4,"mobile":2,"gap":20,"photos":{"img/g01.jpg":{"col":1,"row":1,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g02.jpg":{"col":3,"row":1,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":52.32892286159111,"y":50,"zoom":1,"fit":"cover"},"img/g03.jpg":{"col":5,"row":1,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":58.98735631515264,"y":50,"zoom":1,"fit":"cover"},"img/g04.jpg":{"col":1,"row":4,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g05.jpg":{"col":3,"row":4,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g06.jpg":{"col":5,"row":4,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g07.jpg":{"col":1,"row":7,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g08.jpg":{"col":3,"row":7,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g09.jpg":{"col":5,"row":7,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g10.jpg":{"col":1,"row":10,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50.234808738618696,"y":50,"zoom":1,"fit":"cover"},"img/g11.jpg":{"col":3,"row":10,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g12.jpg":{"col":5,"row":10,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"}},"other":{"img/about.jpg":{"x":84.04810834484383,"y":50,"zoom":1,"fit":"cover","frameWidth":100,"frameHeight":530},"img/gallery-banner.jpg":{"x":50,"y":52.53960576279509,"zoom":1,"fit":"cover"}}},"mobile":{"mode":"auto","columns":2,"mobile":2,"gap":20,"photos":{"img/g01.jpg":{"col":1,"row":1,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g02.jpg":{"col":3,"row":1,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":52.32892286159111,"y":50,"zoom":1,"fit":"cover"},"img/g03.jpg":{"col":5,"row":1,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":58.98735631515264,"y":50,"zoom":1,"fit":"cover"},"img/g04.jpg":{"col":1,"row":4,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g05.jpg":{"col":3,"row":4,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g06.jpg":{"col":5,"row":4,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g07.jpg":{"col":1,"row":7,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g08.jpg":{"col":3,"row":7,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g09.jpg":{"col":5,"row":7,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g10.jpg":{"col":1,"row":10,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50.234808738618696,"y":50,"zoom":1,"fit":"cover"},"img/g11.jpg":{"col":3,"row":10,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"},"img/g12.jpg":{"col":5,"row":10,"w":2,"h":3,"span":1,"ratio":"3 / 4","x":50,"y":50,"zoom":1,"fit":"cover"}},"other":{"img/about.jpg":{"x":50,"y":50,"zoom":1,"fit":"cover"},"img/gallery-banner.jpg":{"x":50,"y":50,"fit":"cover"}}}};
 function restorePreviousPositions(notify=true){const keys=['col','row','w','h','span','ratio','x','y','zoom','fit','frameWidth','frameHeight','offsetX','offsetY'];captureDevice();if(notify)history.push(clone(state));for(const device of ['desktop','mobile']){const layout=state.deviceLayouts[device],snapshot=previousPositions[device];for(const key of ['mode','columns','mobile','gap'])if(snapshot[key]!==undefined)layout[key]=snapshot[key];for(const photo of layout.photos){const old=snapshot.photos[photo.src];if(old)for(const key of keys){if(old[key]===undefined)delete photo[key];else photo[key]=old[key]}}for(const [id,photo]of Object.entries(layout.other)){const old=snapshot.other[id]||others.find(x=>x.src===id);if(old)for(const key of keys){if(old[key]===undefined)delete photo[key];else photo[key]=old[key]}}}Object.assign(state,clone(state.deviceLayouts[activeDevice]));state.positionRestoreVersion=1;if(notify){inlineSelected=null;render();save();$('canvas-help').textContent='写真の位置と枠を先ほどの状態に戻しました。差し替えた写真やエフェクトは保持しています。'}}
