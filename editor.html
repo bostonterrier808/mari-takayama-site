@@ -141,8 +141,11 @@ function startCrop(event, photo, image, host, done) {
   const isHero = host === image && Boolean(image.closest('.hero-photo'));
   const width = isHero ? Math.min(image.clientWidth, image.parentElement.clientWidth) : image.clientWidth;
   const height = isHero && !photo.frameHeight ? image.parentElement.clientHeight : image.clientHeight;
-  const fitScale = Math.min(width / image.naturalWidth, height / image.naturalHeight);
-  const zoom = safeNum(photo.zoom, .5, 1, 1);
+  const fit = image.ownerDocument.defaultView.getComputedStyle(image).objectFit;
+  const scaleX = width / image.naturalWidth;
+  const scaleY = height / image.naturalHeight;
+  const fitScale = fit === "cover" ? Math.max(scaleX, scaleY) : Math.min(scaleX, scaleY);
+  const zoom = safeNum(photo.zoom, .5, 3, 1);
   const roomX = width - image.naturalWidth * fitScale * zoom;
   const roomY = height - image.naturalHeight * fitScale * zoom;
   const x = safeNum(photo.x, 0, 100, 50);
@@ -158,14 +161,8 @@ function startCrop(event, photo, image, host, done) {
     const dy = move.clientY - event.clientY;
     if (!moved && Math.hypot(dx, dy) < 3) return;
     moved = true;
-    photo.fit = 'contain';
-    photo.zoom = zoom;
-    photo.x = safeNum(x + (roomX > 0 ? dx / roomX * 100 : 0), 0, 100, 50);
-    photo.y = safeNum(y + (roomY > 0 ? dy / roomY * 100 : 0), 0, 100, 50);
-    if (isHero) {
-      photo.innerHero = true;
-      applyInnerHero(image, photo);
-    }
+    photo.x = safeNum(x + (Math.abs(roomX) > 0.5 ? dx / roomX * 100 : 0), 0, 100, 50);
+    photo.y = safeNum(y + (Math.abs(roomY) > 0.5 ? dy / roomY * 100 : 0), 0, 100, 50);
     for (const property of ['object-fit','object-position','transform','transform-origin']) image.style.removeProperty(property);
     paintImage(image, photo);
     for (const property of ['object-fit','object-position','transform','transform-origin']) {
@@ -193,13 +190,6 @@ function innerHeroStyles(photo) {
   if (!photo.innerHero || photo.fit !== 'contain') return '';
   return 'max-width:100%;margin-left:0;mask-image:none;'+(photo.frameHeight?'':'height:100%;')+(photo.frameWidth?'':'width:100%;');
 }
-function applyInnerHero(image, photo) {
-  for (const declaration of innerHeroStyles(photo).split(';').filter(Boolean)) {
-    const [property,value] = declaration.split(':');
-    image.style.setProperty(property,value,'important');
-  }
-}
-
 $('selected-crop').onpointerdown=e=>{const p=state.photos.find(p=>p.src===selected);previewSection='gallery';startCrop(e,p,$('selected-crop-img'),$('selected-crop'),()=>{renderPhotos();renderSelected()})};
 $('other-crop').onpointerdown=e=>{if(e.target.closest('#other-resize'))return;const src=$('other').value;if(!state.other[src])state.other[src]=clone(others.find(o=>o.src===src));startCrop(e,state.other[src],$('other-crop-img'),$('other-crop'),renderOther)};
 $('zoom').oninput=()=>{change(()=>{state.photos.find(p=>p.src===selected).zoom=+$('zoom').value});renderPhotos();renderSelected()};$('other-zoom').oninput=()=>{change(()=>{const src=$('other').value;if(!state.other[src])state.other[src]=clone(others.find(o=>o.src===src));state.other[src].zoom=+$('other-zoom').value});renderOther()};
