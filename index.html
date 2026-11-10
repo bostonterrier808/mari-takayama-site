@@ -285,14 +285,20 @@ header.top a.lesson-nav { color: #465b7a; font-weight: 600; border-bottom: 2px s
 </style>
 <style id="manual-box-styles">@media(min-width:761px){[data-box-slot="16"]{translate:-3px 0px !important}}@media(max-width:760px){[data-box-slot="6"]{height:140px !important;translate:0px 0px !important}[data-box-slot="15"]{width:77% !important;height:343px !important;translate:0px 0px !important}}</style><style id="home-page">
 /* Home: a calm overview that sends visitors to each page */
-.home-intro { background: var(--paper); }
-.home-intro .wrap { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(2rem, 6vw, 6rem); align-items: start; padding-block: clamp(4rem, 9vw, 7.5rem); }
-.home-intro h2 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: clamp(2.4rem, 5.2vw, 4.4rem); line-height: 1.04; letter-spacing: -0.01em; text-wrap: balance; color: var(--ink); }
-.home-intro-body p { margin: 0 0 1.75rem; max-width: 32em; }
-.home-facts { margin: 0 0 2rem; display: grid; border-top: 1px solid #e3dfe4; }
-.home-facts div { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 1rem; padding: 0.7rem 0; border-bottom: 1px solid #e3dfe4; }
-.home-facts dt { color: var(--ink-soft); font-size: var(--step--1); }
-.home-facts dd { margin: 0; }
+.home-intro { background: color-mix(in srgb, var(--rose) 14%, var(--paper)); color: var(--ink); overflow: hidden; }
+.home-intro .wrap { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(2rem, 6vw, 5.5rem); align-items: center; padding-block: clamp(3.5rem, 8vw, 6.5rem); }
+.home-intro-photo { margin: 0; position: relative; }
+.home-intro-photo::before { content: ""; position: absolute; inset: 1.5rem -1.5rem -1.5rem 1.5rem; border: 1px solid var(--rose); }
+.home-intro-photo img { position: relative; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 20%; }
+.home-intro h2 { margin: 0 0 1.5rem; font-family: var(--font-display); font-weight: 500; font-style: italic; font-size: clamp(2.2rem, 4.4vw, 3.8rem); line-height: 1.05; text-wrap: balance; }
+.home-intro-body > p { margin: 0 0 2.25rem; max-width: 32em; font-size: 1.15rem; }
+.home-facts { margin: 0 0 2.5rem; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.home-facts div { padding: 0 1.25rem; border-left: 1px solid var(--rose); }
+.home-facts div:first-child { padding-left: 0; border-left: 0; }
+.home-facts dt { color: var(--ink-soft); font-size: var(--step--1); margin-bottom: 0.35rem; }
+.home-facts dd { margin: 0; font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; line-height: 1.25; }
+.home-button.dark { background: var(--ink); border-color: var(--ink); color: var(--on-color); }
+.home-button.dark:hover { background: transparent; color: var(--ink); }
 .home-link { font-family: var(--font-display); font-size: 1.35rem; font-weight: 600; color: var(--slate); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.3em; }
 .home-link:hover { color: var(--ink); }
 
@@ -368,7 +374,11 @@ header.top a.lesson-nav { color: #465b7a; font-weight: 600; border-bottom: 2px s
 .home-credits .credit-role { color: var(--ink-soft); font-style: italic; }
 @media (prefers-reduced-motion: reduce) { .home-strip img, .home-button, .strip-arrow { transition: none; } .home-strip a:hover img { transform: none; } }
 @media (max-width: 760px) {
-  .home-intro .wrap { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+  .home-intro .wrap { grid-template-columns: minmax(0, 1fr); gap: 2.75rem; }
+  .home-intro-photo { margin-right: 1.5rem; }
+  .home-facts { grid-template-columns: minmax(0, 1fr); gap: 0.9rem; }
+  .home-facts div { padding: 0 0 0 1rem; border-left: 2px solid var(--rose); }
+  .home-facts div:first-child { padding-left: 1rem; border-left: 2px solid var(--rose); }
   .home-stage-grid { grid-template-columns: minmax(0, 1fr); }
   .home-credits li { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; }
   .home-paths { grid-template-columns: minmax(0, 1fr); }
@@ -415,15 +425,18 @@ header.top a.lesson-nav { color: #465b7a; font-weight: 600; border-bottom: 2px s
 
   <section class="home-intro" aria-labelledby="intro-title">
     <div class="wrap">
-      <h2 id="intro-title">Classical ballet, from the stage to the park.</h2>
+      <figure class="home-intro-photo">
+        <img src="img/about.jpg" alt="Portrait of Mari Takayama" data-photo-id="home/about" loading="lazy">
+      </figure>
       <div class="home-intro-body">
+        <h2 id="intro-title">Classical ballet, from the stage to the park.</h2>
         <p>Mari Takayama is a Japanese ballet dancer based in New York City. She performs, teaches children and adults, and brings people together through dance.</p>
         <dl class="home-facts">
           <div><dt>Based in</dt><dd>New York City</dd></div>
           <div><dt>From</dt><dd>Japan</dd></div>
           <div><dt>Style</dt><dd>Classical ballet and contemporary</dd></div>
         </dl>
-        <a class="home-link" href="about.html">Read Mari’s story</a>
+        <a class="home-button dark" href="about.html">Read Mari’s story</a>
       </div>
     </div>
   </section>
