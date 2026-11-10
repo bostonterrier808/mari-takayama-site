@@ -390,7 +390,8 @@ header.top a.lesson-nav { color: #465b7a; font-weight: 600; border-bottom: 2px s
   .home-gallery-tools .strip-arrow { display: none; }
   .press-list a { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
   .hero-actions { margin-top: 1rem; position: relative; z-index: 2; }
-  .hero-actions .home-button { font-size: 1rem; padding: 0.55rem 1.1rem; }
+  .hero-actions { flex-wrap: nowrap; gap: 0.5rem; max-width: 26rem; margin-inline: auto; }
+  .hero-actions .home-button { flex: 1 1 0; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 0.95rem; line-height: 1.2; padding: 0.55rem 0.7rem; }
 }
 </style></head>
 <body>
