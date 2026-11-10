@@ -303,6 +303,12 @@ header.top a.lesson-nav { color: #465b7a; font-weight: 600; border-bottom: 2px s
 .hero-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin: 1.75rem 0 0; text-shadow: none; }
 
 .home-paths { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.home-paths.single { grid-template-columns: minmax(0, 1fr); }
+.home-paths.single .home-path { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); grid-template-rows: none; }
+.home-paths.single .home-path > img { height: 100%; min-height: 22rem; aspect-ratio: auto; }
+.home-paths.single .home-path-text { justify-content: center; }
+.home-paths.single .home-path .home-button { margin-top: 0.5rem; }
+.home-paths.flip .home-path > img { order: 2; }
 .home-path { display: grid; grid-template-rows: auto 1fr; color: var(--on-color); }
 .home-path.lessons { background: var(--slate); }
 .home-path.taiso { background: var(--mauve); }
@@ -343,6 +349,9 @@ header.top a.lesson-nav { color: #465b7a; font-weight: 600; border-bottom: 2px s
 @media (max-width: 760px) {
   .home-intro .wrap { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
   .home-paths { grid-template-columns: minmax(0, 1fr); }
+  .home-paths.single .home-path { grid-template-columns: minmax(0, 1fr); }
+  .home-paths.single .home-path > img { min-height: 0; aspect-ratio: 4 / 3; }
+  .home-paths.flip .home-path > img { order: 0; }
   .home-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 0.5rem; }
   .home-strip a { flex: 0 0 62%; scroll-snap-align: start; }
   .press-list a { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
@@ -395,21 +404,13 @@ header.top a.lesson-nav { color: #465b7a; font-weight: 600; border-bottom: 2px s
     </div>
   </section>
 
-  <section class="home-paths" aria-label="Lessons and community">
+  <section class="home-paths single" aria-label="Private lessons">
     <article class="home-path lessons">
       <img src="img/lesson.jpg" alt="Mari correcting a student's pointe at the barre" data-photo-id="home/lesson" loading="lazy">
       <div class="home-path-text">
         <h2>Private Lessons</h2>
         <p>One-on-one and small group ballet for children and adults. Every class starts at the barre and builds clean, strong technique.</p>
         <a class="home-button" href="private-lessons.html">See lesson details</a>
-      </div>
-    </article>
-    <article class="home-path taiso">
-      <img src="img/taiso.jpg" alt="A group doing Radio Taiso exercises on the grass in Central Park" data-photo-id="home/taiso" loading="lazy">
-      <div class="home-path-text">
-        <h2>Radio Taiso</h2>
-        <p>Japanese morning exercise, shared outdoors in New York. Anyone can join, whatever their age or experience.</p>
-        <a class="home-button" href="radio-taiso.html">About Radio Taiso</a>
       </div>
     </article>
   </section>
@@ -438,6 +439,17 @@ header.top a.lesson-nav { color: #465b7a; font-weight: 600; border-bottom: 2px s
       </ul>
       <a class="home-link" href="interview.html">Read all seven interviews</a>
     </div>
+  </section>
+
+  <section class="home-paths single flip" aria-label="Radio Taiso">
+    <article class="home-path taiso">
+      <img src="img/taiso.jpg" alt="A group doing Radio Taiso exercises on the grass in Central Park" data-photo-id="home/taiso" loading="lazy">
+      <div class="home-path-text">
+        <h2>Radio Taiso</h2>
+        <p>Japanese morning exercise, shared outdoors in New York. Anyone can join, whatever their age or experience.</p>
+        <a class="home-button" href="radio-taiso.html">About Radio Taiso</a>
+      </div>
+    </article>
   </section>
 
   <section class="home-contact" aria-labelledby="contact-title">
