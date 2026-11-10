@@ -188,7 +188,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const touchFirst=matchMedia('(pointer: coarse)').matches,handleSize=touchFirst?'28px':'18px';
-const sitePages=[['index.html','Home'],['about.html','About'],['credits.html','Credits'],['private-lessons.html','Private Lessons'],['booking.html','Booking'],['radio-taiso.html','Radio Taiso'],['gallery.html','Gallery'],['interview.html','Interview']];
+const sitePages=[['index.html','Home'],['about.html','About'],['credits.html','Credits'],['private-lessons.html','Private Lessons'],['booking.html','Booking'],['radio-taiso.html','Radio Taiso'],['gallery.html','Gallery'],['interview.html','Interview'],['rates.html','料金（非公開ページ）']];
 const pageFile=(()=>{const q=new URLSearchParams(location.search).get('page');return sitePages.some(x=>x[0]===q)?q:'index.html'})();
 const pageUrl=()=>'./'+pageFile;
 const key='mari-photo-editor-v1'+(pageFile==='index.html'?'':':'+pageFile);

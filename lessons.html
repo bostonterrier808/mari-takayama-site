@@ -57,7 +57,7 @@ fieldset.choice-group .choice {
 <fieldset class="choice-group"><legend>Have you taken ballet before?</legend><p class="help">Optional. Choose one.</p><div class="choice-grid"><label class="choice"><input type="radio" name="experience" value="No ballet experience"><span>I’m new to ballet</span></label><label class="choice"><input type="radio" name="experience" value="Some ballet experience"><span>I’ve taken some classes</span></label><label class="choice"><input type="radio" name="experience" value="Regular ballet training"><span>I train regularly</span></label><label class="choice"><input type="radio" name="experience" value="Not sure"><span>I’m not sure</span></label></div></fieldset>
 <fieldset class="choice-group"><legend>Are you a performer?</legend><p class="help">Optional. Choose any that apply, or skip this question.</p><div class="choice-grid"><label class="choice"><input type="checkbox" name="background" value="Singer"><span>Singer</span></label><label class="choice"><input type="checkbox" name="background" value="Dancer"><span>Dancer</span></label><label class="choice"><input type="checkbox" name="background" value="Ballet dancer"><span>Ballet dancer</span></label><label class="choice"><input type="checkbox" name="background" value="Other"><span>Other</span></label></div></fieldset>
 <label id="experience-other" hidden>Other background (optional)<input name="experienceOther" maxlength="150" placeholder="Tell us a little about your background"></label>
-<fieldset class="choice-group"><legend>Where would you like the lesson?</legend><p class="help">Optional. Choose one.</p><div class="choice-grid"><label class="choice"><input type="radio" name="place" value="FuncPhysio"><span>At FuncPhysio (no studio fee)</span></label><label class="choice"><input type="radio" name="place" value="Studio"><span>At a dance studio (studio fee paid by student)</span></label><label class="choice"><input type="radio" name="place" value="Travel"><span>At my place (Mari comes to me)</span></label><label class="choice"><input type="radio" name="place" value="Either"><span>Any is fine</span></label></div></fieldset>
+<fieldset class="choice-group"><legend>Where would you like the lesson?</legend><p class="help">Optional. Choose one.</p><div class="choice-grid"><label class="choice"><input type="radio" name="place" value="FuncPhysio"><span>At FuncPhysio Physical Therapy</span></label><label class="choice"><input type="radio" name="place" value="Studio"><span>At a dance studio</span></label><label class="choice"><input type="radio" name="place" value="Travel"><span>At my place (Mari comes to me)</span></label><label class="choice"><input type="radio" name="place" value="Either"><span>Any is fine</span></label></div></fieldset>
 <label id="place-area" hidden>Neighborhood or venue <span class="help">(optional)</span><input name="placeArea" maxlength="150" placeholder="e.g. Upper West Side, home"></label>
     <fieldset>
       <legend>Days that usually work</legend>
@@ -143,7 +143,7 @@ form.addEventListener('submit', event => {
     values.get("ageGroup") && values.get("ageGroup") !== "declined" && "Student’s age group: " + values.get("ageGroup"),
     experience && 'Ballet experience: ' + experience,
     background && 'Performance background: ' + background,
-    values.get('place') && 'Lesson place: ' + ({FuncPhysio:'At FuncPhysio Physical Therapy (no studio fee)',Studio:'At a dance studio (studio fee paid by student)',Travel:'At my place (travel lesson)',Either:'Any is fine'}[values.get('place')]) + (values.get('place')==='Travel' && values.get('placeArea').trim() ? ' – ' + values.get('placeArea').trim() : ''),
+    values.get('place') && 'Lesson place: ' + ({FuncPhysio:'At FuncPhysio Physical Therapy',Studio:'At a dance studio',Travel:'At my place (travel lesson)',Either:'Any is fine'}[values.get('place')]) + (values.get('place')==='Travel' && values.get('placeArea').trim() ? ' – ' + values.get('placeArea').trim() : ''),
     'Days that usually work: ' + days,
     'Preferred times (New York): ' + times,
     goals && 'Lesson goals: ' + goals,
@@ -157,7 +157,7 @@ form.addEventListener('submit', event => {
       'お名前：'+name,
       values.get('ageGroup')&&values.get('ageGroup')!=='declined'&&'年齢層：'+t(values.get('ageGroup')),
       experience&&'バレエ経験：'+({'No ballet experience':'初めてです','Some ballet experience':'習ったことがあります','Regular ballet training':'定期的にレッスンを受けています','Not sure':'よく分かりません'}[experience]||experience),
-      values.get('place')&&'レッスンの場所：'+({FuncPhysio:'FuncPhysio Physical Therapy（スタジオ代無料）',Studio:'ダンススタジオ（スタジオ代は自己負担）',Travel:'出張レッスン（自宅・会場など）',Either:'どこでも'}[values.get('place')])+(values.get('place')==='Travel'&&values.get('placeArea').trim()?'（'+values.get('placeArea').trim()+'）':''),
+      values.get('place')&&'レッスンの場所：'+({FuncPhysio:'FuncPhysio Physical Therapy',Studio:'ダンススタジオ',Travel:'出張レッスン（自宅・会場など）',Either:'どこでも'}[values.get('place')])+(values.get('place')==='Travel'&&values.get('placeArea').trim()?'（'+values.get('placeArea').trim()+'）':''),
       background&&'舞台・パフォーマンス経験：'+values.getAll('background').map(value=>value==='Other'&&otherExperience?'その他：'+otherExperience:t(value)).join('、'),
       '都合のよい曜日：'+(values.getAll('days').map(t).join('、')||'相談できます'),
       '希望の時間帯（ニューヨーク時間）：'+(values.getAll('times').map(t).join('、')||'相談できます'),
@@ -185,6 +185,6 @@ document.querySelector('#copy').addEventListener('click', async () => {
   }
 });
 </script>
-<script src="site-language.js?v=17"></script>
+<script src="site-language.js?v=18"></script>
 </body>
 </html>
