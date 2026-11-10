@@ -323,9 +323,19 @@ header.top a.lesson-nav { color: #465b7a; font-weight: 600; border-bottom: 2px s
 .home-gallery h2 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: var(--step-3); line-height: 1; }
 .home-gallery .home-link { color: #e7cfb4; }
 .home-gallery .home-link:hover { color: var(--on-color); }
-.home-strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: clamp(0.5rem, 1.2vw, 1rem); padding-inline: max(16px, env(safe-area-inset-left, 0px)); max-width: 92rem; margin: 0 auto; }
-.home-strip a { display: block; overflow: hidden; }
-.home-strip img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; transition: transform 0.6s ease; }
+.home-gallery-tools { display: flex; align-items: center; gap: 0.6rem; }
+.home-gallery-tools .home-link { margin-left: 0.75rem; }
+.strip-arrow { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; padding: 0; border: 1px solid rgba(255, 255, 255, 0.45); border-radius: 50%; background: transparent; color: var(--on-color); cursor: pointer; transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease; }
+.strip-arrow svg { width: 1.3rem; height: 1.3rem; }
+.strip-arrow:hover:not(:disabled) { background: var(--on-color); color: var(--ink); }
+.strip-arrow:focus-visible { outline: 2px solid var(--on-color); outline-offset: 3px; }
+.strip-arrow:disabled { opacity: 0.3; cursor: default; }
+.home-strip { --strip-gap: clamp(0.5rem, 1.2vw, 1rem); display: flex; gap: var(--strip-gap); overflow-x: auto; scroll-snap-type: x proximity; scroll-padding-inline: max(16px, calc((100% - 76rem) / 2 + 16px)); padding-inline: max(16px, calc((100% - 76rem) / 2 + 16px)); padding-bottom: 0.25rem; scrollbar-width: none; overscroll-behavior-x: contain; cursor: grab; }
+.home-strip::-webkit-scrollbar { display: none; }
+.home-strip.dragging { cursor: grabbing; scroll-snap-type: none; }
+.home-strip:focus-visible { outline: 2px solid var(--on-color); outline-offset: 4px; }
+.home-strip a { flex: 0 0 clamp(11rem, 21vw, 18rem); display: block; overflow: hidden; scroll-snap-align: start; }
+.home-strip img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; transition: transform 0.6s ease; user-select: none; -webkit-user-drag: none; }
 .home-strip a:hover img { transform: scale(1.04); }
 .home-strip a:focus-visible { outline: 2px solid var(--on-color); outline-offset: 3px; }
 
@@ -356,7 +366,7 @@ header.top a.lesson-nav { color: #465b7a; font-weight: 600; border-bottom: 2px s
 .home-credits li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 1rem; padding: 0.8rem 0; border-bottom: 1px solid color-mix(in srgb, var(--slate) 30%, var(--paper)); align-items: baseline; }
 .home-credits .credit-work { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; }
 .home-credits .credit-role { color: var(--ink-soft); font-style: italic; }
-@media (prefers-reduced-motion: reduce) { .home-strip img, .home-button { transition: none; } .home-strip a:hover img { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .home-strip img, .home-button, .strip-arrow { transition: none; } .home-strip a:hover img { transform: none; } }
 @media (max-width: 760px) {
   .home-intro .wrap { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
   .home-stage-grid { grid-template-columns: minmax(0, 1fr); }
@@ -365,8 +375,8 @@ header.top a.lesson-nav { color: #465b7a; font-weight: 600; border-bottom: 2px s
   .home-paths.single .home-path { grid-template-columns: minmax(0, 1fr); }
   .home-paths.single .home-path > img { min-height: 0; aspect-ratio: 4 / 3; }
   .home-paths.flip .home-path > img { order: 0; }
-  .home-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 0.5rem; }
-  .home-strip a { flex: 0 0 62%; scroll-snap-align: start; }
+  .home-strip a { flex-basis: 62%; }
+  .home-gallery-tools .strip-arrow { display: none; }
   .press-list a { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
   .hero-actions { margin-top: 1rem; position: relative; z-index: 2; }
   .hero-actions .home-button { font-size: 1rem; padding: 0.55rem 1.1rem; }
@@ -454,14 +464,25 @@ header.top a.lesson-nav { color: #465b7a; font-weight: 600; border-bottom: 2px s
   <section class="home-gallery" aria-labelledby="home-gallery-title">
     <div class="wrap home-gallery-head">
       <h2 id="home-gallery-title">Gallery</h2>
-      <a class="home-link" href="gallery.html">See all photos</a>
+      <div class="home-gallery-tools">
+        <button class="strip-arrow" type="button" data-dir="-1" aria-label="Previous photos" aria-controls="home-strip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+        <button class="strip-arrow" type="button" data-dir="1" aria-label="Next photos" aria-controls="home-strip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+        <a class="home-link" href="gallery.html">See all photos</a>
+      </div>
     </div>
-    <div class="home-strip">
-      <a href="gallery.html"><img src="img/g02.jpg" alt="In a black and gold tutu beside a red stage curtain" data-photo-id="home/g02" loading="lazy"></a>
-      <a href="gallery.html"><img src="img/g03.jpg" alt="Leaping in white on a snowy mountain" data-photo-id="home/g03" loading="lazy"></a>
-      <a href="gallery.html"><img src="img/g08.jpg" alt="Arabesque with a flowing kimono" data-photo-id="home/g08" loading="lazy"></a>
-      <a href="gallery.html"><img src="img/g10.jpg" alt="In a white tutu among falling red leaves" data-photo-id="home/g10" loading="lazy"></a>
-      <a href="gallery.html"><img src="img/g12.jpg" alt="In a pink kimono at Bethesda Terrace" data-photo-id="home/g12" loading="lazy"></a>
+    <div class="home-strip" id="home-strip" tabindex="0" aria-label="Gallery photos, scroll sideways">
+      <a href="gallery.html"><img src="img/g01.jpg" alt="Posing en pointe in a greenhouse" data-photo-id="home/g01" loading="lazy" draggable="false"></a>
+      <a href="gallery.html"><img src="img/g02.jpg" alt="In a black and gold tutu beside a red stage curtain" data-photo-id="home/g02" loading="lazy" draggable="false"></a>
+      <a href="gallery.html"><img src="img/g03.jpg" alt="Leaping in white on a snowy mountain" data-photo-id="home/g03" loading="lazy" draggable="false"></a>
+      <a href="gallery.html"><img src="img/g04.jpg" alt="High kick on a rooftop above Manhattan" data-photo-id="home/g04" loading="lazy" draggable="false"></a>
+      <a href="gallery.html"><img src="img/g05.jpg" alt="Smiling portrait" data-photo-id="home/g05" loading="lazy" draggable="false"></a>
+      <a href="gallery.html"><img src="img/g06.jpg" alt="In a white lace dress in the snow" data-photo-id="home/g06" loading="lazy" draggable="false"></a>
+      <a href="gallery.html"><img src="img/g07.jpg" alt="Headshot with red lips" data-photo-id="home/g07" loading="lazy" draggable="false"></a>
+      <a href="gallery.html"><img src="img/g08.jpg" alt="Arabesque with a flowing kimono" data-photo-id="home/g08" loading="lazy" draggable="false"></a>
+      <a href="gallery.html"><img src="img/g09.jpg" alt="Dancing with a fan and silk on stage" data-photo-id="home/g09" loading="lazy" draggable="false"></a>
+      <a href="gallery.html"><img src="img/g10.jpg" alt="In a white tutu among falling red leaves" data-photo-id="home/g10" loading="lazy" draggable="false"></a>
+      <a href="gallery.html"><img src="img/g11.jpg" alt="Dancing at dusk in front of a lit hotel" data-photo-id="home/g11" loading="lazy" draggable="false"></a>
+      <a href="gallery.html"><img src="img/g12.jpg" alt="In a pink kimono at Bethesda Terrace" data-photo-id="home/g12" loading="lazy" draggable="false"></a>
     </div>
   </section>
 
@@ -541,6 +562,45 @@ document.getElementById('copy-mail').addEventListener('click', async (e) => {
 </script>
 
 
+<script>
+// Home gallery: arrow buttons and mouse drag scroll the photo strip.
+(() => {
+  const strip = document.getElementById('home-strip');
+  if (!strip) return;
+  const arrows = document.querySelectorAll('.strip-arrow');
+  const smooth = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+  const update = () => {
+    const max = strip.scrollWidth - strip.clientWidth - 2;
+    arrows.forEach(b => { b.disabled = b.dataset.dir < 0 ? strip.scrollLeft <= 2 : strip.scrollLeft >= max; });
+  };
+  arrows.forEach(b => b.addEventListener('click', () => strip.scrollBy({ left: b.dataset.dir * strip.clientWidth * 0.8, behavior: smooth })));
+  strip.addEventListener('scroll', update, { passive: true });
+  addEventListener('resize', update);
+  update();
+  let start = null, moved = false;
+  strip.addEventListener('pointerdown', e => {
+    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    start = { x: e.clientX, left: strip.scrollLeft }; moved = false;
+  });
+  addEventListener('pointermove', e => {
+    if (!start) return;
+    const dx = e.clientX - start.x;
+    if (!moved && Math.abs(dx) < 5) return;
+    moved = true; strip.classList.add('dragging');
+    strip.scrollLeft = start.left - dx;
+  });
+  addEventListener('pointerup', () => {
+    if (!start) return;
+    start = null;
+    if (moved) {
+      const left = strip.scrollLeft;
+      strip.classList.remove('dragging');
+      strip.scrollLeft = left;
+    }
+  });
+  strip.addEventListener('click', e => { if (moved) { e.preventDefault(); moved = false; } }, true);
+})();
+</script>
 <script id="photo-editor-settings" type="application/json">{"version":1,"columns":4,"mobile":2,"gap":20,"photos":[{"src":"img/g01.jpg","alt":"Posing en pointe in a greenhouse","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":1,"w":2,"h":3,"zoom":1},{"src":"img/g02.jpg","alt":"In a black and gold tutu beside a red stage curtain","span":1,"ratio":"3 / 4","fit":"cover","x":52.32892286159111,"y":50,"col":3,"row":1,"w":2,"h":3,"zoom":1,"preset":"natural","effects":{"brightness":100,"contrast":100,"saturate":100,"hue":0,"blur":0,"grayscale":0,"sepia":0}},{"src":"img/g03.jpg","alt":"Leaping in white on a snowy mountain","span":1,"ratio":"3 / 4","fit":"cover","x":58.98735631515264,"y":50,"col":5,"row":1,"w":2,"h":3,"zoom":1},{"src":"img/g04.jpg","alt":"High kick on a rooftop above Manhattan","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g05.jpg","alt":"Smiling portrait","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g06.jpg","alt":"In a white lace dress in the snow","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g07.jpg","alt":"Headshot with red lips","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g08.jpg","alt":"Arabesque with a flowing kimono","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g09.jpg","alt":"Dancing with a fan and silk on stage","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g10.jpg","alt":"In a white tutu among falling red leaves","span":1,"ratio":"3 / 4","fit":"cover","x":50.234808738618696,"y":50,"col":1,"row":10,"w":2,"h":3,"zoom":1},{"src":"img/g11.jpg","alt":"Dancing at dusk in front of a lit hotel","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":10,"w":2,"h":3,"zoom":1},{"src":"img/g12.jpg","alt":"In a pink kimono at Bethesda Terrace","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":10,"w":2,"h":3,"zoom":1}],"other":{"img/about.jpg":{"src":"img/about.jpg","label":"プロフィール写真","fit":"contain","x":84.04810834484383,"y":50,"zoom":1,"frameWidth":100,"frameHeight":435,"offsetX":8,"offsetY":-131},"img/gallery-banner.jpg":{"src":"img/gallery-banner.jpg","alt":"Dance photograph","label":"Galleryの見出し写真","fit":"cover","x":10,"y":34,"replacement":"img/gallery-banner-photo.jpg","zoom":1.25,"effects":{"brightness":87,"contrast":105,"saturate":100,"hue":0,"blur":0,"grayscale":0,"sepia":0},"preset":"natural","frameWidth":100,"frameHeight":176,"offsetX":3,"offsetY":-26},"img/hero.jpg":{"fit":"source","x":50,"y":50,"zoom":1},"img/hero.jpg?v=full-body":{"src":"img/hero.jpg?v=full-body","alt":"Mari Takayama leaping in a purple and black leotard, with her full body visible","label":"トップ写真","fit":"source","x":50,"y":50,"zoom":1},"img/works.jpg":{"src":"img/works.jpg","alt":"Dance photograph","label":"Worksの見出し写真","fit":"cover","x":50,"y":47,"replacement":"img/works-banner.jpg","offsetX":84,"offsetY":-1,"frameWidth":100,"frameHeight":221,"zoom":1.35}},"mode":"free","deviceLayouts":{"desktop":{"version":1,"mode":"free","columns":4,"mobile":2,"gap":20,"photos":[{"src":"img/g01.jpg","alt":"Posing en pointe in a greenhouse","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":1,"w":2,"h":3,"zoom":1},{"src":"img/g02.jpg","alt":"In a black and gold tutu beside a red stage curtain","span":1,"ratio":"3 / 4","fit":"cover","x":52.32892286159111,"y":50,"col":3,"row":1,"w":2,"h":3,"zoom":1,"preset":"natural","effects":{"brightness":100,"contrast":100,"saturate":100,"hue":0,"blur":0,"grayscale":0,"sepia":0}},{"src":"img/g03.jpg","alt":"Leaping in white on a snowy mountain","span":1,"ratio":"3 / 4","fit":"cover","x":58.98735631515264,"y":50,"col":5,"row":1,"w":2,"h":3,"zoom":1},{"src":"img/g04.jpg","alt":"High kick on a rooftop above Manhattan","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g05.jpg","alt":"Smiling portrait","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g06.jpg","alt":"In a white lace dress in the snow","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g07.jpg","alt":"Headshot with red lips","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g08.jpg","alt":"Arabesque with a flowing kimono","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g09.jpg","alt":"Dancing with a fan and silk on stage","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g10.jpg","alt":"In a white tutu among falling red leaves","span":1,"ratio":"3 / 4","fit":"cover","x":50.234808738618696,"y":50,"col":1,"row":10,"w":2,"h":3,"zoom":1},{"src":"img/g11.jpg","alt":"Dancing at dusk in front of a lit hotel","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":10,"w":2,"h":3,"zoom":1},{"src":"img/g12.jpg","alt":"In a pink kimono at Bethesda Terrace","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":10,"w":2,"h":3,"zoom":1}],"other":{"img/about.jpg":{"src":"img/about.jpg","label":"プロフィール写真","fit":"contain","x":84.04810834484383,"y":50,"zoom":1,"frameWidth":100,"frameHeight":435,"offsetX":8,"offsetY":-131},"img/gallery-banner.jpg":{"src":"img/gallery-banner.jpg","alt":"Dance photograph","label":"Galleryの見出し写真","fit":"cover","x":10,"y":34,"replacement":"img/gallery-banner-photo.jpg","zoom":1.25,"effects":{"brightness":87,"contrast":105,"saturate":100,"hue":0,"blur":0,"grayscale":0,"sepia":0},"preset":"natural","frameWidth":100,"frameHeight":176,"offsetX":3,"offsetY":-26},"img/hero.jpg":{"fit":"source","x":50,"y":50,"zoom":1},"img/hero.jpg?v=full-body":{"src":"img/hero.jpg?v=full-body","alt":"Mari Takayama leaping in a purple and black leotard, with her full body visible","label":"トップ写真","fit":"source","x":50,"y":50,"zoom":1},"img/works.jpg":{"src":"img/works.jpg","alt":"Dance photograph","label":"Worksの見出し写真","fit":"cover","x":50,"y":47,"replacement":"img/works-banner.jpg","offsetX":84,"offsetY":-1,"frameWidth":100,"frameHeight":221,"zoom":1.35}}},"mobile":{"version":1,"mode":"free","columns":2,"mobile":2,"gap":20,"photos":[{"src":"img/g01.jpg","alt":"Posing en pointe in a greenhouse","span":1,"ratio":"3 / 4","fit":"cover","x":0,"y":50,"col":1,"row":1,"w":2,"h":3,"zoom":1},{"src":"img/g02.jpg","alt":"In a black and gold tutu beside a red stage curtain","span":1,"ratio":"3 / 4","fit":"cover","x":52.32892286159111,"y":50,"col":3,"row":1,"w":2,"h":3,"zoom":1,"preset":"natural","effects":{"brightness":100,"contrast":100,"saturate":100,"hue":0,"blur":0,"grayscale":0,"sepia":0}},{"src":"img/g03.jpg","alt":"Leaping in white on a snowy mountain","span":1,"ratio":"3 / 4","fit":"cover","x":58.98735631515264,"y":50,"col":5,"row":1,"w":2,"h":3,"zoom":1},{"src":"img/g04.jpg","alt":"High kick on a rooftop above Manhattan","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g05.jpg","alt":"Smiling portrait","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g06.jpg","alt":"In a white lace dress in the snow","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g07.jpg","alt":"Headshot with red lips","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g08.jpg","alt":"Arabesque with a flowing kimono","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g09.jpg","alt":"Dancing with a fan and silk on stage","span":1,"ratio":"3 / 4","fit":"cover","x":52.84711359787364,"y":50,"col":5,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g10.jpg","alt":"In a white tutu among falling red leaves","span":1,"ratio":"3 / 4","fit":"cover","x":50.234808738618696,"y":50,"col":1,"row":10,"w":2,"h":3,"zoom":1},{"src":"img/g11.jpg","alt":"Dancing at dusk in front of a lit hotel","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":10,"w":2,"h":3,"zoom":1},{"src":"img/g12.jpg","alt":"In a pink kimono at Bethesda Terrace","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":10,"w":2,"h":3,"zoom":1}],"other":{"img/about.jpg":{"src":"img/about.jpg","label":"プロフィール写真","fit":"contain","x":50,"y":0,"zoom":1,"frameWidth":87,"frameHeight":355,"offsetX":23,"offsetY":7},"img/gallery-banner.jpg":{"src":"img/gallery-banner.jpg","alt":"Dance photograph","label":"Galleryの見出し写真","fit":"cover","x":0,"y":55,"replacement":"img/gallery-banner-photo.jpg","frameWidth":99,"frameHeight":135,"zoom":1.25},"img/hero.jpg?v=full-body":{"src":"img/hero.jpg?v=full-body","alt":"Mari Takayama leaping in a purple and black leotard, with her full body visible","label":"トップ写真","fit":"source","x":50,"y":50,"zoom":1},"img/hero.jpg":{"fit":"source","x":50,"y":50,"zoom":1},"img/works.jpg":{"src":"img/works.jpg","alt":"Dance photograph","label":"Worksの見出し写真","fit":"contain","x":31.99651020736173,"y":0,"replacement":"img/works-banner.jpg","zoom":3,"frameWidth":99,"frameHeight":263,"offsetX":38,"offsetY":-308},"img/lesson.jpg":{"src":"img/lesson.jpg","alt":"Mari correcting a student's pointe at the barre","label":"レッスンの写真","fit":"cover","x":50,"y":36.40510596943636,"frameWidth":98,"frameHeight":420}}}},"positionRestoreVersion":1,"heroSourceRestore":2,"boxStyles":{"desktop":{"photo-img/lesson.jpg":{"x":-3,"y":0}},"mobile":{"photo-img/about.jpg":{"width":77,"height":343,"x":0,"y":0},"#works .banner":{"height":140,"x":0,"y":"0"}}},"worksPhotoSizeRestored":true}</script><script src="site-language.js?v=4"></script>
 
 </body></html>
