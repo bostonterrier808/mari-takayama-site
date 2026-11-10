@@ -5,14 +5,18 @@ Two people edit this repo with different AI tools (Claude Code and Codex). These
 
 ## Structure
 
-- `index.html` — the whole site: HTML, CSS (in `<style>`) and a small script. No build step, no framework.
+- One HTML file per page, each with its own CSS (in `<style>`) and small script. No build step, no framework.
+  - `index.html` — Home (hero + Interview)
+  - `about.html`, `private-lessons.html`, `radio-taiso.html`, `gallery.html` — one page each
+  - `lessons.html` — private lesson request form
+- `editor.html` — photo/text editor; pick the page to edit at the top. Each page keeps its editor settings in `<script id="photo-editor-settings">`.
 - `img/` — photos used by the page.
 - Preview: open `index.html` in a browser.
 - Published with GitHub Pages from the `main` branch.
 
 ## Design (keep it)
 
-- Sections in order: nav → hero → About → Works (Lesson, Radio Taiso) → Gallery → Interview → footer/contact.
+- Menu order: Home → About → Private Lessons → Radio Taiso → Gallery → Interview → Contact. Every page shares the same nav and footer; keep them in sync.
 - Colors are tokens on `:root` (`--slate`, `--mauve`, `--rose`, `--stage`, …). Change a token rather than adding new literal colors.
 - Fonts: Cormorant Garamond (headings, nav), EB Garamond (body), from Google Fonts.
 - Site copy is in English.
