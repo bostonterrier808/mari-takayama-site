@@ -83,6 +83,22 @@
   .box-inspector .settings > label:first-child, #box-reset { grid-column: 1 / -1; }
 }
 </style>
+<style id="phone-flow">
+/* Phone: everything sits in one column that fills the screen. The panel is part of that column,
+   below the site preview, so it can never cover it. */
+@media (max-width: 760px) {
+  html, body { height: 100%; overflow: hidden; }
+  body { display: flex; flex-direction: column; height: 100dvh; }
+  body > header, body > .device-bar, body > #canvas-help, body > #load-error { flex: 0 0 auto; }
+  .layout:not([hidden]) { flex: 1 1 auto; min-height: 0; display: flex !important; flex-direction: column; gap: 6px; padding: 6px; }
+  .layout:not([hidden]) .preview { order: 1; flex: 1 1 auto; height: auto !important; min-height: 120px !important; margin: 0; }
+  .layout:not([hidden]) > div:first-child { order: 2; }
+  .inspector-open .layout > div:first-child {
+    position: static !important; inset: auto !important; flex: 0 0 var(--sheet-h, 38%); height: var(--sheet-h, 38%) !important;
+    max-height: none !important; width: auto !important; margin: 0 -6px -6px; box-shadow: 0 -6px 18px rgba(0,0,0,.12);
+  }
+}
+</style>
 <style id="phone-simple">
 #phone-more { display: none; }
 @media (max-width: 760px) {
@@ -802,7 +818,7 @@ async function cloudStart(){try{cloud.db=await window.claude?.use?.('db')||null}
 $('cloud-publish').onclick=async()=>{const btn=$('cloud-publish');btn.disabled=true;$('cloud-publish-message').textContent='保存しています…';try{captureDevice();const html=currentLayout()===publishedLayout?original:'<!doctype html>\n'+apply(parse(original)).documentElement.outerHTML+'\n';await cloud.chain;await cloudWrite('requests/'+cloud.pageId,html,{page:pageFile,status:'waiting',base:await sha256(original)});$('cloud-publish-message').textContent='保存しました。Claude とのチャットで「公開して」と送ってください。';cloudSay('公開待ち')}catch(x){$('cloud-publish-message').textContent=x&&x.code==='invalid_argument'?'差し替えた写真が大きすぎて保存できませんでした。下の手順でファイルを保存してください。':'保存できませんでした。通信を確認して、もう一度押してください。'}finally{btn.disabled=false}};
 
 // Phone: the preview and the panel share the screen, so the panel never covers what you are editing.
-function fitPhoneLayout(){const preview=document.querySelector('.layout .preview');if(!preview)return;if(!matchMedia('(max-width: 760px)').matches){preview.style.height='';return}const open=document.body.classList.contains('inspector-open'),min=document.body.classList.contains('sheet-min');const sheet=open?(min?Math.round(58+(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sab'))||0)):Math.round(innerHeight*0.38)):0;document.documentElement.style.setProperty('--sheet-h',sheet+'px');const top=preview.getBoundingClientRect().top;preview.style.height=Math.max(160,innerHeight-top-sheet-6)+'px';resizePreview();requestAnimationFrame(()=>{const doc=$('preview').contentDocument;const el=doc?.querySelector('[data-text-selected],[contenteditable=true],[data-inline-selected]');if(!el)return;const r=el.getBoundingClientRect(),h=doc.defaultView.innerHeight;if(r.top<0||r.top>h*0.7)el.scrollIntoView({block:'center',behavior:'smooth'})})}
+function fitPhoneLayout(){const preview=document.querySelector('.layout .preview');if(!preview)return;if(!matchMedia('(max-width: 760px)').matches){preview.style.height='';return}const open=document.body.classList.contains('inspector-open'),min=document.body.classList.contains('sheet-min');const sheet=open?(min?Math.round(58+(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sab'))||0)):Math.round(innerHeight*0.38)):0;document.documentElement.style.setProperty('--sheet-h',open?(min?'58px':'38%'):'0px');preview.style.height='';requestAnimationFrame(resizePreview);requestAnimationFrame(()=>{const doc=$('preview').contentDocument;const el=doc?.querySelector('[data-text-selected],[contenteditable=true],[data-inline-selected]');if(!el)return;const r=el.getBoundingClientRect(),h=doc.defaultView.innerHeight;if(r.top<0||r.top>h*0.7)el.scrollIntoView({block:'center',behavior:'smooth'})})}
 let sheetUserMin=false;function setSheetMin(min){document.body.classList.toggle('sheet-min',min);$('inspector-min').setAttribute('aria-pressed',String(min));$('inspector-min').textContent=min?'▲ 調整を開く':'▼ 小さくする'}
 $('inspector-min').onclick=()=>{const min=!document.body.classList.contains('sheet-min');sheetUserMin=min;setSheetMin(min);fitPhoneLayout()};
 addEventListener('resize',()=>fitPhoneLayout());
