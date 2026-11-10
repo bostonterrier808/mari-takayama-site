@@ -6,8 +6,8 @@ Two people edit this repo with different AI tools (Claude Code and Codex). These
 ## Structure
 
 - One HTML file per page, each with its own CSS (in `<style>`) and small script. No build step, no framework.
-  - `index.html` — Home (hero + Interview)
-  - `about.html`, `private-lessons.html`, `radio-taiso.html`, `gallery.html` — one page each
+  - `index.html` — Home: hero + a short overview card for each page, linking to the details
+  - `about.html`, `private-lessons.html`, `radio-taiso.html`, `gallery.html`, `interview.html` — one page each
   - `lessons.html` — private lesson request form
 - `editor.html` — photo/text editor; pick the page to edit at the top. Each page keeps its editor settings in `<script id="photo-editor-settings">`.
 - `img/` — photos used by the page.

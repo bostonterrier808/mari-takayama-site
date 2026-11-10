@@ -101,11 +101,11 @@
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
-const sitePages=[['index.html','Home'],['about.html','About'],['private-lessons.html','Private Lessons'],['radio-taiso.html','Radio Taiso'],['gallery.html','Gallery']];
+const sitePages=[['index.html','Home'],['about.html','About'],['private-lessons.html','Private Lessons'],['radio-taiso.html','Radio Taiso'],['gallery.html','Gallery'],['interview.html','Interview']];
 const pageFile=(()=>{const q=new URLSearchParams(location.search).get('page');return sitePages.some(x=>x[0]===q)?q:'index.html'})();
 const pageUrl=()=>'./'+pageFile;
 const key='mari-photo-editor-v1'+(pageFile==='index.html'?'':':'+pageFile);
-const photoLabels={'img/hero.jpg?v=full-body':'トップ写真','img/hero.jpg':'トップ写真','img/about.jpg':'プロフィール写真','img/works.jpg':'見出し写真','img/lesson.jpg':'レッスンの写真','img/taiso.jpg':'ラジオ体操の写真','img/gallery-banner.jpg':'Galleryの見出し写真'};
+const photoLabels={'img/hero.jpg?v=full-body':'トップ写真','img/hero.jpg':'トップ写真','img/about.jpg':'プロフィール写真','img/works.jpg':'見出し写真','img/lesson.jpg':'レッスンの写真','img/taiso.jpg':'ラジオ体操の写真','img/gallery-banner.jpg':'Galleryの見出し写真','home/about':'Aboutの紹介写真','home/lesson':'レッスンの紹介写真','home/taiso':'ラジオ体操の紹介写真','home/g02':'Galleryの紹介写真 1','home/g03':'Galleryの紹介写真 2','home/g08':'Galleryの紹介写真 3','home/g12':'Galleryの紹介写真 4'};
 let original='',state,initial,selected='',others=[],history=[],dragged=null,baseSignature='',previewTimer,previewSection='gallery',photoAction='frame',library=[],activeDevice='desktop',inlineAction='select',inlineSelected=null,inlineTextSelected=null;
 const clone=x=>JSON.parse(JSON.stringify(x));
 const safeNum=(v,min,max,fallback)=>Number.isFinite(+v)?Math.min(max,Math.max(min,+v)):fallback;
