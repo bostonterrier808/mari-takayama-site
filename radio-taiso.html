@@ -201,7 +201,7 @@ footer nav a { font-family: var(--font-display); font-size: var(--step-1); lette
 footer nav a:hover { color: var(--slate); }
 .sign { text-align: right; display: grid; gap: 0.5rem; justify-items: end; }
 .sign .name { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); line-height: 1.1; }
-.sign .mail { margin: 0; font-family: var(--font-display); font-size: var(--step-1); word-break: break-all; user-select: all; }
+.sign .mail { margin: 0; font-family: var(--font-display); font-size: clamp(14px, 4.4vw, var(--step-1)); white-space: nowrap; letter-spacing: normal; word-break: normal; user-select: all; }
 .copy { font: inherit; font-size: var(--step--1); background: none; color: var(--ink-soft); border: 1px solid #d9d7dc; padding: 0.2em 0.9em; cursor: pointer; }
 .copy:hover { color: var(--ink); border-color: var(--ink); }
 .social { display: flex; gap: 1.25rem; margin-top: 0.75rem; }
