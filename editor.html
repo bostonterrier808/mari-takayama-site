@@ -344,9 +344,10 @@ function currentLayout() {
   captureDevice();
   return JSON.stringify({...state, ...state.deviceLayouts.desktop});
 }
-// A photo change (new photo, position, zoom, colours) made in one view also goes to the other view,
+// A photo change (new photo, colours) made in one view also goes to the other view,
 // so the PC and phone versions of the site never show the old photo. Frame sizes stay per view.
-const photoLook=['replacement','alt','x','y','zoom','fit','effects'];
+// Only which photo and its colours/description are shared; position and zoom in the frame stay separate for PC and phone.
+const photoLook=['replacement','alt','effects'];
 function captureDevice(){if(!state.deviceLayouts)return;const prev=state.deviceLayouts[activeDevice],next=layoutSnapshot(state),other=state.deviceLayouts[activeDevice==='desktop'?'mobile':'desktop'];
  if(prev&&other){const sync=(a,b,o)=>{if(!a||!o)return;for(const k of photoLook){if(JSON.stringify(a[k])!==JSON.stringify(b?.[k])){if(a[k]===undefined)delete o[k];else o[k]=clone(a[k])}}};
   for(const p of next.photos||[]){const o=other.photos?.find(x=>x.src===p.src);sync(p,prev.photos?.find(x=>x.src===p.src),o)}
