@@ -350,6 +350,8 @@ const photoLook=['replacement','alt','x','y','zoom','fit','effects'];
 function captureDevice(){if(!state.deviceLayouts)return;const prev=state.deviceLayouts[activeDevice],next=layoutSnapshot(state),other=state.deviceLayouts[activeDevice==='desktop'?'mobile':'desktop'];
  if(prev&&other){const sync=(a,b,o)=>{if(!a||!o)return;for(const k of photoLook){if(JSON.stringify(a[k])!==JSON.stringify(b?.[k])){if(a[k]===undefined)delete o[k];else o[k]=clone(a[k])}}};
   for(const p of next.photos||[]){const o=other.photos?.find(x=>x.src===p.src);sync(p,prev.photos?.find(x=>x.src===p.src),o)}
+  // Adding, removing or reordering gallery photos happens in both views; each view keeps its own sizes.
+  const ids=a=>(a||[]).map(x=>x.src).join('|');if(ids(next.photos)!==ids(prev.photos)&&ids(next.photos)!==ids(other.photos)){other.photos=(next.photos||[]).map(p=>{const o=other.photos?.find(x=>x.src===p.src);if(!o)return clone(p);for(const k of photoLook){if(p[k]===undefined)delete o[k];else o[k]=clone(p[k])}return o})}
   for(const [id,p] of Object.entries(next.other||{})){other.other=other.other||{};if(!other.other[id]){const base=others.find(o=>o.src===id);if(!base)continue;other.other[id]=clone(base)}sync(p,prev.other?.[id],other.other[id])}}
  state.deviceLayouts[activeDevice]=next}
 function initDevices(){activeDevice='desktop';if(!state.deviceLayouts){const desktop=layoutSnapshot(state),mobile=clone(desktop);mobile.mode='auto';mobile.columns=state.mobile||2;state.deviceLayouts={desktop,mobile}}Object.assign(state,clone(state.deviceLayouts.desktop))}
