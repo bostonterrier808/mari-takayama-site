@@ -515,21 +515,6 @@ html.home-reveal .rv.in { opacity: 1; transform: none; }
   .home-duo .home-path, .home-duo .home-path:hover, .home-button:hover { transform: none; }
 }
 </style>
-<style id="home-book">
-/* Home: make booking easy and inviting */
-.home-duo .home-path .home-button { margin-top: auto; }
-.home-link.small { font-size: 1.05rem; margin-top: -0.25rem; }
-.contact-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin: 0 0 1.25rem !important; }
-.contact-mail { margin: 0 !important; font-size: 0.98rem; }
-.contact-mail a { color: var(--gold-ink); white-space: nowrap; }
-.book-bar { display: none; }
-@media (max-width: 760px) {
-  .book-bar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; gap: 0.5rem; padding: 0.6rem 12px calc(0.6rem + env(safe-area-inset-bottom)); background: rgba(255,255,255,0.96); border-top: 1px solid var(--gold-line); box-shadow: 0 -8px 24px -18px rgba(0,0,0,0.35); transform: translateY(110%); transition: transform 0.35s ease; }
-  .book-bar.show { transform: none; }
-  .book-bar .home-button { flex: 1 1 0; text-align: center; font-size: 0.95rem; padding: 0.6rem 0.5rem; }
-  body:has(.book-bar) footer { padding-bottom: 4.5rem; }
-}
-</style>
 <style id="home-about-duo">
 /* About Mari: portrait and a stage photo, overlapping */
 .home-intro-photo { position: relative; width: 100%; max-width: 30rem !important; padding-bottom: 30%; }
@@ -711,18 +696,16 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
       <img src="img/lesson.jpg" alt="Mari correcting a student's pointe at the barre" data-photo-id="home/lesson" loading="lazy" data-box-slot="58" style="filter: brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%); translate: 0px;">
       <div class="home-path-text" data-box-slot="35">
         <h2 data-box-slot="36">Private Lessons</h2>
-        <p data-box-slot="37">Personal attention from a professional dancer, built on clean, strong technique.</p>
-        <a class="home-button" href="lessons.html">Request a private lesson</a>
-        <a class="home-link small" href="private-lessons.html">See lesson details</a>
+        <p data-box-slot="37">Personal attention from a professional dancer. One-on-one or small group classes for children and adults, at a studio or at your place, built on clean, strong technique.</p>
+        <a class="home-button" href="private-lessons.html">See lesson details</a>
       </div>
     </article>
     <article class="home-path events" data-box-slot="38">
       <img src="img/g08.jpg" alt="Mari in an arabesque with a flowing kimono" data-photo-id="home/events" loading="lazy" data-box-slot="59">
       <div class="home-path-text" data-box-slot="39">
         <h2 data-box-slot="40">Ballet for your event</h2>
-        <p data-box-slot="41">Live ballet that makes your occasion unforgettable.</p>
+        <p data-box-slot="41">Weddings, galas, private parties, and cultural festivals. Classical ballet or Japanese-inspired dance, choreographed for your occasion.</p>
         <a class="home-button" href="booking.html">Book Mari to perform</a>
-        <a class="home-link small" href="credits.html">See past performances</a>
       </div>
     </article>
       </div>
@@ -799,12 +782,10 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
     <div class="wrap" data-box-slot="20">
       <h2 id="contact-title" data-box-slot="55">Let’s create something beautiful together.</h2>
       <p data-box-slot="56">Lessons, performances, and collaborations. Write to Mari and she will reply personally.</p>
-      <p class="contact-actions"><a class="home-button" href="lessons.html">Request a private lesson</a><a class="home-button light" href="booking.html">Book Mari to perform</a></p>
-      <p class="contact-mail">Or email <a href="mailto:maritakayama.official@gmail.com">maritakayama.official@gmail.com</a></p>
+      <a class="home-button light" href="mailto:maritakayama.official@gmail.com">Email Mari</a>
     </div>
   </section>
 </main>
-<nav class="book-bar" aria-label="Book Mari"><a class="home-button" href="lessons.html">Book a lesson</a><a class="home-button light" href="booking.html">Book a performance</a></nav>
 
 <footer id="contact" data-box-slot="5">
   <div class="wrap">
@@ -897,16 +878,6 @@ document.getElementById('copy-mail').addEventListener('click', async (e) => {
 
 
 
-<script id="home-book-script">
-(() => {
-  const bar = document.querySelector('.book-bar'), hero = document.getElementById('home'), contact = document.querySelector('.home-contact');
-  if (!bar || !hero || !('IntersectionObserver' in window)) return;
-  let heroVisible = true, contactVisible = false;
-  const update = () => bar.classList.toggle('show', !heroVisible && !contactVisible);
-  new IntersectionObserver(([e]) => { heroVisible = e.isIntersecting; update(); }).observe(hero);
-  if (contact) new IntersectionObserver(([e]) => { contactVisible = e.isIntersecting; update(); }).observe(contact);
-})();
-</script>
 <script id="home-motion-script">
 (() => {
   if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
