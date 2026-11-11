@@ -256,7 +256,7 @@
       send: { en: 'Sorry, the request could not be sent. Please try again, or use Instagram DM or email.', ja: '送信できませんでした。もう一度お試しいただくか、Instagram の DM かメールでお送りください。' }
     },
     week: { en: (a, b) => a + ' – ' + b, ja: (a, b) => a + ' 〜 ' + b },
-    doneSent: { en: v => 'Your request was sent. Mari will message you on ' + v + ' within one or two days.', ja: v => 'リクエストを送りました。1〜2日以内に Mari から ' + v + ' で連絡します。' },
+    doneSent: { en: v => 'Your request was sent. Mari will contact you ' + (v === 'email' ? 'by email' : 'on ' + v) + ' within one or two days.', ja: v => 'リクエストを送りました。1〜2日以内に Mari から ' + v + ' で連絡します。' },
     doneManual: { en: 'Send your request to Mari with one of these:', ja: '次のどちらかで Mari に送ってください。' },
     titleSent: { en: 'Thank you!', ja: 'ありがとうございます' },
     titleManual: { en: 'One more step', ja: 'あと少しです' },
