@@ -515,29 +515,6 @@ html.home-reveal .rv.in { opacity: 1; transform: none; }
   .home-duo .home-path, .home-duo .home-path:hover, .home-button:hover { transform: none; }
 }
 </style>
-<style id="home-contrast">
-/* Home: white sections with black bands for contrast (Lessons & Performances, Gallery, Contact) */
-:root { --noir: #141215; --noir-2: #1e1b20; --gold-bright: #d4b170; --ivory-on-dark: #f3ede2; --muted-on-dark: #b9b0a5; }
-.home-paths.duo, .home-gallery, .home-contact { background: var(--noir) !important; color: var(--ivory-on-dark); border-color: transparent !important; }
-.home-paths.duo .home-eyebrow, .home-gallery h2, .home-contact h2 { color: var(--ivory-on-dark) !important; }
-.home-paths.duo .home-eyebrow::after, .home-gallery h2::after { background: var(--gold-bright); }
-.home-paths.duo .home-lede, .home-contact p { color: var(--muted-on-dark); }
-.home-duo .home-path { background: var(--noir-2) !important; border-color: color-mix(in srgb, var(--gold-bright) 45%, transparent); color: var(--ivory-on-dark); }
-.home-duo .home-path h2 { color: var(--ivory-on-dark) !important; }
-.home-duo .home-path p { color: var(--muted-on-dark); }
-.home-duo .home-path:hover { box-shadow: 0 22px 50px -26px rgba(212, 177, 112, 0.45); }
-.home-paths.duo .home-button, .home-contact .home-button { background: var(--gold-bright); border-color: var(--gold-bright); color: var(--noir); }
-.home-paths.duo .home-button:hover, .home-contact .home-button:hover { background: transparent; color: var(--gold-bright); border-color: var(--gold-bright); }
-.home-gallery .home-link { color: var(--gold-bright) !important; text-decoration-color: color-mix(in srgb, var(--gold-bright) 50%, transparent); }
-.home-gallery .home-link:hover { color: var(--ivory-on-dark) !important; }
-.home-gallery .strip-arrow { border-color: color-mix(in srgb, var(--gold-bright) 70%, transparent); color: var(--gold-bright); }
-.home-gallery .strip-arrow:hover:not(:disabled) { background: var(--gold-bright); color: var(--noir); }
-.home-contact { padding-block: clamp(1rem, 3vw, 2rem); }
-.home-contact .home-kicker, .home-paths.duo .home-kicker { color: var(--gold-bright); }
-/* white sections: crisp white, thin gold rules between them */
-.home-intro, .home-stage, .home-press, .home-aside { background: #fff !important; }
-.home-upcoming p { background: #f7f3ec; }
-</style>
 <style id="site-nav-style">
 /* Main menu. PC: one line, About opens a small list (Credits, Gallery, Interview). Phone: Menu button opens cards. */
 header.top { position: sticky; top: 0; z-index: 20; padding: 0 !important; background: color-mix(in srgb, var(--paper) 92%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
