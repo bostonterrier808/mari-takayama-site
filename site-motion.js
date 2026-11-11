@@ -54,3 +54,75 @@
     }
   }
 })();
+
+// ---------- Stronger movement (only on the real site, not inside the editor preview) ----------
+(() => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const inFrame = window.self !== window.top;
+  const root = document.documentElement;
+  const fine = matchMedia('(pointer: fine)').matches;
+
+  // 1) opening curtain with the name, once per visit
+  if (!inFrame) {
+    let seen = false; try { seen = sessionStorage.getItem('mt-intro') === '1'; sessionStorage.setItem('mt-intro', '1'); } catch {}
+    if (!seen) {
+      const c = document.createElement('div'); c.className = 'mt-curtain';
+      c.innerHTML = '<span class="mt-curtain-name">Mari Takayama</span><span class="mt-curtain-line"></span>';
+      document.body.append(c);
+      setTimeout(() => c.classList.add('lift'), 1300);
+      setTimeout(() => c.remove(), 2600);
+    }
+    // 2) soft page change: fade out, then go
+    root.classList.add('mt-page-in');
+    document.addEventListener('click', e => {
+      if (e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = e.target.closest('a[href]'); if (!a || a.target === '_blank' || a.hasAttribute('download')) return;
+      const url = new URL(a.href, location.href);
+      if (url.origin !== location.origin || !/\.html$|\/$/.test(url.pathname) || (url.pathname === location.pathname && url.hash)) return;
+      e.preventDefault(); root.classList.add('mt-page-out'); setTimeout(() => { location.href = url.href; }, 420);
+    });
+    addEventListener('pageshow', ev => { if (ev.persisted) root.classList.remove('mt-page-out'); });
+  }
+
+  // 3) header slips away when scrolling down, returns when scrolling up
+  const header = document.querySelector('header.top');
+  let lastY = scrollY;
+  addEventListener('scroll', () => {
+    const y = scrollY; if (!header || header.classList.contains('menu-open')) { lastY = y; return; }
+    header.classList.toggle('mt-hide', y > lastY && y > 240); lastY = y;
+  }, { passive: true });
+
+  // 4) the repertoire line speeds up while you scroll
+  const track = document.querySelector('.mq-track');
+  if (track && track.getAnimations) {
+    let boost = 0, prev = scrollY;
+    addEventListener('scroll', () => { boost = Math.min(4, boost + Math.abs(scrollY - prev) / 120); prev = scrollY; }, { passive: true });
+    const tick = () => { boost *= 0.92; track.getAnimations().forEach(an => { an.playbackRate = 1 + boost; }); requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }
+
+  if (!fine || inFrame) return;
+  // 5) a small gold ring follows the mouse and opens up over links and photos
+  const ring = document.createElement('div'); ring.className = 'mt-cursor'; document.body.append(ring);
+  let x = innerWidth / 2, y = innerHeight / 2, rx = x, ry = y;
+  addEventListener('mousemove', e => { x = e.clientX; y = e.clientY; ring.classList.add('on'); }, { passive: true });
+  document.addEventListener('mouseleave', () => ring.classList.remove('on'));
+  document.addEventListener('mouseover', e => {
+    const t = e.target;
+    ring.classList.toggle('link', !!t.closest('a, button'));
+    ring.classList.toggle('photo', !!t.closest('main img, #grid button, .home-strip a'));
+  });
+  const loop = () => { rx += (x - rx) * 0.18; ry += (y - ry) * 0.18; ring.style.transform = `translate(${rx}px, ${ry}px)`; requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
+  // 6) buttons lean toward the mouse
+  document.querySelectorAll('.home-button, .booking-button, .lesson-inquiry-button').forEach(b => {
+    b.addEventListener('mousemove', e => { const r = b.getBoundingClientRect(); b.style.translate = `${((e.clientX - r.left) / r.width - 0.5) * 10}px ${((e.clientY - r.top) / r.height - 0.5) * 8}px`; });
+    b.addEventListener('mouseleave', () => { b.style.translate = ''; });
+  });
+  // 7) photos tilt slightly toward the mouse
+  document.querySelectorAll('.home-duo .home-path > img, #grid > button, .home-strip a').forEach(el => {
+    el.style.transition = (el.style.transition ? el.style.transition + ', ' : '') + 'transform .6s cubic-bezier(.2,.7,.2,1)';
+    el.addEventListener('mousemove', e => { const r = el.getBoundingClientRect(); const px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5; el.style.transform = `perspective(900px) rotateY(${px * 5}deg) rotateX(${-py * 5}deg) scale(1.02)`; });
+    el.addEventListener('mouseleave', () => { el.style.transform = ''; });
+  });
+})();
