@@ -254,11 +254,12 @@ header.top.mt-hide { transform: translateY(-100%); }
 }
 /* outlined buttons: darker gold letters and line */
 .home-button.ghost, .home-button.dark, .home-button.light, .booking-button.ghost { color: var(--gold-ink) !important; border-color: var(--gold-ink) !important; }
-.home-button:hover, .lesson-inquiry-button:hover, .booking-button:hover, #interview .interview-feature-link:hover { background: #fff !important; color: var(--gold-ink) !important; border-color: var(--gold-ink) !important; }
-.home-button.ghost:hover, .home-button.dark:hover, .home-button.light:hover, .booking-button.ghost:hover { background: var(--gold-ink) !important; color: #fff !important; }
+/* on hover each button keeps its own look and only shifts a little */
+.home-button:not(.ghost):not(.dark):not(.light):hover, .lesson-inquiry-button:hover, .booking-button:not(.ghost):hover, #interview .interview-feature-link:hover { background: var(--gold-deep) !important; border-color: var(--gold-deep) !important; color: #fff !important; }
+.home-button.ghost:hover, .home-button.dark:hover, .home-button.light:hover, .booking-button.ghost:hover { background: var(--ivory) !important; color: var(--gold-ink) !important; border-color: var(--gold-ink) !important; }
 /* buttons on the dark top photo stay white */
 .hero .hero-actions .home-button:not(.ghost) { background: #fff !important; border-color: #fff !important; color: var(--ink) !important; }
 .hero .hero-actions .home-button.ghost { color: #fff !important; border-color: #fff !important; }
-.hero .hero-actions .home-button:not(.ghost):hover { background: transparent !important; color: #fff !important; }
-.hero .hero-actions .home-button.ghost:hover { background: #fff !important; color: var(--ink) !important; }
+.hero .hero-actions .home-button:not(.ghost):hover { background: var(--gold-line) !important; border-color: var(--gold-line) !important; color: var(--ink) !important; }
+.hero .hero-actions .home-button.ghost:hover { background: rgba(255,255,255,.14) !important; color: #fff !important; border-color: var(--gold-line) !important; }
 .booking-button.dark { border-radius: 0 !important; }
