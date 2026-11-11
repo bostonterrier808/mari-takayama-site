@@ -92,15 +92,6 @@
     header.classList.toggle('mt-hide', y > lastY && y > 240); lastY = y;
   }, { passive: true });
 
-  // 4) the repertoire line speeds up while you scroll
-  const track = document.querySelector('.mq-track');
-  if (track && track.getAnimations) {
-    let boost = 0, prev = scrollY;
-    addEventListener('scroll', () => { boost = Math.min(4, boost + Math.abs(scrollY - prev) / 120); prev = scrollY; }, { passive: true });
-    const tick = () => { boost *= 0.92; track.getAnimations().forEach(an => { an.playbackRate = 1 + boost; }); requestAnimationFrame(tick); };
-    requestAnimationFrame(tick);
-  }
-
   if (!fine || inFrame) return;
   // 5) a small gold ring follows the mouse and opens up over links and photos
   const ring = document.createElement('div'); ring.className = 'mt-cursor'; document.body.append(ring);

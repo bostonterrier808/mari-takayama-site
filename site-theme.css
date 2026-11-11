@@ -229,10 +229,14 @@ html.site-reveal .rv-img.in { clip-path: inset(0 0 0 0); }
   header.top #site-menu > li { opacity: 1 !important; transform: none !important; transition: none !important; }
   .banner h2, .plain-banner h2, .credits-page h1, .hero h1 { animation: none !important; }
 }
+/* Home top: Book buttons in larger, easy-to-read letters */
+.hero-actions .home-button { font-family: "EB Garamond", Georgia, serif !important; font-weight: 500 !important; font-size: 1.12rem !important; letter-spacing: 0.04em !important; text-transform: none !important; padding: 0.95rem 2rem !important; }
+html[lang=ja] .hero-actions .home-button { font-family: "Shippori Mincho", serif !important; font-size: 1rem !important; letter-spacing: 0.08em !important; }
+.hero .hero-actions .home-button.ghost { background: rgba(20,18,22,.35) !important; }
 @media (max-width: 760px) {
-  .hero-actions .home-button { font-size: 0.7rem !important; letter-spacing: 0.12em !important; padding: 0.85rem 0.5rem !important; white-space: nowrap; }
+  .hero-actions { flex-direction: column !important; align-items: stretch !important; max-width: 19rem !important; gap: 0.6rem !important; }
+  .hero-actions .home-button { flex: none !important; font-size: 1.08rem !important; padding: 0.85rem 1rem !important; white-space: nowrap; }
 }
-@media (max-width: 380px) { .hero-actions .home-button { font-size: 0.64rem !important; letter-spacing: 0.08em !important; } }
 
 /* ---------- Stronger movement ---------- */
 .mt-curtain { position: fixed; inset: 0; z-index: 1000; display: grid; place-content: center; justify-items: center; gap: 1.2rem; background: #fff; transition: transform 1.2s cubic-bezier(.76,0,.24,1); }
