@@ -25,6 +25,8 @@ const EXTRA_CALENDAR_EMAIL = '';
 const SENDER_NAME = 'Mari Takayama';
 // Paying ahead: Venmo name without @ (empty = the email says Mari will send the details). No cash.
 const VENMO = 'maritakayama_ballet';
+// Zelle QR code as base64 PNG. Kept only in Mari's own copy of the script (it carries her phone number), never in the public files.
+const ZELLE_QR_B64 = '';
 const RATE_PER_30 = 65;   // dollars per 30 minutes, used for FuncPhysio lessons
 const BOOKING_PAGE = 'https://bostonterrier808.github.io/mari-takayama-site/lessons.html';
 // Lesson hours by weekday (0 = Sunday), 24-hour clock, New York time. A lesson must fit inside these hours.
@@ -318,19 +320,21 @@ function payNote_(data, ch, ja) {
   const d = dateOf_(ch.date); const memo = 'Ballet lesson ' + (d.getMonth() + 1) + '/' + d.getDate();
   const link = VENMO ? 'https://venmo.com/' + VENMO + '?txn=pay' + (amount ? '&amount=' + amount : '') + '&note=' + encodeURIComponent(memo) : '';
   const lines = ja ? [
-    'レッスン代は、前もって Venmo でお願いします（現金は受け取っていません）。',
+    'レッスン代は、前もって Venmo か Zelle でお願いします（現金は受け取っていません）。',
     amount ? '金額：$' + amount : '金額は、別のメールでお知らせします。',
-    link ? 'こちらを開くと、Venmo に金額が入った状態で開きます：\n' + link : (VENMO ? '' : '送り先は、別のメールでお知らせします。'),
+    link ? 'Venmo：こちらを開くと、金額が入った状態で開きます\n' + link : (VENMO ? '' : '送り先は、別のメールでお知らせします。'),
+    ZELLE_QR_B64 ? 'Zelle：添付の QR コードを、銀行のアプリで読み取ってください' : '',
     '', 'ご予定が変わったときは：',
     '・2日前まで：全額お返しします', '・前日：半分お返しします', '・当日：お返しできません'
   ] : [
-    'Please pay for the lesson ahead of time by Venmo (sorry, no cash).',
+    'Please pay for the lesson ahead of time by Venmo or Zelle (sorry, no cash).',
     amount ? 'Amount: $' + amount : 'Mari will send you the amount in a separate email.',
-    link ? 'This link opens Venmo with everything filled in:\n' + link : (VENMO ? '' : 'Mari will send you where to send it.'),
+    link ? 'Venmo — this link opens with everything filled in:\n' + link : (VENMO ? '' : 'Mari will send you where to send it.'),
+    ZELLE_QR_B64 ? 'Zelle — scan the attached QR code in your banking app' : '',
     '', 'If your plans change:',
     '• Up to 2 days before: fully refunded', '• The day before: half refunded', '• On the day: no refund'
   ];
-  return lines.filter(x => x !== '' || true).join('\n').replace(/\n\n\n+/g, '\n\n');
+  return lines.filter((x, i) => x !== '' || lines[i - 1] !== '').join('\n');
 }
 function sendCustomer_(data, kind, ch, note) {
   if (!data.email) return;
@@ -357,7 +361,7 @@ function sendCustomer_(data, kind, ch, note) {
       : 'Hi ' + data.name + ',\n\nThank you for your request. I’m sorry — the times you chose are no longer available.\n\nCould you pick another time here?\n' + BOOKING_PAGE + '\n\nThank you,\nMari Takayama';
   }
   const mail = { to: data.email, subject: subject, body: body, name: SENDER_NAME, replyTo: REPLY_TO };
-  if (kind === 'confirm') { mail.attachments = [ics_(data, ch, data.len)]; mail.body += ja ? '\n\n添付のファイルを開くと、お使いのカレンダーに追加できます。' : '\n\nOpen the attached file to add the lesson to your calendar.'; }
+  if (kind === 'confirm') { mail.attachments = [ics_(data, ch, data.len)].concat(ZELLE_QR_B64 ? [Utilities.newBlob(Utilities.base64Decode(ZELLE_QR_B64), 'image/png', 'zelle-qr.png')] : []); mail.body += ja ? '\n\n添付のファイルを開くと、お使いのカレンダーに追加できます。' : '\n\nOpen the attached file to add the lesson to your calendar.'; }
   MailApp.sendEmail(mail);
 }
 
