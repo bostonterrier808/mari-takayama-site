@@ -97,7 +97,7 @@
   const loop = () => { rx += (x - rx) * 0.18; ry += (y - ry) * 0.18; ring.style.transform = `translate(${rx}px, ${ry}px)`; requestAnimationFrame(loop); };
   requestAnimationFrame(loop);
   // 7) photos tilt slightly toward the mouse
-  document.querySelectorAll('.home-duo .home-path > img, #grid > button, .home-strip a').forEach(el => {
+  document.querySelectorAll('.home-duo .home-path > img').forEach(el => {
     el.style.transition = (el.style.transition ? el.style.transition + ', ' : '') + 'transform .6s cubic-bezier(.2,.7,.2,1)';
     el.addEventListener('mousemove', e => { const r = el.getBoundingClientRect(); const px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5; el.style.transform = `perspective(900px) rotateY(${px * 5}deg) rotateX(${-py * 5}deg) scale(1.02)`; });
     el.addEventListener('mouseleave', () => { el.style.transform = ''; });

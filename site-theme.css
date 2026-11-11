@@ -285,3 +285,13 @@ html[lang=ja] .hero .sub, .hero .sub { text-wrap: balance; }
 /* the big e-mail on Home never runs off a phone screen */
 .contact-mail-big { max-width: 100%; overflow-wrap: anywhere; letter-spacing: normal !important; }
 html[lang=ja] .contact-mail-big { font-family: var(--font-display) !important; }
+
+/* ---------- Gallery photos: gentle hover ---------- */
+/* the photo under the mouse slowly comes forward; the others quietly step back */
+#grid > button, .home-strip a { overflow: hidden; }
+#grid > button img, .home-strip a img { transition: scale 1.4s cubic-bezier(.2,.7,.2,1), filter .8s ease, opacity .8s ease !important; }
+@media (hover: hover) {
+  #grid > button:hover img, .home-strip a:hover img { scale: 1.035; filter: brightness(1.04) !important; }
+  #grid:has(> button:hover) > button:not(:hover) img, .home-strip:has(a:hover) a:not(:hover) img { opacity: .72; filter: saturate(.85) !important; }
+}
+.home-strip a:hover img { transform: none !important; }

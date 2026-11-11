@@ -708,8 +708,10 @@ main { counter-reset: sec; }
   .home-credits .credit-role { text-align: left; }
   .contact-mail-big { font-size: clamp(1.15rem, 5.6vw, 1.6rem); }
 }
+/* On stage: only the upcoming note */
+.home-stage-grid { grid-template-columns: minmax(0, 46rem); }
 </style>
-<link rel="stylesheet" href="site-theme.css?v=17">
+<link rel="stylesheet" href="site-theme.css?v=18">
 <style id="manual-box-styles">@media(min-width:761px){}@media(max-width:760px){}</style><style id="manual-text-styles">@media(min-width:761px){}@media(max-width:760px){}</style></head>
 <body>
 
@@ -806,16 +808,6 @@ main { counter-reset: sec; }
         <div class="home-upcoming" data-box-slot="44">
           <h3 data-box-slot="45">Upcoming</h3>
           <p data-box-slot="46">New performances will be posted here. For the latest news, follow <a href="https://www.instagram.com/maritakayama_ballet/" target="_blank" rel="noopener">@maritakayama_ballet</a> on Instagram.</p>
-        </div>
-        <div class="home-past" data-box-slot="47">
-          <h3 data-box-slot="48">Past highlights</h3>
-          <ul class="home-credits" data-box-slot="49">
-            <li><span class="credit-work">Don Quixote</span><span class="credit-role">Kitri, lead role</span></li>
-            <li><span class="credit-work">The Nutcracker</span><span class="credit-role">Sugar Plum Fairy, four seasons in a row</span></li>
-            <li><span class="credit-work">The Thorn</span><span class="credit-role">National tour</span></li>
-            <li><span class="credit-work">Ramaavan</span><span class="credit-role">Off-Broadway musical</span></li>
-          </ul>
-          <a class="home-link" href="credits.html">See all credits</a>
         </div>
       </div>
     </div>
@@ -976,5 +968,5 @@ document.getElementById('copy-mail').addEventListener('click', async (e) => {
   items.forEach(el => io.observe(el));
 })();
 </script>
-<script src="site-motion.js?v=8"></script>
+<script src="site-motion.js?v=9"></script>
 </body></html>
