@@ -20,6 +20,8 @@ const TZ = 'America/New_York';
 const USE_GOOGLE_CALENDAR = true;   // busy times in every calendar Mari owns block lesson times
 const CAL_ICS = '';                 // or another calendar as an iCal (.ics) link
 const REPLY_TO = 'maritakayama.official@gmail.com';  // customers' replies go here
+// Confirmed lessons are also sent as a calendar invitation here (e.g. Mari's Yahoo address), so they appear in that calendar.
+const EXTRA_CALENDAR_EMAIL = '';
 const SENDER_NAME = 'Mari Takayama';
 const BOOKING_PAGE = 'https://bostonterrier808.github.io/mari-takayama-site/lessons.html';
 // Lesson hours by weekday (0 = Sunday), 24-hour clock, New York time. A lesson must fit inside these hours.
@@ -227,11 +229,8 @@ function actionPage_(p) {
     const s = atNY_(ch.date, ...ch.start.split(':').map(Number)), en = new Date(s.getTime() + data.len * 60000);
     const clash = busyEvents_(s, en).filter(ev => !ev.allDay && ev.start < en && ev.end > s).length;
     if (!p.go) return page_('この時間で確定しますか？', '<b>' + esc_(data.name) + '</b> さん<br>' + choiceJa_(ch, data.len) + '<br>' + esc_(PLACES[data.place] ? PLACES[data.place].ja : '') + (clash ? '<p style="color:#8b3a3a">この時間には、Google カレンダーにほかの予定があります。</p>' : '') + '<p>確定すると、お客さんに確定メールが届き、Google カレンダーに入ります。</p>', self + '&go=1', '確定して、お客さんにメールを送る');
-    CalendarApp.getDefaultCalendar().createEvent('バレエレッスン：' + data.name, s, en, { location: PLACES[data.place] ? PLACES[data.place].en : '', description: 'メール：' + data.email + (data.area ? '\nエリア：' + data.area : '') + '\n（予約サイトから）' });
-    sendCustomer_(data, 'confirm', ch);
-    sh.getRange(r, C['状況']).setValue('予約確定'); sh.getRange(r, C['確定した日時']).setValue(choiceJa_(ch, data.len));
-    CacheService.getScriptCache().remove('free');
-    return page_('確定しました', esc_(data.name) + ' さんに確定メールを送り、Google カレンダーに入れました。<br>' + choiceJa_(ch, data.len));
+    bookLesson_(sh, r, data, ch, data.len, '');
+    return page_('確定しました', esc_(data.name) + ' さんと Mari さんに確定メールを送り、Google カレンダーに入れました。<br>' + choiceJa_(ch, data.len));
   }
   if (p.act === 'propose') {
     const ch0 = (data.choices || [])[0] || { date: Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'), start: '19:00' };
@@ -266,6 +265,31 @@ function actionPage_(p) {
   }
   return page_('?', '');
 }
+// one confirmed lesson: Google Calendar (+ invitation to the extra calendar), emails to the customer and to Mari, the sheet
+function bookLesson_(sh, r, data, ch, len, how) {
+  const s = atNY_(ch.date, ...ch.start.split(':').map(Number)), en = new Date(s.getTime() + len * 60000);
+  const place = PLACES[data.place] ? PLACES[data.place].en : '';
+  const opts = { location: place, description: 'メール：' + data.email + (data.area ? '\nエリア：' + data.area : '') + '\n（予約サイトから' + (how ? '・' + how : '') + '）' };
+  if (EXTRA_CALENDAR_EMAIL) { opts.guests = EXTRA_CALENDAR_EMAIL; opts.sendInvites = true; }
+  CalendarApp.getDefaultCalendar().createEvent('バレエレッスン：' + data.name, s, en, opts);
+  data.len = len;
+  sendCustomer_(data, 'confirm', ch);
+  sh.getRange(r, C['状況']).setValue('予約確定'); sh.getRange(r, C['確定した日時']).setValue(choiceJa_(ch, len));
+  CacheService.getScriptCache().remove('free');
+  const me = Session.getEffectiveUser().getEmail();
+  if (me) MailApp.sendEmail({ to: me, subject: '予約が確定しました：' + data.name + '（' + choiceJa_(ch, len) + '）',
+    body: data.name + ' さんのレッスンが確定しました' + (how ? '（' + how + '）' : '') + '。\n\n日時：' + choiceJa_(ch, len) + '（' + len + '分）\n場所：' + (PLACES[data.place] ? PLACES[data.place].ja : '') + (data.area ? '（' + data.area + '）' : '') + '\nメール：' + data.email + '\n\nお客さんにも確定メールを送りました。Google カレンダーに入れました' + (EXTRA_CALENDAR_EMAIL ? '（Yahoo カレンダーにも招待として送りました）' : '') + '。\n添付のファイルを開くと、ほかのカレンダーにも追加できます。',
+    attachments: [ics_(data, ch, len)], name: 'Lesson booking' });
+}
+function ics_(data, ch, len) {
+  const s = atNY_(ch.date, ...ch.start.split(':').map(Number)), en = new Date(s.getTime() + len * 60000);
+  const z = d => Utilities.formatDate(d, 'UTC', "yyyyMMdd'T'HHmmss'Z'");
+  const txt = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Mari Takayama//Lesson//EN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
+    'UID:' + (data.id || Utilities.getUuid()) + '@maritakayama', 'DTSTAMP:' + z(new Date()), 'DTSTART:' + z(s), 'DTEND:' + z(en),
+    'SUMMARY:Ballet lesson — Mari Takayama / ' + String(data.name || '').replace(/[,;\n]/g, ' '),
+    'LOCATION:' + (PLACES[data.place] ? PLACES[data.place].en : '').replace(/,/g, '\\,'), 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  return Utilities.newBlob(txt, 'text/calendar', 'lesson.ics');
+}
 function acceptPage_(p, sh, r, data, status) {
   const ja = data.language === 'ja';
   if (!data.ckey || String(p.k) !== data.ckey || !data.proposal) return page_(ja ? '開けません' : 'Link not valid', ja ? 'このリンクは使えません。' : 'This link can no longer be used.');
@@ -276,14 +300,7 @@ function acceptPage_(p, sh, r, data, status) {
     const self = ScriptApp.getService().getUrl() + '?act=accept&id=' + encodeURIComponent(p.id) + '&k=' + encodeURIComponent(p.k) + '&go=1';
     return page_(ja ? 'この時間で予約しますか？' : 'Book this time?', '<b>' + when + '</b>' + (ja ? '（ニューヨーク時間）' : ' (New York time)') + '<br>' + esc_(PLACES[data.place] ? PLACES[data.place][ja ? 'ja' : 'en'] : ''), self, ja ? 'この時間で予約する' : 'Book this time');
   }
-  const s = atNY_(prop.date, ...prop.start.split(':').map(Number)), en = new Date(s.getTime() + prop.len * 60000);
-  CalendarApp.getDefaultCalendar().createEvent('バレエレッスン：' + data.name, s, en, { location: PLACES[data.place] ? PLACES[data.place].en : '', description: 'メール：' + data.email + '\n（予約サイトから・提案した時間）' });
-  data.len = prop.len;
-  sendCustomer_(data, 'confirm', prop);
-  sh.getRange(r, C['状況']).setValue('予約確定'); sh.getRange(r, C['確定した日時']).setValue(choiceJa_(prop, prop.len));
-  CacheService.getScriptCache().remove('free');
-  const me = Session.getEffectiveUser().getEmail();
-  if (me) MailApp.sendEmail({ to: me, subject: '予約が確定しました：' + data.name + '（' + choiceJa_(prop, prop.len) + '）', body: data.name + ' さんが、提案した時間で予約しました。\n\n日時：' + choiceJa_(prop, prop.len) + '\n場所：' + (PLACES[data.place] ? PLACES[data.place].ja : '') + '\nメール：' + data.email + '\n\nGoogle カレンダーに入れました。', name: 'Lesson booking' });
+  bookLesson_(sh, r, data, prop, prop.len, '提案した時間で、お客さんが予約');
   return page_(ja ? '予約が確定しました' : 'Your lesson is booked', (ja ? '確定のメールをお送りしました。<br>日時：' : 'A confirmation email is on its way.<br>When: ') + when);
 }
 function page_(title, body, goHref, goLabel) {
@@ -316,7 +333,9 @@ function sendCustomer_(data, kind, ch, note) {
       ? data.name + ' 様\n\nお問い合わせありがとうございます。申し訳ありません、ご希望の日時はほかの予定が入ってしまいました。\n\nお手数ですが、こちらからほかの日時を選び直していただけますか。\n' + BOOKING_PAGE + '\n\nよろしくお願いいたします。\n髙山まり'
       : 'Hi ' + data.name + ',\n\nThank you for your request. I’m sorry — the times you chose are no longer available.\n\nCould you pick another time here?\n' + BOOKING_PAGE + '\n\nThank you,\nMari Takayama';
   }
-  MailApp.sendEmail({ to: data.email, subject: subject, body: body, name: SENDER_NAME, replyTo: REPLY_TO });
+  const mail = { to: data.email, subject: subject, body: body, name: SENDER_NAME, replyTo: REPLY_TO };
+  if (kind === 'confirm') { mail.attachments = [ics_(data, ch, data.len)]; mail.body += ja ? '\n\n添付のファイルを開くと、お使いのカレンダーに追加できます。' : '\n\nOpen the attached file to add the lesson to your calendar.'; }
+  MailApp.sendEmail(mail);
 }
 
 // ---------- helpers ----------

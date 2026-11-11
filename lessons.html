@@ -310,6 +310,7 @@
     group.addEventListener('click', e => {
       const b = e.target.closest('.chip'); if (!b) return;
       const name = group.dataset.group; const on = b.getAttribute('aria-pressed') !== 'true';
+      if (!on && ['len', 'visit', 'via'].includes(name)) return; // a needed choice stays chosen
       group.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
       if (on) { b.setAttribute('aria-pressed', 'true'); choice[name] = b.dataset.value; } else delete choice[name];
       if (name === 'place') document.getElementById('area-field').hidden = choice.place !== 'Travel';
