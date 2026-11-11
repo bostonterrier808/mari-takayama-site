@@ -106,6 +106,7 @@ function doPost(e) {
   const lock = LockService.getScriptLock(); lock.waitLock(20000);
   try {
     const d = JSON.parse(e.postData.contents);
+    if (!looksReal_(d)) return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
     const len = Math.max(30, Math.min(240, +d.length || 60));
     const c = (d.choices || []).slice(0, 3).filter(x => /^\d{4}-\d\d-\d\d$/.test(x.date));
     const id = Utilities.getUuid().slice(0, 8), key = Utilities.getUuid().replace(/-/g, '');
@@ -120,6 +121,20 @@ function doPost(e) {
   } finally { lock.releaseLock(); }
 }
 
+// quietly drop bot or flood submissions (the visitor still sees "sent", so bots learn nothing)
+function looksReal_(d) {
+  if (!d || d.hp) return false;                                   // hidden field filled = a bot
+  if (typeof d.ms === 'number' && d.ms < 4000) return false;      // filled in under 4 seconds = a bot
+  const email = String(d.email || '').trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) return false;
+  if (!String(d.name || '').trim() || String(d.name).length > 100) return false;
+  if (!Array.isArray(d.choices) || !d.choices.length || d.choices.length > 3) return false;
+  const cache = CacheService.getScriptCache();
+  const bump = (k, max, secs) => { const n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), secs); return n <= max; };
+  if (!bump('m:' + email, 3, 3600)) return false;                  // same email: at most 3 an hour
+  if (!bump('all', 30, 3600)) return false;                        // everyone together: at most 30 an hour
+  return true;
+}
 function notifyMari_(d, c, len, id, key) {
   const me = Session.getEffectiveUser().getEmail(); if (!me) return;
   const url = ScriptApp.getService().getUrl();
@@ -320,14 +335,14 @@ function payNote_(data, ch, ja) {
   const d = dateOf_(ch.date); const memo = 'Ballet lesson ' + (d.getMonth() + 1) + '/' + d.getDate();
   const link = VENMO ? 'https://venmo.com/' + VENMO + '?txn=pay' + (amount ? '&amount=' + amount : '') + '&note=' + encodeURIComponent(memo) : '';
   const lines = ja ? [
-    'レッスン代は、前もって Venmo か Zelle でお願いします（現金は受け取っていません）。',
+    'レッスン代は、前もって Venmo' + (ZELLE_QR_B64 ? ' か Zelle' : '') + ' でお願いします（現金は受け取っていません）。',
     amount ? '金額：$' + amount : '金額は、別のメールでお知らせします。',
     link ? 'Venmo：こちらを開くと、金額が入った状態で開きます\n' + link : (VENMO ? '' : '送り先は、別のメールでお知らせします。'),
     ZELLE_QR_B64 ? 'Zelle：添付の QR コードを、銀行のアプリで読み取ってください' : '',
     '', 'ご予定が変わったときは：',
     '・2日前まで：全額お返しします', '・前日：半分お返しします', '・当日：お返しできません'
   ] : [
-    'Please pay for the lesson ahead of time by Venmo or Zelle (sorry, no cash).',
+    'Please pay for the lesson ahead of time by Venmo' + (ZELLE_QR_B64 ? ' or Zelle' : '') + ' (sorry, no cash).',
     amount ? 'Amount: $' + amount : 'Mari will send you the amount in a separate email.',
     link ? 'Venmo — this link opens with everything filled in:\n' + link : (VENMO ? '' : 'Mari will send you where to send it.'),
     ZELLE_QR_B64 ? 'Zelle — scan the attached QR code in your banking app' : '',
