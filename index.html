@@ -552,6 +552,32 @@ html[lang="ja"] .home-intro h2 em { font-style: normal; }
 .home-intro-photo .intro-dance { position: absolute !important; right: 0; bottom: 0; z-index: 1; width: 50% !important; border: 0 !important; box-shadow: none !important; -webkit-mask-image: radial-gradient(ellipse 72% 72% at 50% 50%, #000 55%, transparent 100%); mask-image: radial-gradient(ellipse 72% 72% at 50% 50%, #000 55%, transparent 100%); }
 @media (max-width: 760px) { .home-intro-photo { max-width: 92% !important; } }
 </style>
+<style id="home-action">
+/* Home: more visible movement */
+@keyframes home-breathe { from { transform: scale(1); } to { transform: scale(1.035); } }
+.hero-photo { overflow: hidden; }
+.hero-photo img { animation: home-settle 1.8s cubic-bezier(.2,.7,.2,1) both, home-breathe 14s 1.8s ease-in-out infinite alternate; }
+/* section title lines draw in */
+html.home-reveal .home-eyebrow.rv::after, html.home-reveal .home-stage h2.rv::after, html.home-reveal .home-gallery-head.rv h2::after, html.home-reveal .home-press h2.rv::after { width: 0; transition: width 1.1s 0.4s cubic-bezier(.2,.7,.2,1); }
+html.home-reveal .home-eyebrow.rv.in::after, html.home-reveal .home-stage h2.rv.in::after, html.home-reveal .home-gallery-head.rv.in h2::after, html.home-reveal .home-press h2.rv.in::after { width: 4rem; }
+/* About photos glide in from each side */
+html.home-reveal .home-intro-photo.rv > img[data-photo-id="home/about"] { opacity: 0; transform: translateX(-48px); transition: opacity 1.1s ease, transform 1.3s cubic-bezier(.2,.7,.2,1); }
+html.home-reveal .home-intro-photo.rv .intro-dance { opacity: 0; transform: translateX(48px); transition: opacity 1.1s 0.35s ease, transform 1.3s 0.35s cubic-bezier(.2,.7,.2,1); }
+html.home-reveal .home-intro-photo.rv.in > img, html.home-reveal .home-intro-photo.rv.in .intro-dance { opacity: 1; transform: none; }
+html.home-reveal .home-intro-photo.rv { opacity: 1; transform: none; }
+/* card photos unveil from the top */
+html.home-reveal .home-duo > .home-path.rv > img { clip-path: inset(0 0 100% 0); transition: clip-path 1.2s 0.25s cubic-bezier(.65,0,.35,1); }
+html.home-reveal .home-duo > .home-path.rv.in > img { clip-path: inset(0 0 0 0); }
+/* gallery photos zoom softly on hover */
+.home-strip a { overflow: hidden; }
+.home-strip img { transition: transform 0.8s cubic-bezier(.2,.7,.2,1) !important; }
+.home-strip a:hover img { transform: scale(1.05); }
+@media (prefers-reduced-motion: reduce) {
+  .hero-photo img { animation: none; }
+  html.home-reveal .home-intro-photo.rv > img, html.home-reveal .home-intro-photo.rv .intro-dance { opacity: 1; transform: none; transition: none; }
+  html.home-reveal .home-duo > .home-path.rv > img { clip-path: none; transition: none; }
+}
+</style>
 <style id="site-nav-style">
 /* Main menu. PC: one line, About opens a small list (Credits, Gallery, Interview). Phone: Menu button opens cards. */
 header.top { position: sticky; top: 0; z-index: 20; padding: 0 !important; background: color-mix(in srgb, var(--paper) 92%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
@@ -623,7 +649,7 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
 @media (max-width: 350px) { header.top .brand small { display: none; } }
 @media (prefers-reduced-motion: reduce) { header.top #site-menu, header.top #site-menu a::after, header.top .menu-sub, header.top .menu-toggle i::before, header.top .menu-toggle i::after { transition: none !important; } }
 </style>
-<meta name="editor-published-at" content="1794371836122"><style id="manual-box-styles">@media(min-width:761px){}@media(max-width:760px){}</style><style id="manual-text-styles">@media(min-width:761px){}@media(max-width:760px){}</style></head>
+<meta name="editor-published-at" content="1794374253764"><style id="manual-box-styles">@media(min-width:761px){}@media(max-width:760px){}</style><style id="manual-text-styles">@media(min-width:761px){}@media(max-width:760px){}</style></head>
 <body>
 
 <header class="top" data-box-slot="0">
