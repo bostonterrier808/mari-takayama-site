@@ -517,39 +517,18 @@ html.home-reveal .rv.in { opacity: 1; transform: none; }
 </style>
 <style id="home-book">
 /* Home: make booking easy and inviting */
-.hero-proof { margin: 1.1rem 0 0; color: #e9d8b2; font-size: 0.95rem; letter-spacing: 0.08em; font-style: italic; animation: home-rise 1s 1.2s cubic-bezier(.2,.7,.2,1) both; }
-.home-proof { background: #fff; border-bottom: 1px solid var(--gold-line); }
-.home-proof .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.6rem 2rem; padding-block: 1.4rem; }
-.proof-label { margin: 0; color: var(--gold-ink); font-family: var(--font-display); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; }
-.proof-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem 2rem; margin: 0; padding: 0; list-style: none; }
-.proof-list a { color: var(--ink); font-family: var(--font-display); font-size: 1.35rem; font-weight: 500; letter-spacing: 0.04em; text-decoration: none; }
-.proof-list li:last-child a { color: var(--gold-ink); font-size: 1rem; font-style: italic; }
-.proof-list a:hover { color: var(--gold-ink); }
-.path-points { list-style: none; margin: 0 0 0.75rem; padding: 0; display: grid; gap: 0.45rem; text-align: left; }
-.path-points li { position: relative; padding-left: 1.6rem; color: var(--ink); font-size: 1.02rem; line-height: 1.45; }
-.path-points li::before { content: ""; position: absolute; left: 0.2rem; top: 0.42em; width: 0.45rem; height: 0.8rem; border: solid var(--gold-deep); border-width: 0 2px 2px 0; transform: rotate(45deg); }
 .home-duo .home-path .home-button { margin-top: auto; }
 .home-link.small { font-size: 1.05rem; margin-top: -0.25rem; }
-.home-steps { list-style: none; margin: clamp(2.5rem, 6vw, 4rem) auto 0; padding: 0; max-width: 64rem; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 3vw, 2.5rem); counter-reset: none; }
-.home-steps li { text-align: center; }
-.step-no { display: inline-grid; place-items: center; width: 2.6rem; height: 2.6rem; border: 1.5px solid var(--gold-deep); border-radius: 50%; color: var(--gold-ink); font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; }
-.home-steps h3 { margin: 0.8rem 0 0.3rem; font-family: var(--font-display); font-size: 1.4rem; font-weight: 500; color: var(--ink); }
-.home-steps p { margin: 0; color: var(--ink-soft); font-size: 1rem; line-height: 1.5; }
 .contact-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin: 0 0 1.25rem !important; }
 .contact-mail { margin: 0 !important; font-size: 0.98rem; }
 .contact-mail a { color: var(--gold-ink); white-space: nowrap; }
 .book-bar { display: none; }
 @media (max-width: 760px) {
-  .hero-proof { font-size: 0.82rem; letter-spacing: 0.04em; }
-  .proof-list a { font-size: 1.15rem; }
-  .home-proof .wrap { gap: 0.4rem 1.25rem; padding-block: 1.1rem; }
-  .home-steps { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
   .book-bar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; gap: 0.5rem; padding: 0.6rem 12px calc(0.6rem + env(safe-area-inset-bottom)); background: rgba(255,255,255,0.96); border-top: 1px solid var(--gold-line); box-shadow: 0 -8px 24px -18px rgba(0,0,0,0.35); transform: translateY(110%); transition: transform 0.35s ease; }
   .book-bar.show { transform: none; }
   .book-bar .home-button { flex: 1 1 0; text-align: center; font-size: 0.95rem; padding: 0.6rem 0.5rem; }
   body:has(.book-bar) footer { padding-bottom: 4.5rem; }
 }
-@media (prefers-reduced-motion: reduce) { .hero-proof { animation: none; } .book-bar { transition: none; } }
 </style>
 <style id="home-about-duo">
 /* About Mari: portrait and a stage photo, overlapping */
@@ -668,14 +647,6 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
       <h1 data-box-slot="22" data-text-slot="15">Mari Takayama</h1>
       <p class="sub" data-box-slot="23" data-text-slot="16">Professional ballet dancer and teacher based in NYC</p>
       <p class="hero-actions" data-box-slot="24"><a class="home-button" href="private-lessons.html">Book a private lesson</a><a class="home-button ghost" href="booking.html">Book Mari to perform</a></p>
-      <p class="hero-proof">Kitri in Don Quixote · Sugar Plum Fairy · National tour</p>
-    </div>
-  </section>
-
-  <section class="home-proof" aria-label="As featured in">
-    <div class="wrap">
-      <p class="proof-label">As featured in</p>
-      <ul class="proof-list"><li><a href="https://ny1page.com/2026/06/05/miru20260605/" target="_blank" rel="noopener noreferrer">NY1Page</a></li><li><a href="https://boldjourney.com/meet-mari-takayama/" target="_blank" rel="noopener noreferrer">Bold Journey</a></li><li><a href="https://voyagela.com/interview/life-work-with-mari-takayama-of-california/" target="_blank" rel="noopener noreferrer">VoyageLA</a></li><li><a href="interview.html">+ 4 more interviews</a></li></ul>
     </div>
   </section>
 
@@ -712,7 +683,6 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
       <div class="home-path-text" data-box-slot="35">
         <h2 data-box-slot="36">Private Lessons</h2>
         <p data-box-slot="37">Personal attention from a professional dancer, built on clean, strong technique.</p>
-        <ul class="path-points"><li>Children and adults, first steps to pointe</li><li>One-on-one or small group</li><li>At a studio or at your place</li></ul>
         <a class="home-button" href="lessons.html">Request a private lesson</a>
         <a class="home-link small" href="private-lessons.html">See lesson details</a>
       </div>
@@ -722,17 +692,11 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
       <div class="home-path-text" data-box-slot="39">
         <h2 data-box-slot="40">Ballet for your event</h2>
         <p data-box-slot="41">Live ballet that makes your occasion unforgettable.</p>
-        <ul class="path-points"><li>Weddings, galas, and private parties</li><li>Cultural festivals and celebrations</li><li>Classical ballet or Japanese-inspired dance</li></ul>
         <a class="home-button" href="booking.html">Book Mari to perform</a>
         <a class="home-link small" href="credits.html">See past performances</a>
       </div>
     </article>
       </div>
-      <ol class="home-steps" aria-label="How booking works">
-        <li><span class="step-no">1</span><h3>Tell Mari what you need</h3><p>Share the date, the place, and what you have in mind.</p></li>
-        <li><span class="step-no">2</span><h3>Mari replies personally</h3><p>She suggests a plan and confirms her availability.</p></li>
-        <li><span class="step-no">3</span><h3>Enjoy the dance</h3><p>A lesson or a performance shaped around you.</p></li>
-      </ol>
     </div>
   </section>
 
@@ -917,7 +881,7 @@ document.getElementById('copy-mail').addEventListener('click', async (e) => {
 <script id="home-motion-script">
 (() => {
   if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const groups = ['.home-proof .wrap > *', '.home-intro-photo', '.home-intro-body > *', '.home-steps > li', '.home-eyebrow', '.home-lede', '.home-duo > .home-path', '.home-stage h2', '.home-upcoming', '.home-past', '.home-gallery-head', '.home-strip', '.home-press h2', '.press-list li', '.home-press .home-link', '.home-contact .wrap > *'];
+  const groups = ['.home-intro-photo', '.home-intro-body > *', '.home-eyebrow', '.home-lede', '.home-duo > .home-path', '.home-stage h2', '.home-upcoming', '.home-past', '.home-gallery-head', '.home-strip', '.home-press h2', '.press-list li', '.home-press .home-link', '.home-contact .wrap > *'];
   const items = [];
   groups.forEach(sel => document.querySelectorAll(sel).forEach((el, i) => { el.classList.add('rv'); el.style.setProperty('--rv-delay', Math.min(i, 5) * 0.12 + 's'); items.push(el); }));
   document.documentElement.classList.add('home-reveal');
