@@ -332,3 +332,6 @@ html[lang=ja] #share-title { text-wrap: nowrap !important; }
 .home-button:hover, .booking-button:hover, .lesson-inquiry-button:hover, #interview .interview-feature-link:hover, .ig-button:hover { box-shadow: none !important; filter: brightness(.94); }
 .home-button.ghost:hover, .home-button.dark:hover, .home-button.light:hover, .booking-button.ghost:hover { filter: none; background: rgba(44,42,48,.04) !important; }
 .hero .hero-actions .home-button:hover { box-shadow: none !important; }
+/* Japanese: a little smaller overall */
+html[lang=ja] { font-size: 92%; }
+html[lang=ja] main :is(p, li, dd, .lesson-inquiry-copy, .interview-feature-summary) { letter-spacing: 0.06em !important; }
