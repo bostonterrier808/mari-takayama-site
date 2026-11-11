@@ -96,11 +96,6 @@
   });
   const loop = () => { rx += (x - rx) * 0.18; ry += (y - ry) * 0.18; ring.style.transform = `translate(${rx}px, ${ry}px)`; requestAnimationFrame(loop); };
   requestAnimationFrame(loop);
-  // 6) buttons lean toward the mouse
-  document.querySelectorAll('.home-button, .booking-button, .lesson-inquiry-button').forEach(b => {
-    b.addEventListener('mousemove', e => { const r = b.getBoundingClientRect(); b.style.translate = `${((e.clientX - r.left) / r.width - 0.5) * 10}px ${((e.clientY - r.top) / r.height - 0.5) * 8}px`; });
-    b.addEventListener('mouseleave', () => { b.style.translate = ''; });
-  });
   // 7) photos tilt slightly toward the mouse
   document.querySelectorAll('.home-duo .home-path > img, #grid > button, .home-strip a').forEach(el => {
     el.style.transition = (el.style.transition ? el.style.transition + ', ' : '') + 'transform .6s cubic-bezier(.2,.7,.2,1)';
