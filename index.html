@@ -499,8 +499,8 @@ body:has(#home) main { background: var(--paper); color: var(--ink); }
 .home-button { transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.25s ease; }
 .home-button:hover { transform: translateY(-2px); }
 /* first view: the top photo settles in, words rise one by one */
-@keyframes home-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
-@keyframes home-settle { from { opacity: 0; transform: scale(1.06); } to { opacity: 1; transform: scale(1); } }
+@keyframes home-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes home-settle { from { opacity: 0; } to { opacity: 1; } }
 .hero-photo img { animation: home-settle 1.8s cubic-bezier(.2,.7,.2,1) both; }
 .hero .kicker { animation: home-rise 1s 0.35s cubic-bezier(.2,.7,.2,1) both; }
 .hero h1 { animation: home-rise 1.1s 0.55s cubic-bezier(.2,.7,.2,1) both; }
@@ -554,9 +554,8 @@ html[lang="ja"] .home-intro h2 em { font-style: normal; }
 </style>
 <style id="home-action">
 /* Home: more visible movement */
-@keyframes home-breathe { from { transform: scale(1); } to { transform: scale(1.035); } }
 .hero-photo { overflow: hidden; }
-.hero-photo img { animation: home-settle 1.8s cubic-bezier(.2,.7,.2,1) both, home-breathe 14s 1.8s ease-in-out infinite alternate; }
+.hero-photo img { animation: home-settle 1.4s ease-out both; }
 /* section title lines draw in */
 html.home-reveal .home-eyebrow.rv::after, html.home-reveal .home-stage h2.rv::after, html.home-reveal .home-gallery-head.rv h2::after, html.home-reveal .home-press h2.rv::after { width: 0; transition: width 1.1s 0.4s cubic-bezier(.2,.7,.2,1); }
 html.home-reveal .home-eyebrow.rv.in::after, html.home-reveal .home-stage h2.rv.in::after, html.home-reveal .home-gallery-head.rv.in h2::after, html.home-reveal .home-press h2.rv.in::after { width: 4rem; }
@@ -701,8 +700,6 @@ main { counter-reset: sec; }
 .home-link { text-decoration: none !important; background: linear-gradient(var(--gold), var(--gold)) left bottom / 100% 1px no-repeat; transition: background-size .6s cubic-bezier(.2,.7,.2,1); }
 .home-link:hover { background-size: 0 1px; }
 /* scroll cue under the top buttons */
-.hero .wrap::after { content: ""; display: block; width: 1px; height: 3.2rem; margin: 1.6rem auto 0; background: linear-gradient(rgba(236,220,182,0), #ecdcb6); animation: cue 2.4s ease-in-out infinite; transform-origin: top; }
-@keyframes cue { 0% { transform: scaleY(0); opacity: 0; } 40% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(1) translateY(1rem); opacity: 0; } }
 @media (max-width: 760px) {
   .home-intro::before, .home-paths.duo::before, .home-stage::before, .home-gallery::before, .home-press::before { display: none; }
   .home-duo .home-path, .home-duo .home-path.events { grid-template-columns: minmax(0, 1fr) !important; gap: 1.5rem; }
@@ -710,11 +707,9 @@ main { counter-reset: sec; }
   .home-credits li { grid-template-columns: minmax(0, 1fr) !important; }
   .home-credits .credit-role { text-align: left; }
   .contact-mail-big { font-size: clamp(1.15rem, 5.6vw, 1.6rem); }
-  .hero .wrap::after { height: 2.2rem; margin-top: 1.1rem; }
 }
-@media (prefers-reduced-motion: reduce) { .hero .wrap::after { animation: none; } }
 </style>
-<link rel="stylesheet" href="site-theme.css?v=11">
+<link rel="stylesheet" href="site-theme.css?v=12">
 <style id="manual-box-styles">@media(min-width:761px){}@media(max-width:760px){}</style><style id="manual-text-styles">@media(min-width:761px){}@media(max-width:760px){}</style></head>
 <body>
 
@@ -981,5 +976,5 @@ document.getElementById('copy-mail').addEventListener('click', async (e) => {
   items.forEach(el => io.observe(el));
 })();
 </script>
-<script src="site-motion.js?v=6"></script>
+<script src="site-motion.js?v=7"></script>
 </body></html>

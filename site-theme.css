@@ -130,7 +130,7 @@ html.site-reveal .rv.in { opacity: 1; transform: none; }
 /* ---------- Language switch (English / 日本語) ---------- */
 .site-language-switch { border-color: var(--gold-line) !important; background: #fff !important; }
 .site-language-switch button { color: var(--gold-ink) !important; background: transparent !important; }
-.site-language-switch button[aria-pressed="true"] { background: var(--gold-deep) !important; color: #fff !important; }
+.site-language-switch button[aria-pressed="true"] { background: var(--gold-ink) !important; color: #fff !important; }
 
 /* ---------- Type: Cormorant Garamond (light) for titles, labels in spaced capitals ---------- */
 .banner h2, .plain-banner h2, #interview .plain-banner h2, .credits-page h1, .about h2, .booking-card h1 { font-weight: 300 !important; }
@@ -154,13 +154,13 @@ html[lang=ja] body * { font-style: normal !important; }
   border-radius: 0 !important;
 }
 .home-button, .booking-button, .lesson-inquiry-button, #interview .interview-feature-link {
-  font-family: var(--font-display) !important; font-weight: 600 !important; font-size: 0.86rem !important;
-  letter-spacing: 0.22em !important; text-transform: uppercase !important; padding: 0.95rem 1.9rem !important; line-height: 1.2 !important;
+  font-family: "EB Garamond", Georgia, serif !important; font-weight: 500 !important; font-size: 1.1rem !important;
+  letter-spacing: 0.03em !important; text-transform: none !important; padding: 0.9rem 1.9rem !important; line-height: 1.25 !important;
 }
 .lesson-inquiry-button span { letter-spacing: 0; }
-html[lang=ja] :is(.home-button, .booking-button, .lesson-inquiry-button, #interview .interview-feature-link) { font-family: "Shippori Mincho", serif !important; font-size: 0.9rem !important; letter-spacing: 0.16em !important; }
+html[lang=ja] :is(.home-button, .booking-button, .lesson-inquiry-button, #interview .interview-feature-link) { font-family: "Shippori Mincho", serif !important; font-size: 1rem !important; letter-spacing: 0.06em !important; }
 .site-language-switch { padding: 2px !important; }
-.site-language-switch button { font-family: var(--font-display) !important; font-weight: 600 !important; letter-spacing: 0.12em !important; }
+.site-language-switch button { font-family: "EB Garamond", Georgia, serif !important; font-weight: 500 !important; font-size: 0.95rem !important; letter-spacing: 0.04em !important; }
 
 /* ---------- ≡ menu: an elegant list, not boxes ---------- */
 @media (max-width: 1180px) {
@@ -222,7 +222,7 @@ html.site-reveal .rv-img.in { clip-path: inset(0 0 0 0); }
 }
 /* page titles and the name: revealed from left to right while the letter spacing settles */
 @keyframes title-sweep { from { clip-path: inset(0 100% 0 0); letter-spacing: 0.12em; opacity: 0.2; } to { clip-path: inset(0 -10% 0 0); opacity: 1; } }
-.banner h2, .plain-banner h2, .credits-page h1, .hero h1 { animation: title-sweep 1.6s 0.2s cubic-bezier(.65,0,.35,1) both !important; }
+.banner h2, .plain-banner h2, .credits-page h1 { animation: title-sweep 1.6s 0.2s cubic-bezier(.65,0,.35,1) both !important; }
 @media (prefers-reduced-motion: reduce) {
   .home-button::before, .booking-button::before, .lesson-inquiry-button::before, #interview .interview-feature-link::before { display: none; }
   html.site-reveal .rv-img { clip-path: none; transition: none; }
@@ -239,11 +239,6 @@ html[lang=ja] .hero-actions .home-button { font-family: "Shippori Mincho", serif
 }
 
 /* ---------- Stronger movement ---------- */
-.mt-curtain { position: fixed; inset: 0; z-index: 1000; display: grid; place-content: center; justify-items: center; gap: 1.2rem; background: #fff; transition: transform 1.2s cubic-bezier(.76,0,.24,1); }
-.mt-curtain.lift { transform: translateY(-100%); }
-.mt-curtain-name { font-family: var(--font-display); font-weight: 300; font-size: clamp(2.4rem, 7vw, 5rem); letter-spacing: 0.06em; color: var(--ink); animation: title-sweep 1.1s cubic-bezier(.65,0,.35,1) both; }
-.mt-curtain-line { display: block; height: 1px; width: 0; background: var(--gold); animation: mt-line 1s 0.3s cubic-bezier(.65,0,.35,1) forwards; }
-@keyframes mt-line { to { width: 8rem; } }
 html.mt-page-in body { animation: mt-fade-in .6s ease both; }
 html.mt-page-out body { opacity: 0; transform: translateY(-8px); transition: opacity .4s ease, transform .4s ease; }
 @keyframes mt-fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -254,4 +249,23 @@ header.top.mt-hide { transform: translateY(-100%); }
 .mt-cursor.link { width: 54px; height: 54px; left: -27px; top: -27px; background: color-mix(in srgb, var(--gold) 14%, transparent); }
 .mt-cursor.photo { width: 76px; height: 76px; left: -38px; top: -38px; border-color: #fff; mix-blend-mode: difference; }
 .home-button, .booking-button, .lesson-inquiry-button { transition: translate .35s cubic-bezier(.2,.7,.2,1), background .25s, color .25s, border-color .25s; }
-@media (prefers-reduced-motion: reduce) { .mt-curtain, .mt-cursor { display: none; } html.mt-page-in body { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .mt-cursor { display: none; } html.mt-page-in body { animation: none; } }
+
+/* ---------- Boxed buttons: easy to read everywhere ---------- */
+.rates-page .button, .form-actions button, button.primary {
+  font-family: "EB Garamond", Georgia, serif !important; font-weight: 500 !important; font-size: 1.1rem !important; letter-spacing: 0.03em !important; text-transform: none !important;
+}
+/* filled buttons: deeper gold so the white letters stand out */
+.home-button:not(.ghost):not(.dark):not(.light), .lesson-inquiry-button, .booking-button:not(.ghost), #interview .interview-feature-link, .rates-page .button, .form-actions button, button.primary {
+  background: var(--gold-ink) !important; border-color: var(--gold-ink) !important; color: #fff !important;
+}
+/* outlined buttons: darker gold letters and line */
+.home-button.ghost, .home-button.dark, .home-button.light, .booking-button.ghost { color: var(--gold-ink) !important; border-color: var(--gold-ink) !important; }
+.home-button:hover, .lesson-inquiry-button:hover, .booking-button:hover, #interview .interview-feature-link:hover { background: #fff !important; color: var(--gold-ink) !important; border-color: var(--gold-ink) !important; }
+.home-button.ghost:hover, .home-button.dark:hover, .home-button.light:hover, .booking-button.ghost:hover { background: var(--gold-ink) !important; color: #fff !important; }
+/* buttons on the dark top photo stay white */
+.hero .hero-actions .home-button:not(.ghost) { background: #fff !important; border-color: #fff !important; color: var(--ink) !important; }
+.hero .hero-actions .home-button.ghost { color: #fff !important; border-color: #fff !important; }
+.hero .hero-actions .home-button:not(.ghost):hover { background: transparent !important; color: #fff !important; }
+.hero .hero-actions .home-button.ghost:hover { background: #fff !important; color: var(--ink) !important; }
+.booking-button.dark { border-radius: 0 !important; }

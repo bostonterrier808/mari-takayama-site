@@ -62,16 +62,7 @@
   const root = document.documentElement;
   const fine = matchMedia('(pointer: fine)').matches;
 
-  // 1) opening curtain with the name, once per visit
   if (!inFrame) {
-    let seen = false; try { seen = sessionStorage.getItem('mt-intro') === '1'; sessionStorage.setItem('mt-intro', '1'); } catch {}
-    if (!seen) {
-      const c = document.createElement('div'); c.className = 'mt-curtain';
-      c.innerHTML = '<span class="mt-curtain-name">Mari Takayama</span><span class="mt-curtain-line"></span>';
-      document.body.append(c);
-      setTimeout(() => c.classList.add('lift'), 1300);
-      setTimeout(() => c.remove(), 2600);
-    }
     // 2) soft page change: fade out, then go
     root.classList.add('mt-page-in');
     document.addEventListener('click', e => {
