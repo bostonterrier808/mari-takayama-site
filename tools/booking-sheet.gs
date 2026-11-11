@@ -10,6 +10,9 @@
 // Every new request is added to リクエスト and sent to your Gmail.
 // In 空き状況, type ◯ / △ / × for each date and time. Blank = the usual week shown on the site.
 
+// The sheet's id (from its address). Leave empty when the script is opened from the sheet itself (Extensions > Apps Script).
+const SHEET_ID = '';
+const book_ = () => SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActive();
 const TZ = 'America/New_York';
 const REQ = 'リクエスト', AV = '空き状況', ST = '統計';
 const HEAD = ['受付日時', '初めて／2回目以降', '名前', '連絡方法', '連絡先', '場所', 'エリア', '対象', 'バレエ経験',
@@ -25,7 +28,7 @@ const JA = {
 };
 
 function setup() {
-  const ss = SpreadsheetApp.getActive();
+  const ss = book_();
   ss.setSpreadsheetTimeZone(TZ);
   // requests
   const req = ss.getSheetByName(REQ) || ss.insertSheet(REQ, 0);
@@ -79,10 +82,10 @@ function doPost(e) {
       JA.age[d.age] || d.age || '', JA.level[d.level] || d.level || '', choiceText(0), choiceText(1), choiceText(2)];
     for (let i = 0; i < 3; i++) row.push(c[i] ? (JA.day[c[i].weekday] || c[i].weekday) : '', c[i] ? (JA.time[c[i].time] || c[i].time) : '');
     row.push(clip(d.note, 700), d.language || '', '新規');
-    SpreadsheetApp.getActive().getSheetByName(REQ).appendRow(row);
+    book_().getSheetByName(REQ).appendRow(row);
     const me = Session.getEffectiveUser().getEmail();
     if (me) MailApp.sendEmail(me, 'レッスンのリクエスト：' + String(d.name || '').slice(0, 100) + '（' + (JA.visit[d.visit] || '') + '）',
-      String(d.message || '').slice(0, 3000) + '\n\n――\n連絡方法：' + (d.via || '') + '　' + String(d.contact || '').slice(0, 200) + '\nシート：' + SpreadsheetApp.getActive().getUrl());
+      String(d.message || '').slice(0, 3000) + '\n\n――\n連絡方法：' + (d.via || '') + '　' + String(d.contact || '').slice(0, 200) + '\nシート：' + book_().getUrl());
     return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
   } finally { lock.releaseLock(); }
 }
@@ -91,7 +94,7 @@ function doPost(e) {
 function doGet(e) {
   const days = {};
   if (e && e.parameter && e.parameter.availability) {
-    const av = SpreadsheetApp.getActive().getSheetByName(AV);
+    const av = book_().getSheetByName(AV);
     const today = new Date(); today.setHours(0, 0, 0, 0);
     if (av && av.getLastRow() > 1) av.getRange(2, 1, av.getLastRow() - 1, 5).getValues().forEach(r => {
       if (!(r[0] instanceof Date) || r[0] < today) return;
