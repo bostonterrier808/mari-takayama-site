@@ -3,192 +3,412 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mari’s Private Ballet Lessons</title>
+<title>Book a Private Lesson — Mari Takayama</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&amp;family=EB+Garamond:ital,wght@0,400;0,500;1,400&amp;display=swap">
 <style>
+  :root {
+    --ink: #2c2a30; --muted: #6a6670; --line: #e6dfd2; --ivory: #faf6ee;
+    --champagne: #ecdfc6; --champagne-deep: #dfcda8; --champagne-line: #c9b48c; --champagne-pale: #f6f0e4;
+    --gold-ink: #7d6845; --soon: #b9a27a;
+    --font-display: "Cormorant Garamond", "EB Garamond", Garamond, serif;
+    --font-body: "EB Garamond", Garamond, Georgia, serif;
+  }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
-  body { margin: 0; background: #f5f1f2; color: #2c2a30; font: 16px/1.55 system-ui, sans-serif; }
-  main { max-width: 690px; margin: auto; padding: 24px 16px 44px; }
-  h1 { font: normal clamp(2rem, 6vw, 3.2rem)/1.12 Georgia, serif; margin: 18px 0 12px; }
-  a { color: #3a4d6e; }
-  form { background: white; padding: clamp(14px, 4vw, 28px); border: 1px solid #ded6d9; border-radius: 12px; }
-  label, legend { font-weight: 600; }
-  label { display: block; margin: 0 0 14px; }
-  fieldset { min-width: 0; margin: 0 0 15px; padding: 10px 12px; border: 1px solid #ded6d9; border-radius: 7px; }
-  fieldset label { display: inline-flex; align-items: center; gap: 4px; margin: 3px 12px 3px 0; font-weight: 400; }
-  input:not([type=checkbox]), select, textarea { display: block; width: 100%; padding: 9px; margin-top: 4px; border: 1px solid #a6a2ab; border-radius: 5px; color: inherit; background: #fff; font: inherit; }
-  .help { color: #59535c; font-size: 14px; font-weight: 400; }
-  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  button, .action { padding: 10px 13px; border-radius: 6px; border: 1px solid #526887; color: #344766; background: white; font: inherit; cursor: pointer; }
-  button.primary { background: #526887; color: white; }
-  #result { margin-top: 16px; }
-  #status:empty { display: none; }
+  body { margin: 0; background: var(--ivory); color: var(--ink); font: 17px/1.6 var(--font-body); }
+  a { color: var(--gold-ink); }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; background: #fff; border-bottom: 1px solid var(--line); }
+  .bar .brand { font: 600 1.35rem var(--font-display); letter-spacing: .04em; color: var(--ink); text-decoration: none; }
+  .bar { position: relative; min-height: 58px; }
+  .back { display: inline-block; margin: 0 0 18px; font-size: .95rem; text-decoration: none; }
+  .site-language-switch { position: absolute !important; top: 12px !important; right: 14px !important; transform: none !important; }
+  .picked li button { white-space: nowrap; text-wrap: nowrap; flex: none; }
+  main { max-width: 760px; margin: 0 auto; padding: 34px 18px 70px; }
+  .eyebrow { margin: 0 0 6px; font: 500 .82rem var(--font-body); letter-spacing: .22em; text-transform: uppercase; color: var(--gold-ink); }
+  h1 { margin: 0 0 12px; font: 400 clamp(2.1rem, 7vw, 3.1rem)/1.1 var(--font-display); }
+  .lead { margin: 0 0 30px; color: var(--muted); max-width: 36rem; }
+  section.step { background: #fff; border: 1px solid var(--line); padding: 22px 20px 24px; margin: 0 0 18px; }
+  .step-head { display: flex; align-items: baseline; gap: 12px; margin: 0 0 14px; }
+  .step-num { font: italic 400 1.5rem var(--font-display); color: var(--gold-ink); }
+  .step-title { margin: 0; font: 500 1.45rem/1.2 var(--font-display); }
+  .q { margin: 16px 0 8px; font-weight: 500; }
+  .q small { font-weight: 400; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { appearance: none; border: 1px solid var(--champagne-line); background: #fff; color: var(--ink); font: 1rem var(--font-body); padding: 9px 14px; cursor: pointer; transition: background-color .4s ease, border-color .4s ease; }
+  .chip:hover { background: var(--champagne-pale); }
+  .chip[aria-pressed="true"] { background: var(--champagne); border-color: var(--champagne-deep); }
+  .chip:focus-visible, .slot:focus-visible, .btn:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: 2px; }
 
-.choice-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
-fieldset.choice-group .choice {
-  display: flex; align-items: center; gap: 9px; margin: 0; padding: 12px;
-  border: 1px solid #c9c3cc; border-radius: 7px; cursor: pointer; font-weight: 400;
-}
-.choice input[type=radio], .choice input[type=checkbox] {
-  display: inline-block; width: 18px; height: 18px; margin: 0; padding: 0;
-  flex-shrink: 0; accent-color: #526887;
-}
-.choice:has(input:checked) { background: #edf1f7; border-color: #526887; }
-.choice:focus-within { outline: 2px solid #526887; outline-offset: 2px; }
-@media(max-width:420px) { .choice-grid { grid-template-columns: 1fr; } }
+  /* week of times */
+  .week-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0 12px; }
+  .week-nav button { appearance: none; border: 1px solid var(--line); background: #fff; width: 42px; height: 38px; font-size: 1.1rem; cursor: pointer; color: var(--ink); }
+  .week-nav button:disabled { opacity: .3; cursor: default; }
+  .week-label { font: 500 1.1rem var(--font-display); }
+  .days { display: grid; gap: 6px; }
+  .day { display: grid; grid-template-columns: 6.4rem 1fr; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid var(--line); }
+  .day:first-child { border-top: 0; }
+  .day-name { font-size: .98rem; line-height: 1.25; }
+  .day-name small { display: block; color: var(--muted); font-size: .85rem; }
+  .slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .slot { position: relative; appearance: none; border: 1px solid var(--champagne-line); background: #fff; color: var(--ink); font: .95rem var(--font-body); padding: 9px 4px; cursor: pointer; transition: background-color .4s ease; }
+  .slot:hover { background: var(--champagne-pale); }
+  .slot.maybe::after { content: ""; position: absolute; top: 5px; right: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--soon); }
+  .slot:disabled { border-color: var(--line); color: #b8b3ba; background: repeating-linear-gradient(135deg, #fff 0 6px, #f5f2ec 6px 7px); cursor: default; }
+  .slot[aria-pressed="true"] { background: var(--champagne); border-color: var(--champagne-deep); }
+  .slot .rank { position: absolute; top: -8px; left: -6px; min-width: 18px; height: 18px; padding: 0 4px; background: var(--ink); color: #fff; font-size: .72rem; line-height: 18px; text-align: center; border-radius: 9px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 12px 0 0; color: var(--muted); font-size: .88rem; }
+  .legend span::before { content: ""; display: inline-block; width: 11px; height: 11px; margin-right: 6px; vertical-align: -1px; border: 1px solid var(--champagne-line); background: #fff; }
+  .legend .l-maybe::before { background: radial-gradient(circle at 70% 30%, var(--soon) 0 2px, #fff 3px); }
+  .legend .l-no::before { border-color: var(--line); background: repeating-linear-gradient(135deg, #fff 0 3px, #ece7de 3px 4px); }
+  .picked { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+  .picked li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: var(--champagne-pale); }
+  .picked li button { appearance: none; border: 0; background: none; color: var(--muted); font: .9rem var(--font-body); cursor: pointer; text-decoration: underline; }
+  .picked-empty { color: var(--muted); font-size: .95rem; margin: 12px 0 0; }
+  .note-flex { margin: 10px 0 0; font-size: .92rem; color: var(--muted); }
+
+  label.field { display: block; margin: 14px 0 0; font-weight: 500; }
+  label.field small { font-weight: 400; color: var(--muted); }
+  input[type=text], input[type=email], input[type=tel], textarea { display: block; width: 100%; margin-top: 6px; padding: 11px 12px; border: 1px solid #cfc7ba; background: #fff; color: var(--ink); font: 1rem var(--font-body); border-radius: 0; }
+  textarea { resize: vertical; }
+  .contact-hint { margin: 6px 0 0; font-size: .88rem; color: var(--muted); }
+
+  .send { margin: 26px 0 0; text-align: center; }
+  .btn { appearance: none; display: inline-block; border: 1px solid var(--champagne); background: var(--champagne); color: var(--ink); font: 500 1.12rem var(--font-body); letter-spacing: .03em; padding: 14px 34px; cursor: pointer; text-decoration: none; transition: filter .6s ease, background-color .6s ease; }
+  .btn:hover { filter: brightness(.94); }
+  .btn.ghost { background: transparent; border-color: var(--champagne-line); }
+  .btn.ghost:hover { filter: none; background: rgba(44,42,48,.04); }
+  .btn:disabled { opacity: .45; cursor: default; filter: none; }
+  .send-help { margin: 10px 0 0; color: var(--muted); font-size: .9rem; }
+  .error { margin: 10px 0 0; color: #8b3a3a; font-size: .95rem; }
+  .done { background: #fff; border: 1px solid var(--line); padding: 30px 22px; text-align: center; }
+  .done h2 { margin: 0 0 10px; font: 400 2rem var(--font-display); }
+  .done p { margin: 0 auto 8px; max-width: 30rem; }
+  .fallback { display: grid; gap: 10px; justify-items: center; margin: 18px 0 0; }
+  .fallback textarea { max-width: 34rem; font-size: .92rem; }
+  footer { text-align: center; color: var(--muted); font-size: .9rem; padding: 0 18px 40px; }
+  @media (max-width: 480px) {
+    section.step { padding: 18px 14px 20px; }
+    .day { grid-template-columns: 4.6rem 1fr; }
+    .slot { font-size: .88rem; padding: 9px 2px; }
+  }
 </style>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&amp;family=EB+Garamond:ital,wght@0,400;0,500;1,400&amp;display=swap">
-<style id="lessons-type">:root{--font-display:"Cormorant Garamond","EB Garamond",Garamond,serif;--font-body:"EB Garamond",Garamond,serif;--ink:#2c2a30}body{font-family:var(--font-body)}h1{font-family:var(--font-display);font-weight:400;letter-spacing:.01em}h1::after{content:"";display:block;width:4rem;height:2px;margin-top:.8rem;background:#b0883a}</style>
 <link rel="stylesheet" href="site-theme.css?v=28">
+<style>
+  /* this page keeps its own calm controls over the shared theme */
+  html[lang=ja] .chip, html[lang=ja] .slot, html[lang=ja] .btn { font-family: "Shippori Mincho", serif; letter-spacing: .04em; }
+  html[lang=ja] .eyebrow { letter-spacing: .14em; }
+</style>
 </head>
 <body>
+<header class="bar">
+  <a class="brand" href="index.html">Mari Takayama</a>
+</header>
 <main>
-  <a href="private-lessons.html">← Mari Takayama · Private Lessons</a>
-  <h1>Mari’s Private Ballet Lessons</h1>
-  <p>Tell Mari a little about yourself and when you’re usually free. Mari will check her schedule and studio availability, then reply with possible times. Your lesson is confirmed once you agree on a time together.</p>
-  <form id="inquiry">
-    <label>Your name <input name="name" autocomplete="name" required maxlength="100"></label>
-    <label>Student’s age group <span class="help">(optional)</span>
-      <select name="ageGroup">
-        <option value="">Choose if you’d like</option>
-        <option>Child</option>
-        <option>Teen</option>
-        <option>Adult</option>
-        <option value="declined">Prefer not to say</option>
-      </select>
-    </label>
-<fieldset class="choice-group"><legend>Have you taken ballet before?</legend><p class="help">Optional. Choose one.</p><div class="choice-grid"><label class="choice"><input type="radio" name="experience" value="No ballet experience"><span>I’m new to ballet</span></label><label class="choice"><input type="radio" name="experience" value="Some ballet experience"><span>I’ve taken some classes</span></label><label class="choice"><input type="radio" name="experience" value="Regular ballet training"><span>I train regularly</span></label><label class="choice"><input type="radio" name="experience" value="Not sure"><span>I’m not sure</span></label></div></fieldset>
-<fieldset class="choice-group"><legend>Are you a performer?</legend><p class="help">Optional. Choose any that apply, or skip this question.</p><div class="choice-grid"><label class="choice"><input type="checkbox" name="background" value="Singer"><span>Singer</span></label><label class="choice"><input type="checkbox" name="background" value="Dancer"><span>Dancer</span></label><label class="choice"><input type="checkbox" name="background" value="Ballet dancer"><span>Ballet dancer</span></label><label class="choice"><input type="checkbox" name="background" value="Other"><span>Other</span></label></div></fieldset>
-<label id="experience-other" hidden>Other background (optional)<input name="experienceOther" maxlength="150" placeholder="Tell us a little about your background"></label>
-<fieldset class="choice-group"><legend>Where would you like the lesson?</legend><p class="help">Optional. Choose one.</p><div class="choice-grid"><label class="choice"><input type="radio" name="place" value="FuncPhysio"><span>At FuncPhysio Physical Therapy</span></label><label class="choice"><input type="radio" name="place" value="Studio"><span>At a dance studio</span></label><label class="choice"><input type="radio" name="place" value="Travel"><span>At my place (Mari comes to me)</span></label><label class="choice"><input type="radio" name="place" value="Either"><span>Any is fine</span></label></div></fieldset>
-<label id="place-area" hidden>Neighborhood or venue <span class="help">(optional)</span><input name="placeArea" maxlength="150" placeholder="e.g. Upper West Side, home"></label>
-    <fieldset>
-      <legend>Days that usually work</legend>
-      <span class="help">Optional. Choose as many as you like.</span><br>
-      <label><input type="checkbox" name="days" value="Weekdays"> Weekdays</label>
-      <label><input type="checkbox" name="days" value="Weekends"> Weekends</label>
-      <label><input type="checkbox" name="days" value="Flexible"> Flexible</label>
-    </fieldset>
-    <fieldset>
-      <legend>Preferred time of day</legend>
-      <span class="help">Optional. New York time.</span><br>
-      <label><input type="checkbox" name="times" value="Morning"> Morning</label>
-      <label><input type="checkbox" name="times" value="Afternoon"> Afternoon</label>
-      <label><input type="checkbox" name="times" value="Evening"> Evening</label>
-      <label><input type="checkbox" name="times" value="Flexible"> Flexible</label>
-    </fieldset>
-    <fieldset>
-      <legend>What would you like to work on?</legend>
-      <span class="help">Optional. Choose any that apply.</span><br>
-      <label><input type="checkbox" name="focus" value="Ballet basics"> Ballet basics</label>
-      <label><input type="checkbox" name="focus" value="Posture and alignment"> Posture and alignment</label>
-      <label><input type="checkbox" name="focus" value="Turns and jumps"> Turns and jumps</label>
-      <label><input type="checkbox" name="focus" value="Pointe preparation"> Pointe preparation</label>
-      <label><input type="checkbox" name="focus" value="Help me choose"> Help me choose</label>
-    </fieldset>
-    <label>Anything else? <span class="help">(optional)</span>
-      <textarea name="goals" rows="2" maxlength="700"></textarea>
-    </label>
-    <div class="actions">
-      <button class="primary" type="submit" value="email">Open email draft</button>
-      <button type="submit" value="copy">Prepare message to copy</button>
-    </div>
-    <p class="help">Send the draft from your email app, or copy the message and paste it into a DM. The form prepares a message for you to send.</p>
-    <div id="result" hidden>
-      <label>Your inquiry message<textarea id="message" rows="8" readonly></textarea></label>
-      <div class="actions">
-        <button type="button" id="copy">Copy message</button>
-        <a class="action" href="https://www.instagram.com/maritakayama_ballet/" target="_blank" rel="noopener">Open @maritakayama_ballet on Instagram</a>
+  <a class="back" href="private-lessons.html">← Private Lessons</a>
+  <p class="eyebrow">Private lessons</p>
+  <h1>Book a lesson</h1>
+  <p class="lead">Pick a few times that suit you and tell Mari how to reach you. Mari will message you to confirm. It takes about a minute.</p>
+
+  <form id="book" novalidate>
+    <section class="step" aria-labelledby="s1">
+      <div class="step-head"><span class="step-num">1</span><h2 class="step-title" id="s1">Your lesson</h2></div>
+      <p class="q">Where?</p>
+      <div class="chips" data-group="place" data-single>
+        <button type="button" class="chip" data-value="FuncPhysio">FuncPhysio Physical Therapy</button>
+        <button type="button" class="chip" data-value="Studio">A dance studio</button>
+        <button type="button" class="chip" data-value="Travel">At my place</button>
+        <button type="button" class="chip" data-value="Any">Any is fine</button>
       </div>
-      <p class="help">On Instagram, tap Message, then paste and send your inquiry.</p>
-      <p id="status" role="status"></p>
+      <label class="field" id="area-field" hidden>Neighborhood or venue <small>(optional)</small><input type="text" name="area" maxlength="120" placeholder="e.g. Upper West Side"></label>
+      <p class="q">Who is the lesson for?</p>
+      <div class="chips" data-group="age" data-single>
+        <button type="button" class="chip" data-value="Child">Child</button>
+        <button type="button" class="chip" data-value="Teen">Teen</button>
+        <button type="button" class="chip" data-value="Adult">Adult</button>
+      </div>
+      <p class="q">Ballet experience</p>
+      <div class="chips" data-group="level" data-single>
+        <button type="button" class="chip" data-value="New to ballet">New to ballet</button>
+        <button type="button" class="chip" data-value="Some classes">Some classes</button>
+        <button type="button" class="chip" data-value="Trains regularly">Trains regularly</button>
+      </div>
+    </section>
+
+    <section class="step" aria-labelledby="s2">
+      <div class="step-head"><span class="step-num">2</span><h2 class="step-title" id="s2">Times that suit you</h2></div>
+      <p class="q">Choose up to 3 <small>(New York time)</small></p>
+      <div class="week-nav">
+        <button type="button" id="prev-week" aria-label="Previous week">‹</button>
+        <span class="week-label" id="week-label"></span>
+        <button type="button" id="next-week" aria-label="Next week">›</button>
+      </div>
+      <div class="days" id="days"></div>
+      <div class="legend"><span class="l-open">Likely open</span><span class="l-maybe">Ask Mari</span><span class="l-no">Not available</span></div>
+      <p class="note-flex">Mari’s schedule changes often, so this is a guide. She will confirm the time with you.</p>
+      <ol class="picked" id="picked"></ol>
+      <p class="picked-empty" id="picked-empty">No times chosen yet.</p>
+    </section>
+
+    <section class="step" aria-labelledby="s3">
+      <div class="step-head"><span class="step-num">3</span><h2 class="step-title" id="s3">How can Mari reach you?</h2></div>
+      <label class="field">Your name<input type="text" name="name" autocomplete="name" maxlength="100" required></label>
+      <p class="q">Reach me by</p>
+      <div class="chips" data-group="via" data-single>
+        <button type="button" class="chip" data-value="Instagram">Instagram</button>
+        <button type="button" class="chip" data-value="WhatsApp">WhatsApp</button>
+        <button type="button" class="chip" data-value="LINE">LINE</button>
+        <button type="button" class="chip" data-value="Email">Email</button>
+      </div>
+      <label class="field" id="contact-field" hidden><span id="contact-label">Your contact</span><input type="text" name="contact" maxlength="120" id="contact-input"></label>
+      <p class="contact-hint" id="contact-hint" hidden></p>
+      <label class="field">Anything else? <small>(optional)</small><textarea name="note" rows="3" maxlength="700" placeholder="Goals, questions, or other times that work"></textarea></label>
+    </section>
+
+    <div class="send">
+      <button type="submit" class="btn" id="send-btn">Send request</button>
+      <p class="send-help">Nothing is booked until Mari confirms with you.</p>
+      <p class="error" id="error" role="alert" hidden></p>
     </div>
   </form>
-  <p class="help">Email <a href="mailto:maritakayama.official@gmail.com">maritakayama.official@gmail.com</a></p>
+
+  <div class="done" id="done" hidden>
+    <h2 id="done-title">Thank you!</h2>
+    <p id="done-text"></p>
+    <div class="fallback" id="fallback" hidden>
+      <a class="btn" id="fallback-ig" href="https://ig.me/m/maritakayama_ballet" target="_blank" rel="noopener">Copy and open Instagram DM</a>
+      <a class="btn ghost" id="fallback-mail" href="#">Send by email</a>
+      <textarea id="fallback-message" rows="8" readonly aria-label="Your request"></textarea>
+      <p class="contact-hint" id="copied" role="status"></p>
+    </div>
+    <p style="margin-top:18px"><a href="private-lessons.html">Back to Private Lessons</a></p>
+  </div>
 </main>
+<footer>Mari Takayama · Classical Ballet · New York</footer>
+
 <script>
-const form = document.querySelector('#inquiry');
-const message = document.querySelector('#message');
-const result = document.querySelector('#result');
-const status = document.querySelector('#status');
-function showOtherExperience() {
-  document.querySelector('#experience-other').hidden =
-    !form.querySelector('[name="background"][value="Other"]').checked;
-}
-form.querySelectorAll('[name="background"]').forEach(input =>
-  input.addEventListener('change', showOtherExperience));
-showOtherExperience();
-function showPlaceArea() {
-  document.querySelector('#place-area').hidden = !form.querySelector('[name="place"][value="Travel"]').checked;
-}
-form.querySelectorAll('[name="place"]').forEach(input => input.addEventListener('change', showPlaceArea));
-if (new URLSearchParams(location.search).get('place') === 'travel') form.querySelector('[name="place"][value="Travel"]').checked = true;
-showPlaceArea();
-form.addEventListener('submit', event => {
-  event.preventDefault();
-  const values = new FormData(form);
-  const name = values.get('name').trim();
-  if (!name) {
-    form.elements.name.focus();
-    return;
+(() => {
+  // ---- Settings Mari can change -------------------------------------------------
+  // 1) Where requests are sent. Paste the Formspree address here (https://formspree.io/f/...)
+  //    so visitors can send with one tap. Empty = visitors send by Instagram DM or email.
+  const FORM_ENDPOINT = '';
+  // 2) The availability sheet: a Google Sheet "Published to the web" as CSV.
+  //    Columns: date (2026-11-20), morning, afternoon, evening — each ◯, △ or ×.
+  //    Empty = every time is shown as "likely open".
+  const AVAILABILITY_CSV = '';
+  const WEEKS = 4;          // how many weeks ahead people can choose
+  const MAIL = 'maritakayama.official@gmail.com';
+  // -------------------------------------------------------------------------------
+
+  const ja = () => window.mariSiteLanguage === 'ja';
+  const T = {
+    slots: { en: ['Morning', 'Afternoon', 'Evening'], ja: ['午前', '午後', '夜'] },
+    slotHours: { en: ['9–12', '12–5', '5–9'], ja: ['9〜12時', '12〜17時', '17〜21時'] },
+    days: { en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], ja: ['日', '月', '火', '水', '木', '金', '土'] },
+    choice: { en: ['1st choice', '2nd choice', '3rd choice'], ja: ['第1希望', '第2希望', '第3希望'] },
+    remove: { en: 'Remove', ja: '外す' },
+    contactLabel: {
+      Instagram: { en: 'Your Instagram name', ja: 'あなたの Instagram の名前' },
+      WhatsApp: { en: 'Your WhatsApp number', ja: 'あなたの WhatsApp の電話番号' },
+      LINE: { en: 'Your LINE ID', ja: 'あなたの LINE ID' },
+      Email: { en: 'Your email', ja: 'あなたのメールアドレス' }
+    },
+    contactHint: {
+      Instagram: { en: 'Mari will message you from @maritakayama_ballet.', ja: '@maritakayama_ballet から Mari が連絡します。' },
+      WhatsApp: { en: 'Include the country code, e.g. +1 212 555 0100.', ja: '国番号から入れてください（例：+1 212 555 0100）。' },
+      LINE: { en: 'Please allow others to find you by ID in LINE settings.', ja: 'LINE の設定で「IDによる友だち追加を許可」をオンにしてください。' },
+      Email: { en: 'Mari will reply from ' + MAIL + '.', ja: MAIL + ' から返信します。' }
+    },
+    errors: {
+      name: { en: 'Please write your name.', ja: 'お名前を入れてください。' },
+      times: { en: 'Please choose at least one time.', ja: '希望の時間を1つ以上選んでください。' },
+      via: { en: 'Please choose how Mari can reach you.', ja: '連絡方法を選んでください。' },
+      contact: { en: 'Please write your contact.', ja: '連絡先を入れてください。' },
+      send: { en: 'Sorry, the request could not be sent. Please try again, or use Instagram DM or email.', ja: '送信できませんでした。もう一度お試しいただくか、Instagram の DM かメールでお送りください。' }
+    },
+    week: { en: (a, b) => a + ' – ' + b, ja: (a, b) => a + ' 〜 ' + b },
+    doneSent: { en: v => 'Your request was sent. Mari will message you on ' + v + ' within one or two days.', ja: v => 'リクエストを送りました。1〜2日以内に Mari から ' + v + ' で連絡します。' },
+    doneManual: { en: 'Send your request to Mari with one of these:', ja: '次のどちらかで Mari に送ってください。' },
+    titleSent: { en: 'Thank you!', ja: 'ありがとうございます' },
+    titleManual: { en: 'One more step', ja: 'あと少しです' },
+    copied: { en: 'Copied. Paste it into the Instagram message and send.', ja: 'コピーしました。Instagram のメッセージに貼り付けて送ってください。' },
+    sending: { en: 'Sending…', ja: '送信中…' }
+  };
+  const t = o => o[ja() ? 'ja' : 'en'];
+
+  const form = document.getElementById('book');
+  const picks = [];               // [{date: Date, slot: 0..2}]
+  const choice = {};              // place, age, level, via
+  let weekIndex = 0;
+  let availability = {};          // 'YYYY-MM-DD' -> ['o'|'m'|'x', ...]
+
+  const start = new Date(); start.setHours(0, 0, 0, 0); start.setDate(start.getDate() + 1);
+  const monday = d => { const x = new Date(d); const k = (x.getDay() + 6) % 7; x.setDate(x.getDate() - k); return x; };
+  const firstWeek = monday(start);
+  const key = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const fmtDay = d => ja() ? (d.getMonth() + 1) + '/' + d.getDate() : (d.getMonth() + 1) + '/' + d.getDate();
+  const fmtLong = (d, s) => ja()
+    ? (d.getMonth() + 1) + '月' + d.getDate() + '日（' + T.days.ja[d.getDay()] + '）' + T.slots.ja[s] + '（' + T.slotHours.ja[s] + '）'
+    : T.days.en[d.getDay()] + ' ' + (d.getMonth() + 1) + '/' + d.getDate() + ', ' + T.slots.en[s] + ' (' + T.slotHours.en[s] + ')';
+  const stateOf = (d, s) => { const a = availability[key(d)]; return a ? a[s] : 'o'; };
+
+  // chips (single choice)
+  form.querySelectorAll('.chips[data-group]').forEach(group => {
+    group.addEventListener('click', e => {
+      const b = e.target.closest('.chip'); if (!b) return;
+      const name = group.dataset.group; const on = b.getAttribute('aria-pressed') !== 'true';
+      group.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
+      if (on) { b.setAttribute('aria-pressed', 'true'); choice[name] = b.dataset.value; } else delete choice[name];
+      if (name === 'place') document.getElementById('area-field').hidden = choice.place !== 'Travel';
+      if (name === 'via') showContact();
+    });
+    group.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
+  });
+  if (new URLSearchParams(location.search).get('place') === 'travel') form.querySelector('[data-group=place] [data-value=Travel]').click();
+
+  function showContact() {
+    const f = document.getElementById('contact-field'), hint = document.getElementById('contact-hint'), input = document.getElementById('contact-input');
+    f.hidden = hint.hidden = !choice.via;
+    if (!choice.via) return;
+    document.getElementById('contact-label').textContent = t(T.contactLabel[choice.via]);
+    hint.textContent = t(T.contactHint[choice.via]);
+    input.type = choice.via === 'Email' ? 'email' : choice.via === 'WhatsApp' ? 'tel' : 'text';
+    input.autocomplete = choice.via === 'Email' ? 'email' : choice.via === 'WhatsApp' ? 'tel' : 'off';
+    input.placeholder = choice.via === 'Instagram' ? '@yourname' : '';
   }
-  const days = values.getAll('days').join(', ') || 'Flexible';
-  const times = values.getAll('times').join(', ') || 'Flexible';
-  const selectedExperience = values.get("experience");
-  const otherExperience = values.get("experienceOther").trim();
-  const experience = selectedExperience;
-  const background = values.getAll("background").map(value => value === "Other" && otherExperience ? "Other: " + otherExperience : value).join(", ");
-  const goals = [...values.getAll('focus'), values.get('goals').trim()].filter(Boolean).join(', ');
-  message.value = [
-    'Hi Mari, I’d like to ask about a private ballet lesson.',
-    '',
-    'Name: ' + name,
-    values.get("ageGroup") && values.get("ageGroup") !== "declined" && "Student’s age group: " + values.get("ageGroup"),
-    experience && 'Ballet experience: ' + experience,
-    background && 'Performance background: ' + background,
-    values.get('place') && 'Lesson place: ' + ({FuncPhysio:'At FuncPhysio Physical Therapy',Studio:'At a dance studio',Travel:'At my place (travel lesson)',Either:'Any is fine'}[values.get('place')]) + (values.get('place')==='Travel' && values.get('placeArea').trim() ? ' – ' + values.get('placeArea').trim() : ''),
-    'Days that usually work: ' + days,
-    'Preferred times (New York): ' + times,
-    goals && 'Lesson goals: ' + goals,
-    '',
-    'Please let me know what times might work. Thank you!'
-  ].filter(line => line !== false).filter((line, index) => line || index === 1).join('\n');
-  if(window.mariSiteLanguage==='ja'){
-    const t=value=>window.mariTranslate?.(value)||value;
-    message.value=[
-      'Mariさん、プライベート・バレエレッスンについて相談したいです。','',
-      'お名前：'+name,
-      values.get('ageGroup')&&values.get('ageGroup')!=='declined'&&'年齢層：'+t(values.get('ageGroup')),
-      experience&&'バレエ経験：'+({'No ballet experience':'初めてです','Some ballet experience':'習ったことがあります','Regular ballet training':'定期的にレッスンを受けています','Not sure':'よく分かりません'}[experience]||experience),
-      values.get('place')&&'レッスンの場所：'+({FuncPhysio:'FuncPhysio Physical Therapy',Studio:'ダンススタジオ',Travel:'出張レッスン（自宅・会場など）',Either:'どこでも'}[values.get('place')])+(values.get('place')==='Travel'&&values.get('placeArea').trim()?'（'+values.get('placeArea').trim()+'）':''),
-      background&&'舞台・パフォーマンス経験：'+values.getAll('background').map(value=>value==='Other'&&otherExperience?'その他：'+otherExperience:t(value)).join('、'),
-      '都合のよい曜日：'+(values.getAll('days').map(t).join('、')||'相談できます'),
-      '希望の時間帯（ニューヨーク時間）：'+(values.getAll('times').map(t).join('、')||'相談できます'),
-      goals&&'レッスンの希望：'+[...values.getAll('focus').map(t),values.get('goals').trim()].filter(Boolean).join('、'),'',
-      'ご都合のよい日時を教えていただけますと幸いです。よろしくお願いいたします。'
-    ].filter(line=>line!==false).filter((line,index)=>line||index===1).join('\n');
+
+  // week calendar
+  function renderWeek() {
+    const days = document.getElementById('days'); days.textContent = '';
+    const ws = new Date(firstWeek); ws.setDate(ws.getDate() + weekIndex * 7);
+    const we = new Date(ws); we.setDate(we.getDate() + 6);
+    document.getElementById('week-label').textContent = t(T.week)(fmtDay(ws), fmtDay(we));
+    document.getElementById('prev-week').disabled = weekIndex === 0;
+    document.getElementById('next-week').disabled = weekIndex >= WEEKS - 1;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(ws); d.setDate(d.getDate() + i);
+      const row = document.createElement('div'); row.className = 'day';
+      const name = document.createElement('div'); name.className = 'day-name';
+      name.innerHTML = '<span></span><small></small>';
+      name.firstChild.textContent = ja() ? T.days.ja[d.getDay()] + '曜日' : T.days.en[d.getDay()];
+      name.lastChild.textContent = fmtDay(d);
+      const slots = document.createElement('div'); slots.className = 'slots';
+      for (let s = 0; s < 3; s++) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'slot';
+        b.textContent = t(T.slots)[s];
+        const st = d < start ? 'x' : stateOf(d, s);
+        if (st === 'x') b.disabled = true;
+        if (st === 'm') b.classList.add('maybe');
+        const at = picks.findIndex(p => key(p.date) === key(d) && p.slot === s);
+        b.setAttribute('aria-pressed', at >= 0 ? 'true' : 'false');
+        b.setAttribute('aria-label', fmtLong(d, s));
+        if (at >= 0) { const r = document.createElement('span'); r.className = 'rank'; r.textContent = at + 1; b.append(r); }
+        b.addEventListener('click', () => togglePick(d, s));
+        slots.append(b);
+      }
+      row.append(name, slots); days.append(row);
+    }
   }
-  result.hidden = false;
-  status.textContent = '';
-  if (event.submitter?.value === 'email') {
-    const subject = encodeURIComponent(window.mariSiteLanguage==='ja'?'個人バレエレッスンのお問い合わせ':'Private ballet lesson inquiry');
-    location.href = 'mailto:maritakayama.official@gmail.com?subject=' + subject + '&body=' + encodeURIComponent(message.value);
-  } else {
-    message.focus();
+  function togglePick(d, s) {
+    const at = picks.findIndex(p => key(p.date) === key(d) && p.slot === s);
+    if (at >= 0) picks.splice(at, 1); else { if (picks.length >= 3) picks.shift(); picks.push({ date: new Date(d), slot: s }); }
+    renderWeek(); renderPicks();
   }
-});
-document.querySelector('#copy').addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(message.value);
-    status.textContent = window.mariSiteLanguage==='ja'?'コピーしました。メールやDMに貼り付けて送信してください。':'Copied. Paste the message into your email or DM.';
-  } catch {
-    message.focus();
-    message.select();
-    status.textContent = window.mariSiteLanguage==='ja'?'上の文章を選択してコピーしてください。':'Select and copy the message above.';
+  function renderPicks() {
+    const ol = document.getElementById('picked'); ol.textContent = '';
+    document.getElementById('picked-empty').hidden = picks.length > 0;
+    picks.forEach((p, i) => {
+      const li = document.createElement('li');
+      const span = document.createElement('span'); span.textContent = t(T.choice)[i] + ' · ' + fmtLong(p.date, p.slot);
+      const rm = document.createElement('button'); rm.type = 'button'; rm.textContent = t(T.remove);
+      rm.addEventListener('click', () => { picks.splice(i, 1); renderWeek(); renderPicks(); });
+      li.append(span, rm); ol.append(li);
+    });
   }
-});
+  document.getElementById('prev-week').addEventListener('click', () => { if (weekIndex > 0) { weekIndex--; renderWeek(); } });
+  document.getElementById('next-week').addEventListener('click', () => { if (weekIndex < WEEKS - 1) { weekIndex++; renderWeek(); } });
+
+  // availability sheet (optional)
+  function parseCSV(text) {
+    const map = {}; const norm = v => { v = (v || '').trim(); return /^(×|x|✕|no|NG)$/i.test(v) ? 'x' : /^(△|\?|maybe|ask)$/i.test(v) ? 'm' : 'o'; };
+    text.split(/\r?\n/).forEach(line => {
+      const c = line.split(',').map(x => x.replace(/^"|"$/g, '').trim());
+      const m = (c[0] || '').match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/); if (!m) return;
+      map[m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0')] = [norm(c[1]), norm(c[2]), norm(c[3])];
+    });
+    return map;
+  }
+  if (AVAILABILITY_CSV) fetch(AVAILABILITY_CSV).then(r => r.ok ? r.text() : '').then(txt => { if (txt) { availability = parseCSV(txt); renderWeek(); } }).catch(() => {});
+
+  // the request message
+  function message() {
+    const lines = ja() ? [
+      'Mariさん、個人レッスンの予約をお願いしたいです。', '',
+      'お名前：' + form.name.value.trim(),
+      choice.place && '場所：' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'ダンススタジオ', Travel: '自宅・会場（出張）', Any: 'どこでも' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? '（' + form.area.value.trim() + '）' : ''),
+      choice.age && '対象：' + ({ Child: '子ども', Teen: '10代', Adult: '大人' }[choice.age]),
+      choice.level && 'バレエ経験：' + ({ 'New to ballet': '初めて', 'Some classes': '少し習ったことがある', 'Trains regularly': '定期的に練習している' }[choice.level]),
+      '', '希望の日時（ニューヨーク時間）：', ...picks.map((p, i) => T.choice.ja[i] + '　' + fmtLong(p.date, p.slot)), '',
+      '連絡方法：' + choice.via + '　' + form.contact.value.trim(),
+      form.note.value.trim() && '\nメッセージ：' + form.note.value.trim()
+    ] : [
+      'Hi Mari, I would like to book a private lesson.', '',
+      'Name: ' + form.name.value.trim(),
+      choice.place && 'Place: ' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'A dance studio', Travel: 'At my place', Any: 'Any is fine' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? ' (' + form.area.value.trim() + ')' : ''),
+      choice.age && 'For: ' + choice.age,
+      choice.level && 'Experience: ' + choice.level,
+      '', 'Times that suit me (New York time):', ...picks.map((p, i) => T.choice.en[i] + ': ' + fmtLong(p.date, p.slot)), '',
+      'Reach me by ' + choice.via + ': ' + form.contact.value.trim(),
+      form.note.value.trim() && '\nNote: ' + form.note.value.trim()
+    ];
+    return lines.filter(l => l !== undefined && l !== false && l !== null).join('\n');
+  }
+
+  const err = document.getElementById('error');
+  form.addEventListener('submit', async e => {
+    e.preventDefault(); err.hidden = true;
+    const fail = (m, el) => { err.textContent = t(m); err.hidden = false; if (el) el.focus(); };
+    if (!form.name.value.trim()) return fail(T.errors.name, form.name);
+    if (!picks.length) return fail(T.errors.times);
+    if (!choice.via) return fail(T.errors.via);
+    if (!form.contact.value.trim()) return fail(T.errors.contact, form.contact);
+    const text = message();
+    const viaName = { Instagram: 'Instagram', WhatsApp: 'WhatsApp', LINE: 'LINE', Email: ja() ? 'メール' : 'email' }[choice.via];
+    if (FORM_ENDPOINT) {
+      const btn = document.getElementById('send-btn'); const label = btn.textContent;
+      btn.disabled = true; btn.textContent = t(T.sending);
+      try {
+        const res = await fetch(FORM_ENDPOINT, { method: 'POST', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ _subject: 'Lesson request — ' + form.name.value.trim(), name: form.name.value.trim(), reach_by: choice.via, contact: form.contact.value.trim(), ...(choice.via === 'Email' ? { email: form.contact.value.trim() } : {}), message: text }) });
+        if (!res.ok) throw new Error('send');
+        finish(t(T.doneSent)(viaName), false, text);
+      } catch { fail(T.errors.send); btn.disabled = false; btn.textContent = label; }
+    } else finish(t(T.doneManual), true, text);
+  });
+
+  function finish(msg, manual, text) {
+    form.hidden = true;
+    const done = document.getElementById('done'); done.hidden = false;
+    document.getElementById('done-title').textContent = t(manual ? T.titleManual : T.titleSent);
+    document.getElementById('done-text').textContent = msg;
+    document.getElementById('fallback').hidden = !manual;
+    if (manual) {
+      document.getElementById('fallback-message').value = text;
+      document.getElementById('fallback-mail').href = 'mailto:' + MAIL + '?subject=' + encodeURIComponent(ja() ? '個人レッスンの予約' : 'Private lesson request') + '&body=' + encodeURIComponent(text);
+    }
+    done.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  document.getElementById('fallback-ig').addEventListener('click', async () => {
+    const box = document.getElementById('fallback-message');
+    try { await navigator.clipboard.writeText(box.value); } catch { box.select(); try { document.execCommand('copy'); } catch {} }
+    document.getElementById('copied').textContent = t(T.copied);
+  });
+
+  // redraw dynamic parts when the language changes
+  document.addEventListener('mari-language-change', () => { renderWeek(); renderPicks(); showContact(); });
+  renderWeek(); renderPicks();
+})();
 </script>
-<script src="site-language.js?v=40"></script>
+<script src="site-language.js?v=41"></script>
 <script src="site-motion.js?v=9"></script>
 </body>
 </html>
