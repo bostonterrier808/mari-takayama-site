@@ -10,6 +10,7 @@ Two people edit this repo with different AI tools (Claude Code and Codex). These
   - `about.html`, `private-lessons.html`, `radio-taiso.html`, `gallery.html`, `interview.html`, `credits.html`, `booking.html` — one page each
   - `lessons.html` — private lesson request form
 - `editor.html` — photo/text editor; pick the page to edit at the top. Each page keeps its editor settings in `<script id="photo-editor-settings">`.
+- `site-theme.css` — shared white-and-gold look (page titles, colors, buttons, menu), loaded by every page just before the editor styles. `site-motion.js` — gentle fade-in on scroll for every page except Home.
 - `img/` — photos used by the page.
 - Preview: open `index.html` in a browser.
 - Published with GitHub Pages from the `main` branch.

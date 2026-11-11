@@ -1,0 +1,133 @@
+/* Site theme: white and gold, shared by every page except Home (Home has its own blocks with the same look).
+   Loaded after each page's own CSS and before the editor's styles, so editor adjustments still win. */
+:root {
+  --ivory: #faf6ee;
+  --gold: #b0883a;
+  --gold-deep: #9a742c;
+  --gold-ink: #876221;
+  --gold-line: #c9a663;
+  --slate: #876221;            /* old blue accent → gold, so links and menu accents match */
+  --ink-soft: #6a6670;
+}
+body { background: #fff; }
+a { color: inherit; }
+
+/* ---------- Page titles: plain white with a thin gold line ---------- */
+.banner, .plain-banner { position: relative; background: #fff !important; color: var(--ink) !important; border-bottom: 1px solid var(--gold-line); }
+.banner > img { display: none !important; }
+.banner::before { display: none !important; }
+.banner .wrap, .plain-banner .wrap { position: static !important; display: block !important; inset: auto !important; padding-block: clamp(3.5rem, 8vw, 6rem) clamp(2.25rem, 4vw, 3.25rem) !important; border: 0 !important; }
+.banner h2, .plain-banner h2, #interview .plain-banner h2, .credits-page h1 {
+  margin: 0; padding: 0 !important; background: none !important; color: var(--ink) !important; text-shadow: none !important;
+  font-family: var(--font-display); font-weight: 400 !important; font-size: clamp(2.8rem, 6.4vw, 5.2rem) !important;
+  letter-spacing: 0.01em !important; text-transform: none !important; line-height: 1.02;
+}
+.banner h2::after, .plain-banner h2::after, .credits-page h1::after { content: ""; display: block; width: 4rem; height: 2px; margin-top: 1.1rem; background: var(--gold); }
+
+/* ---------- Section backgrounds: white / ivory only ---------- */
+.about, .works-body, .interview, .gallery-body, .booking-card, .booking-steps, .booking-info, .booking-share, .credits-page { background: #fff !important; color: var(--ink) !important; }
+.works-body, .booking-steps { background: var(--ivory) !important; }
+.gallery-body { background: var(--ivory) !important; }
+
+/* headings and small labels */
+.about h2, .row h3, .travel-lesson h3, .lesson-places h3, .booking-info h2, .booking-steps h2, .booking-share h2, .credits-page h2, .rates-page h2 { font-family: var(--font-display); font-weight: 400 !important; color: var(--ink); letter-spacing: 0.01em; }
+.about h2 { font-size: clamp(2.4rem, 4.6vw, 4rem) !important; line-height: 1.05; }
+.row .tag, .about .meta span, .credit-note, .booking-name, .interview-publication, #interview .interview-publication { color: var(--gold-ink) !important; letter-spacing: 0.22em !important; text-transform: uppercase; font-weight: 600; opacity: 1 !important; }
+.row .tag { font-size: 0.8rem !important; margin-bottom: 0.6rem !important; }
+.about p, .works-body p, .booking-card-text > p, .credits-lead { color: var(--ink-soft); }
+.about .meta { border-top: 1px solid var(--gold-line) !important; border-bottom: 1px solid var(--gold-line); padding-block: 1rem !important; }
+.about .meta li { color: var(--ink); font-style: italic; }
+.about .meta span { font-style: normal; font-size: 0.78rem !important; }
+.about img { aspect-ratio: auto !important; height: auto !important; object-fit: contain !important; }
+
+/* ---------- Buttons: gold ---------- */
+.lesson-inquiry-button, .booking-button, .booking-button.dark, #interview .interview-feature-link, .rates-page .button, .form-actions button, button.primary {
+  background: var(--gold-deep) !important; border: 1px solid var(--gold-deep) !important; color: #fff !important; border-radius: 999px !important;
+}
+.lesson-inquiry-button { display: inline-flex !important; gap: 1rem; padding: 0.75rem 1.5rem !important; font-size: 1.15rem !important; }
+.lesson-inquiry-button:hover, .booking-button:hover, #interview .interview-feature-link:hover { background: transparent !important; color: var(--gold-ink) !important; }
+.booking-button.ghost { background: transparent !important; color: var(--gold-ink) !important; border: 1.5px solid var(--gold-deep) !important; }
+.booking-button.ghost:hover { background: var(--gold-deep) !important; color: #fff !important; }
+.credits-link, .credits-empty a, .taiso-mail, .home-link, .booking-contact a, .rates-page a { color: var(--gold-ink) !important; text-decoration-color: var(--gold-line); }
+
+/* ---------- Private Lessons / Radio Taiso ---------- */
+.lesson-inquiry { background: #fff !important; color: var(--ink) !important; border: 1px solid var(--gold-line) !important; border-radius: 0 !important; box-shadow: none !important; }
+.lesson-inquiry-title { font-weight: 400 !important; }
+.place-card { border-color: var(--gold-line) !important; border-radius: 0 !important; background: #fff !important; color: var(--ink) !important; }
+.place-card h4 { font-weight: 500 !important; }
+.travel-lesson { border-color: var(--gold-line) !important; border-radius: 0 !important; background: #fff; }
+.travel-points li { border-color: var(--gold-line) !important; color: var(--ink); }
+.taiso-info div { border-color: var(--gold-line) !important; }
+.taiso-info dt { color: var(--gold-ink) !important; letter-spacing: 0.18em; opacity: 1 !important; }
+.taiso-info dd, .taiso-join { color: var(--ink) !important; }
+
+/* ---------- Gallery ---------- */
+#gallery #grid > button { outline-color: var(--gold-line); border-color: var(--gold-line) !important; }
+#gallery #grid > button::after { background: #fff !important; color: var(--gold-ink) !important; }
+
+/* ---------- Interview ---------- */
+#interview, #interview .plain-banner { color: var(--ink) !important; }
+#interview .published-interview, #interview .qa article { border-color: var(--gold-line) !important; border-radius: 0 !important; box-shadow: none !important; }
+#interview .press-language-nav a { border-color: var(--gold-line) !important; color: var(--gold-ink) !important; background: #fff !important; }
+#interview .press-language-title { font-family: var(--font-display); font-weight: 400 !important; }
+#interview .interview-feature-title { font-family: var(--font-display); font-weight: 500 !important; }
+#interview .interview-feature-summary { font-family: var(--font-body) !important; color: var(--ink-soft) !important; }
+
+/* ---------- Credits / Rates ---------- */
+.credit-list, .credit-list li, .rates-table th, .rates-table td { border-color: var(--gold-line) !important; }
+.credits-empty { background: var(--ivory) !important; border-left-color: var(--gold) !important; }
+.credit-work { font-weight: 500 !important; }
+
+/* ---------- Book a Performance ---------- */
+.booking-card { border-bottom: 1px solid var(--gold-line); }
+.booking-card h1 { color: var(--ink); font-weight: 400 !important; }
+.booking-contact { color: var(--ink-soft) !important; }
+.booking-photo { aspect-ratio: auto !important; height: auto !important; object-fit: contain !important; }
+.booking-list, .booking-list li { border-color: var(--gold-line) !important; }
+.booking-tags li { border-color: var(--gold-line) !important; }
+.booking-steps li::marker { color: var(--gold-ink) !important; }
+.booking-qr { border-color: var(--gold-line) !important; }
+
+/* ---------- Footer ---------- */
+footer { border-top: 1px solid var(--gold-line); }
+footer nav a:hover { color: var(--gold-ink) !important; }
+footer .copy { border-color: var(--gold-line) !important; }
+
+/* ---------- Menu (PC and the ≡ menu on phones) ---------- */
+header.top { border-bottom-color: var(--gold-line) !important; }
+header.top #site-menu > li > a::after { background: var(--gold) !important; }
+header.top #site-menu .menu-sub a:hover, header.top #site-menu .menu-sub a[aria-current="page"] { background: var(--ivory) !important; color: var(--gold-ink) !important; }
+@media (max-width: 1180px) {
+  header.top .menu-toggle { background: #fff !important; color: var(--ink) !important; border-color: var(--gold) !important; }
+  header.top.menu-open .menu-toggle { background: var(--gold-deep) !important; color: #fff !important; border-color: var(--gold-deep) !important; }
+  header.top #site-menu { background: var(--ivory) !important; }
+  header.top #site-menu > li { border-color: color-mix(in srgb, var(--gold) 35%, transparent) !important; }
+  header.top #site-menu > li.menu-group { color: var(--gold-ink) !important; letter-spacing: 0.26em !important; }
+  header.top #site-menu > li > a { font-family: var(--font-display) !important; font-weight: 500 !important; font-size: 1.3rem !important; letter-spacing: 0.02em !important; }
+  header.top #site-menu > li > a::after { background: none !important; color: var(--gold) !important; }
+  header.top #site-menu > li:not(.menu-group):not(.menu-solo) + li:not(.menu-group):not(.menu-solo) > a { border-top-color: color-mix(in srgb, var(--gold) 25%, transparent) !important; }
+  header.top #site-menu > li > a[aria-current="page"] { box-shadow: inset 3px 0 0 var(--gold) !important; color: var(--gold-ink) !important; }
+  header.top #site-menu .menu-desc { font-family: var(--font-body); font-style: italic; }
+  header.top #site-menu .menu-sub a { border-color: var(--gold-line) !important; font-family: var(--font-display); font-size: 1rem !important; }
+  header.top #site-menu .menu-sub a[aria-current="page"] { background: var(--gold-deep) !important; color: #fff !important; border-color: var(--gold-deep) !important; }
+  header.top #site-menu > li.menu-solo > a { border-color: var(--gold-deep) !important; font-family: var(--font-display) !important; font-size: 1.15rem !important; }
+  header.top #site-menu > li.menu-solo:last-child > a { background: var(--gold-deep) !important; color: #fff !important; }
+  html[lang=ja] header.top #site-menu > li > a { font-family: "Noto Serif JP", var(--font-display) !important; font-size: 1.05rem !important; }
+}
+
+/* ---------- Gentle motion: parts fade up as they come into view ---------- */
+html.site-reveal .rv { opacity: 0; transform: translateY(24px); transition: opacity 0.9s ease, transform 0.9s cubic-bezier(.2,.7,.2,1); transition-delay: var(--rv-delay, 0s); }
+html.site-reveal .rv.in { opacity: 1; transform: none; }
+@keyframes site-title-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes site-line-in { from { width: 0; } to { width: 4rem; } }
+.banner h2, .plain-banner h2, .credits-page h1 { animation: site-title-in 1s 0.15s cubic-bezier(.2,.7,.2,1) both; }
+.banner h2::after, .plain-banner h2::after, .credits-page h1::after { animation: site-line-in 1.1s 0.6s cubic-bezier(.2,.7,.2,1) both; }
+@media (prefers-reduced-motion: reduce) {
+  html.site-reveal .rv { opacity: 1; transform: none; transition: none; }
+  .banner h2, .plain-banner h2, .credits-page h1, .banner h2::after, .plain-banner h2::after, .credits-page h1::after { animation: none; }
+}
+
+/* ---------- Language switch (English / 日本語) ---------- */
+header.top .site-language-switch { border-color: var(--gold-line) !important; background: #fff !important; }
+header.top .site-language-switch button { color: var(--gold-ink) !important; background: transparent !important; }
+header.top .site-language-switch button[aria-pressed="true"] { background: var(--gold-deep) !important; color: #fff !important; }
