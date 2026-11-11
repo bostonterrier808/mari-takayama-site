@@ -79,6 +79,10 @@
   .picked li button { appearance: none; border: 0; background: none; color: var(--muted); font: .9rem var(--font-body); cursor: pointer; text-decoration: underline; }
   .picked-empty { color: var(--muted); font-size: .95rem; margin: 12px 0 0; }
   .note-flex { margin: 10px 0 0; font-size: .92rem; color: var(--muted); }
+  .tz-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 12px; font-size: .95rem; color: var(--muted); }
+  .tz-row select { appearance: none; max-width: 100%; border: 1px solid var(--champagne-line); border-radius: 0; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237d6845'/%3E%3C/svg%3E") no-repeat right 10px center; padding: 8px 30px 8px 10px; color: var(--ink); font: 1rem var(--font-body); cursor: pointer; }
+  .tz-row select:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: 2px; }
+  .ny { display: block; font-size: .8rem; color: var(--muted); }
 
   label.field { display: block; margin: 14px 0 0; font-weight: 500; }
   label.field small { font-weight: 400; color: var(--muted); }
@@ -151,8 +155,10 @@
         <button type="button" class="chip" data-value="FuncPhysio">FuncPhysio Physical Therapy</button>
         <button type="button" class="chip" data-value="Studio">A dance studio</button>
         <button type="button" class="chip" data-value="Travel">At my place</button>
+        <button type="button" class="chip" data-value="Zoom">Online (Zoom)</button>
         <button type="button" class="chip" data-value="Any">Any is fine</button>
       </div>
+      <p class="contact-hint" id="zoom-note" hidden>From anywhere — the U.S., Japan or elsewhere. Times are shown in your own time zone.</p>
       <label class="field" id="area-field" hidden>Neighborhood or venue <small>(optional)</small><input type="text" name="area" maxlength="120" placeholder="e.g. Upper West Side"></label>
       <div id="first-only">
       <p class="q">Who is the lesson for?</p>
@@ -172,7 +178,8 @@
 
     <section class="step" aria-labelledby="s2">
       <div class="step-head"><span class="step-num">2</span><h2 class="step-title" id="s2">Choose a time</h2></div>
-      <p class="q">Pick a day, then a start time <small>(New York time)</small></p>
+      <p class="q">Pick a day, then a start time</p>
+      <label class="tz-row"><span id="tz-label">Times shown in</span> <select id="tz"></select></label>
       <div class="date-strip" id="dates" role="listbox" aria-label="Days"></div>
       <p class="day-title" id="day-title"></p>
       <div class="times" id="times"></div>
@@ -283,30 +290,80 @@
   let selectedDay = null;
 
   const pad = n => String(n).padStart(2, '0');
-  const key = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
   const dayOf = k => new Date(k + 'T12:00:00');
   const mins = hhmm => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
   const hhmm = n => Math.floor(n / 60) + ':' + pad(n % 60);
   const lenMin = () => +(choice.len || 60);
   const clock = (n) => { if (ja()) return hhmm(n); let h = Math.floor(n / 60); const m = pad(n % 60), ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return h + ':' + m + ' ' + ap; };
   const fmtDate = k => { const d = dayOf(k); return ja() ? (d.getMonth() + 1) + '月' + d.getDate() + '日（' + T.days.ja[d.getDay()] + '）' : T.days.en[d.getDay()] + ' ' + (d.getMonth() + 1) + '/' + d.getDate(); };
-  const fmtLong = p => fmtDate(p.date) + (ja() ? ' ' : ', ') + clock(mins(p.start)) + (ja() ? '〜' : ' – ') + clock(mins(p.start) + lenMin());
-  const days = () => { const out = []; const d = new Date(); d.setHours(0, 0, 0, 0); for (let i = 0; i <= DAYS_AHEAD; i++) { const x = new Date(d); x.setDate(d.getDate() + i); out.push(key(x)); } return out; };
-  // open hours from the usual week, used until (or if) the sheet answers
+
+  // time zones: Mari's times are New York time; visitors can see them in their own time
+  const NY = 'America/New_York';
+  const ZONES = [
+    ['America/New_York', 'New York (Eastern)', 'ニューヨーク（東部時間）'],
+    ['America/Chicago', 'Chicago (Central)', 'シカゴ（中部時間）'],
+    ['America/Denver', 'Denver (Mountain)', 'デンバー（山岳部時間）'],
+    ['America/Phoenix', 'Arizona', 'アリゾナ'],
+    ['America/Los_Angeles', 'Los Angeles (Pacific)', 'ロサンゼルス（太平洋時間）'],
+    ['America/Anchorage', 'Alaska', 'アラスカ'],
+    ['Pacific/Honolulu', 'Hawaii', 'ハワイ'],
+    ['Asia/Tokyo', 'Japan', '日本時間'],
+    ['Europe/London', 'London', 'ロンドン']
+  ];
+  let here = NY;
+  try { here = Intl.DateTimeFormat().resolvedOptions().timeZone || NY; new Intl.DateTimeFormat('en', { timeZone: here }); } catch { here = NY; }
+  if (!ZONES.some(z => z[0] === here)) { const city = here.split('/').pop().replace(/_/g, ' '); ZONES.push([here, 'Your time (' + city + ')', 'あなたの地域の時間（' + city + '）']); }
+  let zone = NY, zoneTouched = false;
+  const zoneName = z => { const f = ZONES.find(x => x[0] === z); return f ? f[ja() ? 2 : 1] : z; };
+  const fmts = {};
+  function local(z, ms) {
+    const f = fmts[z] || (fmts[z] = new Intl.DateTimeFormat('en-US', { timeZone: z, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }));
+    const o = {}; f.formatToParts(new Date(ms)).forEach(x => { o[x.type] = x.value; });
+    return { key: o.year + '-' + o.month + '-' + o.day, min: (+o.hour % 24) * 60 + +o.minute };
+  }
+  // the moment a New York day + minutes happens
+  function nyAt(k, t) {
+    const [y, m, d] = k.split('-').map(Number); const want = Date.UTC(y, m - 1, d) + t * 60000; let at = want;
+    for (let i = 0; i < 2; i++) { const l = local(NY, at); const [a, b, c] = l.key.split('-').map(Number); at += want - (Date.UTC(a, b - 1, c) + l.min * 60000); }
+    return at;
+  }
+  const keysFrom = (k0, n) => { const [y, m, d] = k0.split('-').map(Number); const out = []; for (let i = 0; i < n; i++) { const x = new Date(Date.UTC(y, m - 1, d + i)); out.push(x.getUTCFullYear() + '-' + pad(x.getUTCMonth() + 1) + '-' + pad(x.getUTCDate())); } return out; };
+  const days = () => keysFrom(local(zone, Date.now()).key, DAYS_AHEAD + 2);
+  const whenIn = (z, p) => { const a = local(z, p.at), b = local(z, p.at + lenMin() * 60000); return fmtDate(a.key) + (ja() ? ' ' : ', ') + clock(a.min) + (ja() ? '〜' : ' – ') + clock(b.min); };
+  const fmtLong = p => whenIn(zone, p);
+  // open hours from the usual week (New York), used until (or if) the sheet answers
   function usualFree() {
     const out = {}; const earliest = Date.now() + MIN_NOTICE_HOURS * 3600000;
-    days().forEach(k => {
+    keysFrom(local(NY, Date.now()).key, DAYS_AHEAD + 1).forEach(k => {
       let r = (HOURS[dayOf(k).getDay()] || []).map(([a, b]) => [mins(a), mins(b)]);
-      const base = new Date(k + 'T00:00:00').getTime();
+      const base = nyAt(k, 0);
       r = r.map(([a, b]) => [Math.max(a, Math.ceil((earliest - base) / 60000)), b]).filter(([a, b]) => b - a >= 60);
       if (r.length) out[k] = r;
     });
     return out;
   }
-  function startsFor(k) {
-    const out = []; ((free || {})[k] || []).forEach(([a, b]) => { for (let t = Math.ceil(a / STEP) * STEP; t + lenMin() <= b; t += STEP) out.push(t); });
-    return out;
+  // every bookable start, in the chosen time zone
+  let slots = [];
+  function buildSlots() {
+    slots = [];
+    Object.keys(free || {}).forEach(k => free[k].forEach(([a, b]) => {
+      for (let t = Math.ceil(a / STEP) * STEP; t + lenMin() <= b; t += STEP) { const at = nyAt(k, t), l = local(zone, at); slots.push({ k, t, at, lk: l.key, lm: l.min }); }
+    }));
+    slots.sort((x, y) => x.at - y.at);
   }
+  const startsFor = lk => slots.filter(x => x.lk === lk);
+  function renderTz() {
+    const sel = document.getElementById('tz'); sel.textContent = '';
+    ZONES.forEach(([v]) => { const o = document.createElement('option'); o.value = v; o.textContent = zoneName(v); sel.append(o); });
+    sel.value = zone;
+  }
+  function setZone(z, byHand) {
+    if (byHand) zoneTouched = true;
+    if (z === zone) return; zone = z; renderTz();
+    if (free) { buildSlots(); selectedDay = picks.length ? local(zone, picks[0].at).key : null; renderDates(); renderTimes(); }
+    renderPicks();
+  }
+  document.getElementById('tz').addEventListener('change', e => setZone(e.target.value, true));
 
   // chips (single choice)
   form.querySelectorAll('.chips[data-group]').forEach(group => {
@@ -316,10 +373,14 @@
       if (!on && ['len', 'visit', 'via'].includes(name)) return; // a needed choice stays chosen
       group.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
       if (on) { b.setAttribute('aria-pressed', 'true'); choice[name] = b.dataset.value; } else delete choice[name];
-      if (name === 'place') document.getElementById('area-field').hidden = choice.place !== 'Travel';
+      if (name === 'place') {
+        document.getElementById('area-field').hidden = choice.place !== 'Travel';
+        document.getElementById('zoom-note').hidden = choice.place !== 'Zoom';
+        if (!zoneTouched) setZone(choice.place === 'Zoom' ? here : NY);
+      }
       if (name === 'via') showContact();
       if (name === 'visit') document.getElementById('first-only').hidden = choice.visit === 'Returning';
-      if (name === 'len') { for (let i = picks.length - 1; i >= 0; i--) if (!startsFor(picks[i].date).includes(mins(picks[i].start))) picks.splice(i, 1); renderDates(); renderTimes(); renderPicks(); }
+      if (name === 'len') { buildSlots(); for (let i = picks.length - 1; i >= 0; i--) if (!slots.some(x => x.at === picks[i].at)) picks.splice(i, 1); renderDates(); renderTimes(); renderPicks(); }
     });
     group.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
   });
@@ -332,9 +393,12 @@
     pick('visit', 'Returning');
     form.name.value = saved.name || ''; form.email.value = saved.email || ''; pick('via', saved.via || 'Email'); form.contact.value = saved.contact || '';
     pick('place', saved.place); if (saved.area) form.area.value = saved.area;
+    if (saved.tz && ZONES.some(z => z[0] === saved.tz)) setZone(saved.tz, true);
     document.getElementById('saved-note').hidden = false;
   }
-  if (new URLSearchParams(location.search).get('place') === 'travel') form.querySelector('[data-group=place] [data-value=Travel]').click();
+  const askPlace = new URLSearchParams(location.search).get('place');
+  if (askPlace === 'travel') pick('place', 'Travel');
+  if (askPlace === 'zoom') pick('place', 'Zoom');
 
   function showContact() {
     const f = document.getElementById('contact-field'), hint = document.getElementById('contact-hint'), input = document.getElementById('contact-input');
@@ -360,7 +424,7 @@
       b.disabled = !startsFor(k).length;
       b.setAttribute('aria-selected', k === selectedDay ? 'true' : 'false');
       b.setAttribute('aria-label', fmtDate(k));
-      if (picks.some(p => p.date === k)) b.classList.add('has-pick');
+      if (picks.some(p => local(zone, p.at).key === k)) b.classList.add('has-pick');
       b.addEventListener('click', () => { selectedDay = k; renderDates(); renderTimes(); });
       box.append(b);
     });
@@ -370,15 +434,15 @@
     const starts = startsFor(selectedDay);
     document.getElementById('day-title').textContent = selectedDay ? fmtDate(selectedDay) : '';
     document.getElementById('times-empty').hidden = starts.length > 0 || !free;
-    starts.forEach(n => {
-      const b = document.createElement('button'); b.type = 'button'; b.textContent = clock(n);
-      const at = picks.findIndex(p => p.date === selectedDay && mins(p.start) === n);
+    starts.forEach(sl => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = clock(sl.lm);
+      const at = picks.findIndex(p => p.at === sl.at);
       b.setAttribute('aria-pressed', at >= 0 ? 'true' : 'false');
-      b.setAttribute('aria-label', fmtLong({ date: selectedDay, start: hhmm(n) }));
+      b.setAttribute('aria-label', fmtLong(sl));
       if (at >= 0) { const r = document.createElement('span'); r.className = 'rank'; r.textContent = at + 1; b.append(r); }
       b.addEventListener('click', () => {
-        const i = picks.findIndex(p => p.date === selectedDay && mins(p.start) === n);
-        if (i >= 0) picks.splice(i, 1); else { if (picks.length >= 3) picks.shift(); picks.push({ date: selectedDay, start: hhmm(n) }); }
+        const i = picks.findIndex(p => p.at === sl.at);
+        if (i >= 0) picks.splice(i, 1); else { if (picks.length >= 3) picks.shift(); picks.push({ date: sl.k, start: hhmm(sl.t), at: sl.at }); }
         renderDates(); renderTimes(); renderPicks();
       });
       box.append(b);
@@ -390,12 +454,13 @@
     picks.forEach((p, i) => {
       const li = document.createElement('li');
       const span = document.createElement('span'); span.textContent = t(T.choice)[i] + ' · ' + fmtLong(p);
+      if (zone !== NY) { const ny = document.createElement('small'); ny.className = 'ny'; ny.textContent = (ja() ? 'ニューヨーク時間：' : 'New York time: ') + whenIn(NY, p); span.append(ny); }
       const rm = document.createElement('button'); rm.type = 'button'; rm.textContent = t(T.remove);
       rm.addEventListener('click', () => { picks.splice(i, 1); renderDates(); renderTimes(); renderPicks(); });
       li.append(span, rm); ol.append(li);
     });
   }
-  function showFree(data) { free = data; document.getElementById('loading').hidden = true; renderDates(); renderTimes(); }
+  function showFree(data) { free = data; buildSlots(); document.getElementById('loading').hidden = true; renderDates(); renderTimes(); }
   if (SHEET_APP) {
     fetch(SHEET_APP + '?slots=1').then(r => r.ok ? r.json() : null).then(j => showFree(j && j.days ? j.days : usualFree())).catch(() => showFree(usualFree()));
   } else showFree(usualFree());
@@ -405,20 +470,20 @@
     const lines = ja() ? [
       'Mariさん、個人レッスンの予約をお願いしたいです。', '',
       'お名前：' + form.name.value.trim() + (choice.visit === 'Returning' ? '（2回目以降）' : '（初めて）'),
-      choice.place && '場所：' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'ダンススタジオ', Travel: '自宅・会場（出張）', Any: 'どこでも' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? '（' + form.area.value.trim() + '）' : ''),
+      choice.place && '場所：' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'ダンススタジオ', Travel: '自宅・会場（出張）', Zoom: 'オンライン（Zoom）', Any: 'どこでも' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? '（' + form.area.value.trim() + '）' : ''),
       choice.age && '対象：' + ({ Child: '子ども', Teen: '10代', Adult: '大人' }[choice.age]),
       choice.level && 'バレエ経験：' + ({ 'New to ballet': '初めて', 'Some classes': '少し習ったことがある', 'Trains regularly': '定期的に練習している' }[choice.level]),
-      '', '希望の日時（ニューヨーク時間）：', ...picks.map((p, i) => T.choice.ja[i] + '　' + fmtLong(p)), 'レッスン：' + lenMin() + '分', '',
+      '', '希望の日時（' + zoneName(zone) + '）：', ...picks.map((p, i) => T.choice.ja[i] + '　' + fmtLong(p) + (zone !== NY ? '（ニューヨーク時間 ' + whenIn(NY, p) + '）' : '')), 'レッスン：' + lenMin() + '分', '',
       'メール：' + form.email.value.trim(),
       choice.via !== 'Email' && '連絡方法：' + choice.via + '　' + form.contact.value.trim(),
       form.note.value.trim() && '\nメッセージ：' + form.note.value.trim()
     ] : [
       'Hi Mari, I would like to book a private lesson.', '',
       'Name: ' + form.name.value.trim() + (choice.visit === 'Returning' ? ' (has had lessons before)' : ' (first lesson)'),
-      choice.place && 'Place: ' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'A dance studio', Travel: 'At my place', Any: 'Any is fine' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? ' (' + form.area.value.trim() + ')' : ''),
+      choice.place && 'Place: ' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'A dance studio', Travel: 'At my place', Zoom: 'Online (Zoom)', Any: 'Any is fine' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? ' (' + form.area.value.trim() + ')' : ''),
       choice.age && 'For: ' + choice.age,
       choice.level && 'Experience: ' + choice.level,
-      '', 'Times that suit me (New York time):', ...picks.map((p, i) => T.choice.en[i] + ': ' + fmtLong(p)), 'Lesson: ' + lenMin() + ' minutes', '',
+      '', 'Times that suit me (' + zoneName(zone) + '):', ...picks.map((p, i) => T.choice.en[i] + ': ' + fmtLong(p) + (zone !== NY ? ' (New York ' + whenIn(NY, p) + ')' : '')), 'Lesson: ' + lenMin() + ' minutes', '',
       'Email: ' + form.email.value.trim(),
       choice.via !== 'Email' && 'Best way to reach me: ' + choice.via + ' ' + form.contact.value.trim(),
       form.note.value.trim() && '\nNote: ' + form.note.value.trim()
@@ -441,14 +506,14 @@
     const text = message();
     const viaName = { Instagram: 'Instagram', WhatsApp: 'WhatsApp', LINE: 'LINE', Email: ja() ? 'メール' : 'email' }[choice.via];
     try {
-      if (document.getElementById('remember').checked) localStorage.setItem(STORE, JSON.stringify({ name: form.name.value.trim(), email: form.email.value.trim(), via: choice.via, contact: form.contact.value.trim(), place: choice.place || '', area: form.area.value.trim() }));
+      if (document.getElementById('remember').checked) localStorage.setItem(STORE, JSON.stringify({ name: form.name.value.trim(), email: form.email.value.trim(), via: choice.via, contact: form.contact.value.trim(), place: choice.place || '', area: form.area.value.trim(), tz: zoneTouched ? zone : '' }));
       else localStorage.removeItem(STORE);
     } catch {}
     const record = {
       hp: form.website.value, ms: Date.now() - openedAt,
       visit: choice.visit, name: form.name.value.trim(), email: form.email.value.trim(), via: choice.via, contact: choice.via === 'Email' ? '' : form.contact.value.trim(),
       place: choice.place || '', area: form.area.value.trim(), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
-      length: lenMin(), choices: picks.map(p => ({ date: p.date, start: p.start })),
+      length: lenMin(), choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
       note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
     };
     if (SHEET_APP) {
@@ -490,11 +555,11 @@
   });
 
   // redraw dynamic parts when the language changes
-  document.addEventListener('mari-language-change', () => { if (free) { renderDates(); renderTimes(); } renderPicks(); showContact(); });
-  renderPicks();
+  document.addEventListener('mari-language-change', () => { renderTz(); if (free) { renderDates(); renderTimes(); } renderPicks(); showContact(); });
+  renderTz(); renderPicks();
 })();
 </script>
-<script src="site-language.js?v=47"></script>
+<script src="site-language.js?v=48"></script>
 <script src="site-motion.js?v=9"></script>
 </body>
 </html>
