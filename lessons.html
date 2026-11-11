@@ -60,6 +60,20 @@
   .legend span::before { content: ""; display: inline-block; width: 11px; height: 11px; margin-right: 6px; vertical-align: -1px; border: 1px solid var(--champagne-line); background: #fff; }
   .legend .l-maybe::before { background: radial-gradient(circle at 70% 30%, var(--soon) 0 2px, #fff 3px); }
   .legend .l-no::before { border-color: var(--line); background: repeating-linear-gradient(135deg, #fff 0 3px, #ece7de 3px 4px); }
+  .date-strip { display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 8px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+  .date-strip button { flex: 0 0 auto; scroll-snap-align: start; appearance: none; width: 62px; padding: 8px 0 7px; border: 1px solid var(--champagne-line); background: #fff; color: var(--ink); font: .95rem/1.25 var(--font-body); cursor: pointer; transition: background-color .4s ease; }
+  .date-strip button small { display: block; font-size: .8rem; color: var(--muted); }
+  .date-strip button:hover { background: var(--champagne-pale); }
+  .date-strip button[aria-selected="true"] { background: var(--champagne); border-color: var(--champagne-deep); }
+  .date-strip button:disabled { border-color: var(--line); color: #bdb8bf; background: #fbfaf7; cursor: default; }
+  .date-strip button:disabled small { color: #cfcad0; }
+  .date-strip button.has-pick { box-shadow: inset 0 -3px 0 var(--gold-ink); }
+  .day-title { margin: 12px 0 8px; font: 500 1.15rem var(--font-display); }
+  .times { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+  .times button { position: relative; appearance: none; border: 1px solid var(--champagne-line); background: #fff; color: var(--ink); font: 1rem var(--font-body); padding: 10px 4px; cursor: pointer; transition: background-color .4s ease; }
+  .times button:hover { background: var(--champagne-pale); }
+  .times button[aria-pressed="true"] { background: var(--champagne); border-color: var(--champagne-deep); }
+  .times button .rank { position: absolute; top: -8px; left: -6px; min-width: 18px; height: 18px; padding: 0 4px; background: var(--ink); color: #fff; font-size: .72rem; line-height: 18px; text-align: center; border-radius: 9px; }
   .picked { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
   .picked li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: var(--champagne-pale); }
   .picked li button { appearance: none; border: 0; background: none; color: var(--muted); font: .9rem var(--font-body); cursor: pointer; text-decoration: underline; }
@@ -111,7 +125,7 @@
   <a class="back" href="private-lessons.html">← Private Lessons</a>
   <p class="eyebrow">Private lessons</p>
   <h1>Book a lesson</h1>
-  <p class="lead">Pick a few times that suit you and tell Mari how to reach you. Mari will message you to confirm. It takes about a minute.</p>
+  <p class="lead">Choose your lesson and a time that suits you. Mari will confirm by email. It takes about a minute.</p>
 
   <form id="book" novalidate>
     <section class="step who" aria-labelledby="s0">
@@ -124,6 +138,13 @@
     </section>
     <section class="step" aria-labelledby="s1">
       <div class="step-head"><span class="step-num">1</span><h2 class="step-title" id="s1">Your lesson</h2></div>
+      <p class="q">How long?</p>
+      <div class="chips" data-group="len" data-single>
+        <button type="button" class="chip" data-value="60">60 minutes</button>
+        <button type="button" class="chip" data-value="90">90 minutes</button>
+        <button type="button" class="chip" data-value="120">120 minutes</button>
+        <button type="button" class="chip" data-value="150">150 minutes</button>
+      </div>
       <p class="q">Where?</p>
       <div class="chips" data-group="place" data-single>
         <button type="button" class="chip" data-value="FuncPhysio">FuncPhysio Physical Therapy</button>
@@ -149,19 +170,17 @@
     </section>
 
     <section class="step" aria-labelledby="s2">
-      <div class="step-head"><span class="step-num">2</span><h2 class="step-title" id="s2">Times that suit you</h2></div>
-      <p class="q">Choose up to 3 <small>(New York time)</small></p>
-      <div class="week-nav">
-        <button type="button" id="prev-week" aria-label="Previous week">‹</button>
-        <span class="week-label" id="week-label"></span>
-        <button type="button" id="next-week" aria-label="Next week">›</button>
-      </div>
-      <div class="days" id="days"></div>
-      <div class="legend"><span class="l-open">Likely open</span><span class="l-maybe">Ask Mari</span><span class="l-no">Not available</span></div>
-      <p class="note-flex">Weekday evenings start at 7:00 or 7:30 pm at FuncPhysio. Sundays are usually open.</p>
-      <p class="note-flex">Mari’s schedule changes often, so this is a guide. She will confirm the time with you.</p>
+      <div class="step-head"><span class="step-num">2</span><h2 class="step-title" id="s2">Choose a time</h2></div>
+      <p class="q">Pick a day, then a start time <small>(New York time)</small></p>
+      <div class="date-strip" id="dates" role="listbox" aria-label="Days"></div>
+      <p class="day-title" id="day-title"></p>
+      <div class="times" id="times"></div>
+      <p class="note-flex" id="times-empty" hidden>No open times on this day.</p>
+      <p class="note-flex" id="loading">Loading open times…</p>
+      <p class="note-flex">Choose up to 3 times. Mari will confirm one of them by email.</p>
       <ol class="picked" id="picked"></ol>
       <p class="picked-empty" id="picked-empty">No times chosen yet.</p>
+      <p class="note-flex">Only times when Mari is free are shown. If none suit you, write the times that work in the message below.</p>
     </section>
 
     <section class="step" aria-labelledby="s3">
@@ -183,7 +202,7 @@
     <div class="send">
       <button type="submit" class="btn" id="send-btn">Send request</button>
       <label class="remember"><input type="checkbox" id="remember" checked> Remember my details on this device for next time</label>
-      <p class="send-help">Nothing is booked until Mari confirms with you.</p>
+      <p class="send-help">Nothing is booked until Mari confirms by email.</p>
       <p class="error" id="error" role="alert" hidden></p>
     </div>
   </form>
@@ -211,29 +230,17 @@
   const SHEET_APP = 'https://script.google.com/macros/s/AKfycbyoBjOrilADknvlRF8Mf6vzOootjaOEG_56OdEDFinrhrzaH4o8Z2fzm8niTlL0c6-9oQ/exec';
   // 2) Or: a Formspree address (https://formspree.io/f/...) if you prefer it for requests.
   const FORM_ENDPOINT = '';
-  // 3) Or: an availability sheet published as CSV (date, morning, afternoon, evening — ◯ / △ / ×).
-  const AVAILABILITY_CSV = '';
-  // 3) Usual week, used when the sheet has no line for a day.
-  //    o = likely open, m = ask Mari, x = not available. Order: [morning, afternoon, evening]
-  const USUAL_WEEK = {
-    0: ['o', 'o', 'o'],   // Sunday: usually free
-    1: ['m', 'm', 'o'],   // Mon–Fri: evenings at FuncPhysio from 7:00 or 7:30 pm
-    2: ['m', 'm', 'o'],
-    3: ['m', 'm', 'o'],
-    4: ['m', 'm', 'o'],
-    5: ['m', 'm', 'o'],
-    6: ['m', 'm', 'm']    // Saturday: ask Mari
-  };
-  const WEEKS = 4;          // how many weeks ahead people can choose
+  // 3) Lesson hours used when the sheet can't be reached (the sheet's own hours win). 0 = Sunday.
+  const HOURS = { 0: [['09:00', '21:00']], 1: [['19:00', '22:00']], 2: [['19:00', '22:00']], 3: [['19:00', '22:00']], 4: [['19:00', '22:00']], 5: [['19:00', '22:00']], 6: [] };
+  const DAYS_AHEAD = 28, STEP = 30, MIN_NOTICE_HOURS = 12;
   const MAIL = 'maritakayama.official@gmail.com';
   // -------------------------------------------------------------------------------
 
   const ja = () => window.mariSiteLanguage === 'ja';
   const T = {
-    slots: { en: ['Morning', 'Afternoon', 'Evening'], ja: ['午前', '午後', '夜'] },
-    slotHours: { en: ['9 am–12', '12–5 pm', 'from 7 pm'], ja: ['9〜12時', '12〜17時', '19時〜'] },
     days: { en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], ja: ['日', '月', '火', '水', '木', '金', '土'] },
     choice: { en: ['1st choice', '2nd choice', '3rd choice'], ja: ['第1希望', '第2希望', '第3希望'] },
+    today: { en: 'Today', ja: '今日' },
     remove: { en: 'Remove', ja: '外す' },
     contactLabel: {
       Instagram: { en: 'Your Instagram name', ja: 'あなたの Instagram の名前' },
@@ -251,11 +258,11 @@
       email: { en: 'Please write your email address.', ja: 'メールアドレスを入れてください。' },
       name: { en: 'Please write your name.', ja: 'お名前を入れてください。' },
       times: { en: 'Please choose at least one time.', ja: '希望の時間を1つ以上選んでください。' },
+      len: { en: 'Please choose how long the lesson is.', ja: 'レッスンの長さを選んでください。' },
       via: { en: 'Please choose how Mari can reach you.', ja: '連絡方法を選んでください。' },
       contact: { en: 'Please write your contact.', ja: '連絡先を入れてください。' },
       send: { en: 'Sorry, the request could not be sent. Please try again, or use Instagram DM or email.', ja: '送信できませんでした。もう一度お試しいただくか、Instagram の DM かメールでお送りください。' }
     },
-    week: { en: (a, b) => a + ' – ' + b, ja: (a, b) => a + ' 〜 ' + b },
     doneSent: { en: v => 'Your request was sent. Mari will contact you ' + (v === 'email' ? 'by email' : 'on ' + v) + ' within one or two days.', ja: v => 'リクエストを送りました。1〜2日以内に Mari から ' + v + ' で連絡します。' },
     doneManual: { en: 'Send your request to Mari with one of these:', ja: '次のどちらかで Mari に送ってください。' },
     titleSent: { en: 'Thank you!', ja: 'ありがとうございます' },
@@ -267,20 +274,36 @@
   const t = o => o[ja() ? 'ja' : 'en'];
 
   const form = document.getElementById('book');
-  const picks = [];               // [{date: Date, slot: 0..2}]
-  const choice = {};              // place, age, level, via
-  let weekIndex = 0;
-  let availability = {};          // 'YYYY-MM-DD' -> ['o'|'m'|'x', ...]
+  const picks = [];               // [{date: 'YYYY-MM-DD', start: '19:30'}]
+  const choice = {};              // len, place, age, level, via, visit
+  let free = null;                // {'YYYY-MM-DD': [[fromMin, toMin], ...]}
+  let selectedDay = null;
 
-  const start = new Date(); start.setHours(0, 0, 0, 0); start.setDate(start.getDate() + 1);
-  const monday = d => { const x = new Date(d); const k = (x.getDay() + 6) % 7; x.setDate(x.getDate() - k); return x; };
-  const firstWeek = monday(start);
-  const key = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  const fmtDay = d => ja() ? (d.getMonth() + 1) + '/' + d.getDate() : (d.getMonth() + 1) + '/' + d.getDate();
-  const fmtLong = (d, s) => ja()
-    ? (d.getMonth() + 1) + '月' + d.getDate() + '日（' + T.days.ja[d.getDay()] + '）' + T.slots.ja[s] + '（' + T.slotHours.ja[s] + '）'
-    : T.days.en[d.getDay()] + ' ' + (d.getMonth() + 1) + '/' + d.getDate() + ', ' + T.slots.en[s] + ' (' + T.slotHours.en[s] + ')';
-  const stateOf = (d, s) => { const a = availability[key(d)]; return a ? a[s] : (USUAL_WEEK[d.getDay()] || ['o', 'o', 'o'])[s]; };
+  const pad = n => String(n).padStart(2, '0');
+  const key = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const dayOf = k => new Date(k + 'T12:00:00');
+  const mins = hhmm => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
+  const hhmm = n => Math.floor(n / 60) + ':' + pad(n % 60);
+  const lenMin = () => +(choice.len || 60);
+  const clock = (n) => { if (ja()) return hhmm(n); let h = Math.floor(n / 60); const m = pad(n % 60), ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return h + ':' + m + ' ' + ap; };
+  const fmtDate = k => { const d = dayOf(k); return ja() ? (d.getMonth() + 1) + '月' + d.getDate() + '日（' + T.days.ja[d.getDay()] + '）' : T.days.en[d.getDay()] + ' ' + (d.getMonth() + 1) + '/' + d.getDate(); };
+  const fmtLong = p => fmtDate(p.date) + (ja() ? ' ' : ', ') + clock(mins(p.start)) + (ja() ? '〜' : ' – ') + clock(mins(p.start) + lenMin());
+  const days = () => { const out = []; const d = new Date(); d.setHours(0, 0, 0, 0); for (let i = 0; i <= DAYS_AHEAD; i++) { const x = new Date(d); x.setDate(d.getDate() + i); out.push(key(x)); } return out; };
+  // open hours from the usual week, used until (or if) the sheet answers
+  function usualFree() {
+    const out = {}; const earliest = Date.now() + MIN_NOTICE_HOURS * 3600000;
+    days().forEach(k => {
+      let r = (HOURS[dayOf(k).getDay()] || []).map(([a, b]) => [mins(a), mins(b)]);
+      const base = new Date(k + 'T00:00:00').getTime();
+      r = r.map(([a, b]) => [Math.max(a, Math.ceil((earliest - base) / 60000)), b]).filter(([a, b]) => b - a >= 60);
+      if (r.length) out[k] = r;
+    });
+    return out;
+  }
+  function startsFor(k) {
+    const out = []; ((free || {})[k] || []).forEach(([a, b]) => { for (let t = Math.ceil(a / STEP) * STEP; t + lenMin() <= b; t += STEP) out.push(t); });
+    return out;
+  }
 
   // chips (single choice)
   form.querySelectorAll('.chips[data-group]').forEach(group => {
@@ -292,12 +315,14 @@
       if (name === 'place') document.getElementById('area-field').hidden = choice.place !== 'Travel';
       if (name === 'via') showContact();
       if (name === 'visit') document.getElementById('first-only').hidden = choice.visit === 'Returning';
+      if (name === 'len') { for (let i = picks.length - 1; i >= 0; i--) if (!startsFor(picks[i].date).includes(mins(picks[i].start))) picks.splice(i, 1); renderDates(); renderTimes(); renderPicks(); }
     });
     group.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
   });
   const STORE = 'mt-booking-me';
   const pick = (group, value) => { const b = value && form.querySelector('[data-group=' + group + '] [data-value="' + value + '"]'); if (b && b.getAttribute('aria-pressed') !== 'true') b.click(); };
   pick('via', 'Email');
+  pick('len', '60');
   let saved = null; try { saved = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch {}
   if (saved && saved.name) {
     pick('visit', 'Returning');
@@ -318,76 +343,58 @@
     input.placeholder = choice.via === 'Instagram' ? '@yourname' : '';
   }
 
-  // week calendar
-  function renderWeek() {
-    const days = document.getElementById('days'); days.textContent = '';
-    const ws = new Date(firstWeek); ws.setDate(ws.getDate() + weekIndex * 7);
-    const we = new Date(ws); we.setDate(we.getDate() + 6);
-    document.getElementById('week-label').textContent = t(T.week)(fmtDay(ws), fmtDay(we));
-    document.getElementById('prev-week').disabled = weekIndex === 0;
-    document.getElementById('next-week').disabled = weekIndex >= WEEKS - 1;
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(ws); d.setDate(d.getDate() + i);
-      const row = document.createElement('div'); row.className = 'day';
-      const name = document.createElement('div'); name.className = 'day-name';
-      name.innerHTML = '<span></span><small></small>';
-      name.firstChild.textContent = ja() ? T.days.ja[d.getDay()] + '曜日' : T.days.en[d.getDay()];
-      name.lastChild.textContent = fmtDay(d);
-      const slots = document.createElement('div'); slots.className = 'slots';
-      for (let s = 0; s < 3; s++) {
-        const b = document.createElement('button'); b.type = 'button'; b.className = 'slot';
-        b.textContent = t(T.slots)[s];
-        const st = d < start ? 'x' : stateOf(d, s);
-        if (st === 'x') b.disabled = true;
-        if (st === 'm') b.classList.add('maybe');
-        const at = picks.findIndex(p => key(p.date) === key(d) && p.slot === s);
-        b.setAttribute('aria-pressed', at >= 0 ? 'true' : 'false');
-        b.setAttribute('aria-label', fmtLong(d, s));
-        if (at >= 0) { const r = document.createElement('span'); r.className = 'rank'; r.textContent = at + 1; b.append(r); }
-        b.addEventListener('click', () => togglePick(d, s));
-        slots.append(b);
-      }
-      row.append(name, slots); days.append(row);
-    }
+  // days and start times
+  function renderDates() {
+    const box = document.getElementById('dates'); box.textContent = '';
+    const list = days();
+    if (!selectedDay || !startsFor(selectedDay).length) selectedDay = list.find(k => startsFor(k).length) || list[0];
+    list.forEach((k, i) => {
+      const d = dayOf(k); const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'option');
+      b.innerHTML = '<span></span><small></small>';
+      b.firstChild.textContent = i === 0 ? t(T.today) : t(T.days)[d.getDay()];
+      b.lastChild.textContent = (d.getMonth() + 1) + '/' + d.getDate();
+      b.disabled = !startsFor(k).length;
+      b.setAttribute('aria-selected', k === selectedDay ? 'true' : 'false');
+      b.setAttribute('aria-label', fmtDate(k));
+      if (picks.some(p => p.date === k)) b.classList.add('has-pick');
+      b.addEventListener('click', () => { selectedDay = k; renderDates(); renderTimes(); });
+      box.append(b);
+    });
   }
-  function togglePick(d, s) {
-    const at = picks.findIndex(p => key(p.date) === key(d) && p.slot === s);
-    if (at >= 0) picks.splice(at, 1); else { if (picks.length >= 3) picks.shift(); picks.push({ date: new Date(d), slot: s }); }
-    renderWeek(); renderPicks();
+  function renderTimes() {
+    const box = document.getElementById('times'); box.textContent = '';
+    const starts = startsFor(selectedDay);
+    document.getElementById('day-title').textContent = selectedDay ? fmtDate(selectedDay) : '';
+    document.getElementById('times-empty').hidden = starts.length > 0 || !free;
+    starts.forEach(n => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = clock(n);
+      const at = picks.findIndex(p => p.date === selectedDay && mins(p.start) === n);
+      b.setAttribute('aria-pressed', at >= 0 ? 'true' : 'false');
+      b.setAttribute('aria-label', fmtLong({ date: selectedDay, start: hhmm(n) }));
+      if (at >= 0) { const r = document.createElement('span'); r.className = 'rank'; r.textContent = at + 1; b.append(r); }
+      b.addEventListener('click', () => {
+        const i = picks.findIndex(p => p.date === selectedDay && mins(p.start) === n);
+        if (i >= 0) picks.splice(i, 1); else { if (picks.length >= 3) picks.shift(); picks.push({ date: selectedDay, start: hhmm(n) }); }
+        renderDates(); renderTimes(); renderPicks();
+      });
+      box.append(b);
+    });
   }
   function renderPicks() {
     const ol = document.getElementById('picked'); ol.textContent = '';
     document.getElementById('picked-empty').hidden = picks.length > 0;
     picks.forEach((p, i) => {
       const li = document.createElement('li');
-      const span = document.createElement('span'); span.textContent = t(T.choice)[i] + ' · ' + fmtLong(p.date, p.slot);
+      const span = document.createElement('span'); span.textContent = t(T.choice)[i] + ' · ' + fmtLong(p);
       const rm = document.createElement('button'); rm.type = 'button'; rm.textContent = t(T.remove);
-      rm.addEventListener('click', () => { picks.splice(i, 1); renderWeek(); renderPicks(); });
+      rm.addEventListener('click', () => { picks.splice(i, 1); renderDates(); renderTimes(); renderPicks(); });
       li.append(span, rm); ol.append(li);
     });
   }
-  document.getElementById('prev-week').addEventListener('click', () => { if (weekIndex > 0) { weekIndex--; renderWeek(); } });
-  document.getElementById('next-week').addEventListener('click', () => { if (weekIndex < WEEKS - 1) { weekIndex++; renderWeek(); } });
-
-  // availability sheet (optional)
-  function parseCSV(text) {
-    const map = {}; const norm = v => { v = (v || '').trim(); return /^(×|x|✕|no|NG)$/i.test(v) ? 'x' : /^(△|\?|maybe|ask)$/i.test(v) ? 'm' : 'o'; };
-    text.split(/\r?\n/).forEach(line => {
-      const c = line.split(',').map(x => x.replace(/^"|"$/g, '').trim());
-      const m = (c[0] || '').match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/); if (!m) return;
-      map[m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0')] = [norm(c[1]), norm(c[2]), norm(c[3])];
-    });
-    return map;
-  }
-  // the sheet sends {days: {'2026-11-20': ['◯', '△', '×'], ...}}; a blank cell keeps the usual week
-  const mark = v => /×|✕|^x$/i.test(v) ? 'x' : /△|\?/.test(v) ? 'm' : /◯|○|〇|^o$/i.test(v) ? 'o' : null;
-  if (SHEET_APP) fetch(SHEET_APP + '?availability=1').then(r => r.ok ? r.json() : null).then(j => {
-    if (!j || !j.days) return;
-    availability = {};
-    Object.entries(j.days).forEach(([k, v]) => { const usual = USUAL_WEEK[new Date(k + 'T00:00').getDay()] || ['o', 'o', 'o']; availability[k] = [0, 1, 2].map(i => mark(String(v[i] || '')) || usual[i]); });
-    renderWeek();
-  }).catch(() => {});
-  else if (AVAILABILITY_CSV) fetch(AVAILABILITY_CSV).then(r => r.ok ? r.text() : '').then(txt => { if (txt) { availability = parseCSV(txt); renderWeek(); } }).catch(() => {});
+  function showFree(data) { free = data; document.getElementById('loading').hidden = true; renderDates(); renderTimes(); }
+  if (SHEET_APP) {
+    fetch(SHEET_APP + '?slots=1').then(r => r.ok ? r.json() : null).then(j => showFree(j && j.days ? j.days : usualFree())).catch(() => showFree(usualFree()));
+  } else showFree(usualFree());
 
   // the request message
   function message() {
@@ -397,7 +404,7 @@
       choice.place && '場所：' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'ダンススタジオ', Travel: '自宅・会場（出張）', Any: 'どこでも' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? '（' + form.area.value.trim() + '）' : ''),
       choice.age && '対象：' + ({ Child: '子ども', Teen: '10代', Adult: '大人' }[choice.age]),
       choice.level && 'バレエ経験：' + ({ 'New to ballet': '初めて', 'Some classes': '少し習ったことがある', 'Trains regularly': '定期的に練習している' }[choice.level]),
-      '', '希望の日時（ニューヨーク時間）：', ...picks.map((p, i) => T.choice.ja[i] + '　' + fmtLong(p.date, p.slot)), '',
+      '', '希望の日時（ニューヨーク時間）：', ...picks.map((p, i) => T.choice.ja[i] + '　' + fmtLong(p)), 'レッスン：' + lenMin() + '分', '',
       'メール：' + form.email.value.trim(),
       choice.via !== 'Email' && '連絡方法：' + choice.via + '　' + form.contact.value.trim(),
       form.note.value.trim() && '\nメッセージ：' + form.note.value.trim()
@@ -407,7 +414,7 @@
       choice.place && 'Place: ' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'A dance studio', Travel: 'At my place', Any: 'Any is fine' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? ' (' + form.area.value.trim() + ')' : ''),
       choice.age && 'For: ' + choice.age,
       choice.level && 'Experience: ' + choice.level,
-      '', 'Times that suit me (New York time):', ...picks.map((p, i) => T.choice.en[i] + ': ' + fmtLong(p.date, p.slot)), '',
+      '', 'Times that suit me (New York time):', ...picks.map((p, i) => T.choice.en[i] + ': ' + fmtLong(p)), 'Lesson: ' + lenMin() + ' minutes', '',
       'Email: ' + form.email.value.trim(),
       choice.via !== 'Email' && 'Best way to reach me: ' + choice.via + ' ' + form.contact.value.trim(),
       form.note.value.trim() && '\nNote: ' + form.note.value.trim()
@@ -421,6 +428,7 @@
     const fail = (m, el) => { err.textContent = t(m); err.hidden = false; if (el) el.focus(); };
     if (!choice.visit) return fail(T.visitErr);
     if (!form.name.value.trim()) return fail(T.errors.name, form.name);
+    if (!choice.len) return fail(T.errors.len);
     if (!picks.length) return fail(T.errors.times);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.value.trim())) return fail(T.errors.email, form.email);
     if (!choice.via) pick('via', 'Email');
@@ -434,7 +442,7 @@
     const record = {
       visit: choice.visit, name: form.name.value.trim(), email: form.email.value.trim(), via: choice.via, contact: choice.via === 'Email' ? '' : form.contact.value.trim(),
       place: choice.place || '', area: form.area.value.trim(), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
-      choices: picks.map(p => ({ date: key(p.date), weekday: T.days.en[p.date.getDay()], time: T.slots.en[p.slot] })),
+      length: lenMin(), choices: picks.map(p => ({ date: p.date, start: p.start })),
       note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
     };
     if (SHEET_APP) {
@@ -476,11 +484,11 @@
   });
 
   // redraw dynamic parts when the language changes
-  document.addEventListener('mari-language-change', () => { renderWeek(); renderPicks(); showContact(); });
-  renderWeek(); renderPicks();
+  document.addEventListener('mari-language-change', () => { if (free) { renderDates(); renderTimes(); } renderPicks(); showContact(); });
+  renderPicks();
 })();
 </script>
-<script src="site-language.js?v=44"></script>
+<script src="site-language.js?v=45"></script>
 <script src="site-motion.js?v=9"></script>
 </body>
 </html>

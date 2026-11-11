@@ -1,4 +1,4 @@
-// Mari Takayama — lesson requests, availability and statistics in one Google Sheet.
+// Mari Takayama — lesson booking: requests, one-tap confirm, availability and statistics in one Google Sheet.
 //
 // How to use (once):
 //   1. Make a new Google Sheet. Menu: Extensions > Apps Script. Delete what is there and paste this whole file.
@@ -7,202 +7,294 @@
 //   3. Deploy > New deployment > type "Web app". Execute as: Me. Who has access: Anyone. Deploy.
 //   4. Copy the Web app URL (https://script.google.com/macros/s/.../exec) and put it in lessons.html (SHEET_APP).
 //
-// Every new request is added to リクエスト and sent to your Gmail.
-// In 空き状況, type ◯ / △ / × for each date and time. Blank = the usual week shown on the site.
+// How it works:
+//   - The website asks for free times (?slots=1): the lesson hours below, minus busy times in Mari's Google Calendar.
+//     Only free/busy leaves the sheet — never the titles or details of her plans.
+//   - A request is added to リクエスト and emailed to Mari with one button per requested time.
+//     One tap confirms: the customer gets a confirmation email and the lesson goes into Mari's Google Calendar.
 
 // The sheet's id (from its address). Leave empty when the script is opened from the sheet itself (Extensions > Apps Script).
 const SHEET_ID = '';
 const book_ = () => SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActive();
 const TZ = 'America/New_York';
-// Busy times in Mari's Google Calendar (every calendar she owns) become × on the site.
-// Only free/busy goes to the website — never the titles or details of her plans.
-const USE_GOOGLE_CALENDAR = true;
-// Or another calendar as an iCal (.ics) link (e.g. Yahoo Calendar > Share > ICS link).
-const CAL_ICS = '';
-// the three lesson times on the site (24-hour clock, New York time)
-const SLOTS = [[9, 0, 12, 0], [12, 0, 17, 0], [19, 0, 21, 30]];
+const USE_GOOGLE_CALENDAR = true;   // busy times in every calendar Mari owns block lesson times
+const CAL_ICS = '';                 // or another calendar as an iCal (.ics) link
+const REPLY_TO = 'maritakayama.official@gmail.com';  // customers' replies go here
+const SENDER_NAME = 'Mari Takayama';
+const BOOKING_PAGE = 'https://bostonterrier808.github.io/mari-takayama-site/lessons.html';
+// Lesson hours by weekday (0 = Sunday), 24-hour clock, New York time. A lesson must fit inside these hours.
+const HOURS = { 0: [['09:00', '21:00']], 1: [['19:00', '22:00']], 2: [['19:00', '22:00']], 3: [['19:00', '22:00']], 4: [['19:00', '22:00']], 5: [['19:00', '22:00']], 6: [] };
+// The 空き状況 tab can open (◯) or close (×) these parts of a day.
+const PARTS = [['09:00', '12:00'], ['12:00', '17:00'], ['19:00', '22:00']];
+const MIN_NOTICE_HOURS = 12;        // earliest bookable time = now + this
+const DAYS_AHEAD = 28;
+const PLACES = {
+  FuncPhysio: { ja: 'FuncPhysio Physical Therapy（2 W 45th Street, Suite 1600, New York）', en: 'FuncPhysio Physical Therapy, 2 W 45th Street, Suite 1600, New York' },
+  Studio: { ja: 'ダンススタジオ（場所は別途ご連絡します）', en: 'A dance studio (Mari will send the address)' },
+  Travel: { ja: 'ご指定の場所（出張）', en: 'Your place (Mari comes to you)' },
+  Any: { ja: '相談して決めます', en: 'To be decided together' }
+};
+
 const REQ = 'リクエスト', AV = '空き状況', ST = '統計';
 const HEAD = ['受付日時', '初めて／2回目以降', '名前', '連絡方法', 'メール', '場所', 'エリア', '対象', 'バレエ経験',
   '第1希望', '第2希望', '第3希望', '第1希望の曜日', '第1希望の時間帯', '第2希望の曜日', '第2希望の時間帯', '第3希望の曜日', '第3希望の時間帯',
-  'メッセージ', '言語', '状況', 'その他の連絡先'];
+  'メッセージ', '言語', '状況', 'その他の連絡先', 'レッスンの長さ（分）', '確定した日時', 'id', 'key', 'data'];
+const C = Object.fromEntries(HEAD.map((h, i) => [h, i + 1]));
 const JA = {
   visit: { First: '初めて', Returning: '2回目以降' },
   place: { FuncPhysio: 'FuncPhysio', Studio: 'ダンススタジオ', Travel: '出張', Any: 'どこでも' },
   age: { Child: '子ども', Teen: '10代', Adult: '大人' },
   level: { 'New to ballet': '初めて', 'Some classes': '少し経験あり', 'Trains regularly': '定期的に練習' },
-  day: { Sun: '日', Mon: '月', Tue: '火', Wed: '水', Thu: '木', Fri: '金', Sat: '土' },
-  time: { Morning: '午前', Afternoon: '午後', Evening: '夜' }
+  day: { Sun: '日', Mon: '月', Tue: '火', Wed: '水', Thu: '木', Fri: '金', Sat: '土' }
 };
+const WD_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], WD_JA = ['日', '月', '火', '水', '木', '金', '土'];
 
 function setup() {
   const ss = book_();
   ss.setSpreadsheetTimeZone(TZ);
-  // requests
   const req = ss.getSheetByName(REQ) || ss.insertSheet(REQ, 0);
   req.getRange(1, 1, 1, HEAD.length).setValues([HEAD]).setFontWeight('bold').setBackground('#ecdfc6');
   req.setFrozenRows(1);
   req.getRange('A2:A').setNumberFormat('yyyy/mm/dd hh:mm');
-  req.getRange('U2:U').setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['新規', '返信済み', '予約確定', 'レッスン済み', 'お断り'], true).build());
+  req.getRange(2, C['状況'], req.getMaxRows() - 1, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['新規', '返信済み', '予約確定', 'レッスン済み', 'お断り'], true).build());
   req.setColumnWidths(1, HEAD.length, 120);
-  // availability: the next 12 weeks, one row per day
+  try { req.hideColumns(C['id'], 3); } catch (e) {}
   const av = ss.getSheetByName(AV) || ss.insertSheet(AV, 1);
   if (av.getLastRow() < 2) {
-    av.getRange(1, 1, 1, 5).setValues([['日付', '曜日', '午前 9〜12時', '午後 12〜17時', '夜 19時〜']]).setFontWeight('bold').setBackground('#ecdfc6');
+    av.getRange(1, 1, 1, 5).setValues([['日付', '曜日', '午前 9〜12時', '午後 12〜17時', '夜 19〜22時']]).setFontWeight('bold').setBackground('#ecdfc6');
     av.setFrozenRows(1);
     const rows = []; const d = new Date(); d.setHours(0, 0, 0, 0);
     for (let i = 0; i < 84; i++) { const x = new Date(d); x.setDate(d.getDate() + i); rows.push([x, '=TEXT(A' + (i + 2) + ',"ddd")', '', '', '']); }
     av.getRange(2, 1, rows.length, 5).setValues(rows);
     av.getRange('A2:A').setNumberFormat('yyyy/mm/dd');
   }
-  av.getRange('C2:E').setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['◯', '△', '×'], true).setAllowInvalid(true).build()).setHorizontalAlignment('center');
-  av.getRange('G1').setValue('◯ 空いていそう　△ 要相談　× 不可　（空白はいつもの週：平日は夜だけ◯、日曜は◯）');
-  // statistics
+  av.getRange('C2:E').setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['◯', '×'], true).setAllowInvalid(true).build()).setHorizontalAlignment('center');
+  av.getRange('G1').setValue('ふだんは使わなくて大丈夫です。◯ = いつもは閉じている時間を開ける　× = その時間を閉じる（Google カレンダーの予定は自動で×になります）');
   const st = ss.getSheetByName(ST) || ss.insertSheet(ST, 2);
   st.clear();
   const R = "'" + REQ + "'!";
   const block = (row, col, title, formula) => { st.getRange(row, col).setValue(title).setFontWeight('bold'); st.getRange(row + 1, col).setFormula(formula); };
   st.getRange('A1').setValue('レッスンのリクエスト　統計').setFontSize(14).setFontWeight('bold');
-  st.getRange('A3:B6').setValues([['リクエストの合計', ''], ['今月', ''], ['初めて', ''], ['2回目以降', '']]);
+  st.getRange('A3:B7').setValues([['リクエストの合計', ''], ['今月', ''], ['初めて', ''], ['2回目以降', ''], ['予約確定', '']]);
   st.getRange('B3').setFormula('=COUNTA(' + R + 'C2:C)');
   st.getRange('B4').setFormula('=COUNTIFS(' + R + 'A2:A,">="&(EOMONTH(TODAY(),-1)+1))');
   st.getRange('B5').setFormula('=COUNTIF(' + R + 'B2:B,"初めて")');
   st.getRange('B6').setFormula('=COUNTIF(' + R + 'B2:B,"2回目以降")');
-  block(8, 1, '月ごと', '=IFERROR(QUERY({ARRAYFORMULA(IF(' + R + 'A2:A="",,TEXT(' + R + 'A2:A,"yyyy-mm")))},"select Col1, count(Col1) where Col1 is not null group by Col1 order by Col1 desc label Col1 \'月\', count(Col1) \'件数\'",0),"まだありません")');
-  block(8, 4, '場所', '=IFERROR(QUERY(' + R + 'F2:F,"select F, count(F) where F <> \'\' group by F order by count(F) desc label F \'場所\', count(F) \'件数\'",0),"まだありません")');
-  block(8, 7, '連絡方法', '=IFERROR(QUERY(' + R + 'D2:D,"select D, count(D) where D <> \'\' group by D order by count(D) desc label D \'連絡方法\', count(D) \'件数\'",0),"まだありません")');
-  block(22, 1, '人気の曜日（第1〜第3希望の合計）', '=IFERROR(QUERY({' + R + 'M2:M;' + R + 'O2:O;' + R + 'Q2:Q},"select Col1, count(Col1) where Col1 is not null and Col1 <> \'\' group by Col1 order by count(Col1) desc label Col1 \'曜日\', count(Col1) \'回数\'",0),"まだありません")');
-  block(22, 4, '人気の時間帯', '=IFERROR(QUERY({' + R + 'N2:N;' + R + 'P2:P;' + R + 'R2:R},"select Col1, count(Col1) where Col1 is not null and Col1 <> \'\' group by Col1 order by count(Col1) desc label Col1 \'時間帯\', count(Col1) \'回数\'",0),"まだありません")');
-  block(22, 7, '状況', '=IFERROR(QUERY(' + R + 'U2:U,"select U, count(U) where U <> \'\' group by U label U \'状況\', count(U) \'件数\'",0),"まだありません")');
-  block(36, 1, '対象', '=IFERROR(QUERY(' + R + 'H2:H,"select H, count(H) where H <> \'\' group by H label H \'対象\', count(H) \'件数\'",0),"まだありません")');
-  block(36, 4, 'バレエ経験', '=IFERROR(QUERY(' + R + 'I2:I,"select I, count(I) where I <> \'\' group by I label I \'経験\', count(I) \'件数\'",0),"まだありません")');
+  st.getRange('B7').setFormula('=COUNTIF(' + R + 'U2:U,"予約確定")+COUNTIF(' + R + 'U2:U,"レッスン済み")');
+  const q = (rng, label, unit) => '=IFERROR(QUERY(' + rng + ',"select Col1, count(Col1) where Col1 is not null and Col1 <> \'\' group by Col1 order by count(Col1) desc label Col1 \'' + label + '\', count(Col1) \'' + unit + '\'",0),"まだありません")';
+  block(9, 1, '月ごと', '=IFERROR(QUERY({ARRAYFORMULA(IF(' + R + 'A2:A="",,TEXT(' + R + 'A2:A,"yyyy-mm")))},"select Col1, count(Col1) where Col1 is not null group by Col1 order by Col1 desc label Col1 \'月\', count(Col1) \'件数\'",0),"まだありません")');
+  block(9, 4, '場所', q('{' + R + 'F2:F}', '場所', '件数'));
+  block(9, 7, '連絡方法', q('{' + R + 'D2:D}', '連絡方法', '件数'));
+  block(23, 1, '人気の曜日（第1〜第3希望の合計）', q('{' + R + 'M2:M;' + R + 'O2:O;' + R + 'Q2:Q}', '曜日', '回数'));
+  block(23, 4, '人気の時間帯', q('{' + R + 'N2:N;' + R + 'P2:P;' + R + 'R2:R}', '時間帯', '回数'));
+  block(23, 7, '状況', q('{' + R + 'U2:U}', '状況', '件数'));
+  block(37, 1, 'レッスンの長さ', q('{' + R + 'W2:W}', '分', '件数'));
+  block(37, 4, '対象', q('{' + R + 'H2:H}', '対象', '件数'));
+  block(37, 7, 'バレエ経験', q('{' + R + 'I2:I}', '経験', '件数'));
   st.setColumnWidths(1, 8, 130);
 }
 
-// a request from the website
+// ---------- the website sends a request ----------
 function doPost(e) {
   const lock = LockService.getScriptLock(); lock.waitLock(20000);
   try {
     const d = JSON.parse(e.postData.contents);
-    const c = (d.choices || []).slice(0, 3);
-    const choiceText = i => c[i] ? Utilities.formatDate(new Date(c[i].date + 'T12:00:00'), TZ, 'M/d') + '（' + (JA.day[c[i].weekday] || c[i].weekday) + '）' + (JA.time[c[i].time] || c[i].time) : '';
+    const len = Math.max(30, Math.min(240, +d.length || 60));
+    const c = (d.choices || []).slice(0, 3).filter(x => /^\d{4}-\d\d-\d\d$/.test(x.date));
+    const id = Utilities.getUuid().slice(0, 8), key = Utilities.getUuid().replace(/-/g, '');
     const row = [new Date(), JA.visit[d.visit] || d.visit || '', clip(d.name), d.via || '', clip(d.email), JA.place[d.place] || d.place || '', clip(d.area),
-      JA.age[d.age] || d.age || '', JA.level[d.level] || d.level || '', choiceText(0), choiceText(1), choiceText(2)];
-    for (let i = 0; i < 3; i++) row.push(c[i] ? (JA.day[c[i].weekday] || c[i].weekday) : '', c[i] ? (JA.time[c[i].time] || c[i].time) : '');
-    row.push(clip(d.note, 700), d.language || '', '新規', clip(d.contact));
+      JA.age[d.age] || d.age || '', JA.level[d.level] || d.level || ''];
+    for (let i = 0; i < 3; i++) row.push(c[i] ? choiceJa_(c[i], len) : '');
+    for (let i = 0; i < 3; i++) row.push(c[i] ? WD_JA[dateOf_(c[i].date).getDay()] : '', c[i] ? partOf_(c[i]) : '');
+    row.push(clip(d.note, 700), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en' }));
     book_().getSheetByName(REQ).appendRow(row);
-    const me = Session.getEffectiveUser().getEmail();
-    if (me) MailApp.sendEmail(me, 'レッスンのリクエスト：' + String(d.name || '').slice(0, 100) + '（' + (JA.visit[d.visit] || '') + '）',
-      String(d.message || '').slice(0, 3000) + '\n\n――\nメール：' + String(d.email || '').slice(0, 200) + (d.contact ? '\n連絡方法：' + (d.via || '') + '　' + String(d.contact).slice(0, 200) : '') + '\nシート：' + book_().getUrl());
+    notifyMari_(d, c, len, id, key);
     return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
   } finally { lock.releaseLock(); }
 }
 
-// the website asks for availability: ?availability=1
-// the sheet wins when a cell has ◯ / △ / ×; otherwise a busy calendar time becomes ×
-function doGet(e) {
-  const days = {};
-  if (e && e.parameter && e.parameter.availability) {
-    busyDays_().forEach((v, k) => { days[k] = v; });
-    const av = book_().getSheetByName(AV);
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    if (av && av.getLastRow() > 1) av.getRange(2, 1, av.getLastRow() - 1, 5).getValues().forEach(r => {
-      if (!(r[0] instanceof Date) || r[0] < today) return;
-      if (!r[2] && !r[3] && !r[4]) return;
-      const k = Utilities.formatDate(r[0], TZ, 'yyyy-MM-dd'); const cal = days[k] || ['', '', ''];
-      days[k] = [0, 1, 2].map(i => String(r[2 + i] || cal[i] || ''));
-    });
-  }
-  return ContentService.createTextOutput(JSON.stringify({ days })).setMimeType(ContentService.MimeType.JSON);
+function notifyMari_(d, c, len, id, key) {
+  const me = Session.getEffectiveUser().getEmail(); if (!me) return;
+  const url = ScriptApp.getService().getUrl();
+  const btn = (href, label, main) => '<a href="' + href + '" style="display:inline-block;margin:4px 0;padding:12px 18px;background:' + (main ? '#ecdfc6' : '#ffffff') + ';border:1px solid #c9b48c;color:#2c2a30;text-decoration:none;font-size:16px">' + label + '</a>';
+  const rows = c.map((x, i) => '<p style="margin:10px 0">' + btn(url + '?act=confirm&id=' + id + '&k=' + key + '&c=' + i, '第' + (i + 1) + '希望で確定：' + choiceJa_(x, len), true) + '</p>').join('');
+  const info = [
+    ['名前', esc_(d.name) + '（' + (JA.visit[d.visit] || '') + '）'], ['メール', esc_(d.email)],
+    d.contact ? ['連絡方法', esc_(d.via) + '　' + esc_(d.contact)] : null,
+    ['場所', esc_(JA.place[d.place] || d.place || '') + (d.area ? '（' + esc_(d.area) + '）' : '')], ['長さ', len + '分'],
+    d.age ? ['対象', esc_(JA.age[d.age] || d.age)] : null, d.level ? ['バレエ経験', esc_(JA.level[d.level] || d.level)] : null,
+    d.note ? ['メッセージ', esc_(d.note)] : null
+  ].filter(Boolean).map(([a, b]) => '<tr><td style="padding:3px 12px 3px 0;color:#6a6670">' + a + '</td><td>' + b + '</td></tr>').join('');
+  const html = '<div style="font-family:sans-serif;color:#2c2a30;font-size:15px;line-height:1.6">'
+    + '<p><b>レッスンのリクエストが届きました。</b>確定する時間のボタンを押すと、お客さんに確定メールが届き、Google カレンダーにも入ります。</p>'
+    + rows
+    + '<p style="margin:16px 0">' + btn(url + '?act=decline&id=' + id + '&k=' + key, 'どの時間も無理なので、お断りする（ほかの日を選び直してもらう）', false) + '</p>'
+    + '<table style="margin-top:14px;font-size:14px">' + info + '</table>'
+    + '<p style="color:#6a6670;font-size:13px;margin-top:18px">ボタンを押すと確認の画面が出ます。そこでもう一度押すと送られます。<br>シート：' + book_().getUrl() + '</p></div>';
+  MailApp.sendEmail({ to: me, subject: 'レッスンのリクエスト：' + String(d.name || '').slice(0, 60) + '（' + (JA.visit[d.visit] || '') + '）', htmlBody: html, body: String(d.message || '').slice(0, 3000), name: 'Lesson booking' });
 }
 
-// ---------- calendar (free / busy only) ----------
-function busyDays_() {
-  const out = new Map();
-  if (!USE_GOOGLE_CALENDAR && !CAL_ICS) return out;
+// ---------- the website asks for free times, or Mari taps a button ----------
+function doGet(e) {
+  const p = (e && e.parameter) || {};
+  if (p.slots) return json_({ days: freeTimes_() });
+  if (p.availability) return json_({ days: {} });
+  if (p.act) return actionPage_(p);
+  return HtmlService.createHtmlOutput('<p>OK</p>');
+}
+function json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+
+// free time ranges per day, in minutes from midnight (New York): {'2026-11-20': [[1140, 1320]], ...}
+function freeTimes_() {
   const cache = CacheService.getScriptCache();
-  const hit = cache.get('busy');
-  if (hit) { JSON.parse(hit).forEach(([k, v]) => out.set(k, v)); return out; }
+  const hit = cache.get('free'); if (hit) return JSON.parse(hit);
   const start = new Date(); start.setHours(0, 0, 0, 0);
-  const end = new Date(start); end.setDate(start.getDate() + 36);
+  const end = new Date(start); end.setDate(start.getDate() + DAYS_AHEAD + 1);
+  const busy = busyEvents_(start, end);
+  const sheet = sheetMarks_();
+  const earliest = new Date(Date.now() + MIN_NOTICE_HOURS * 3600000);
+  const out = {};
+  for (let i = 0; i <= DAYS_AHEAD; i++) {
+    const day = new Date(start); day.setDate(start.getDate() + i);
+    const k = Utilities.formatDate(day, TZ, 'yyyy-MM-dd');
+    const wd = +Utilities.formatDate(day, TZ, 'u') % 7;
+    let ranges = (HOURS[wd] || []).map(([a, b]) => [mins_(a), mins_(b)]);
+    const marks = sheet[k];
+    if (marks) PARTS.forEach(([a, b], j) => {
+      if (marks[j] === 'o') ranges = add_(ranges, [mins_(a), mins_(b)]);
+      if (marks[j] === 'x') ranges = cut_(ranges, [mins_(a), mins_(b)]);
+    });
+    const dayStart = atNY_(k, 0, 0);
+    busy.forEach(ev => {
+      if (ev.allDay || ev.end <= dayStart || ev.start >= new Date(dayStart.getTime() + 86400000 + 3600000)) return;
+      ranges = cut_(ranges, [Math.floor((ev.start - dayStart) / 60000), Math.ceil((ev.end - dayStart) / 60000)]);
+    });
+    if (earliest > dayStart) ranges = cut_(ranges, [0, Math.ceil((earliest - dayStart) / 60000)]);
+    ranges = ranges.filter(([a, b]) => b - a >= 60);
+    if (ranges.length) out[k] = ranges;
+  }
+  cache.put('free', JSON.stringify(out), 300);
+  return out;
+}
+function add_(ranges, [a, b]) {
+  const all = ranges.concat([[a, b]]).sort((x, y) => x[0] - y[0]); const out = [];
+  all.forEach(r => { const last = out[out.length - 1]; if (last && r[0] <= last[1]) last[1] = Math.max(last[1], r[1]); else out.push(r.slice()); });
+  return out;
+}
+function cut_(ranges, [a, b]) {
+  const out = []; ranges.forEach(([x, y]) => { if (b <= x || a >= y) out.push([x, y]); else { if (a > x) out.push([x, a]); if (b < y) out.push([b, y]); } }); return out;
+}
+function mins_(hhmm) { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; }
+function sheetMarks_() {
+  const out = {}; const av = book_().getSheetByName(AV); if (!av || av.getLastRow() < 2) return out;
+  av.getRange(2, 1, av.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (!(r[0] instanceof Date)) return;
+    const m = [r[2], r[3], r[4]].map(v => /×|✕|^x$/i.test(String(v)) ? 'x' : /◯|○|〇|^o$/i.test(String(v)) ? 'o' : '');
+    if (m.some(Boolean)) out[Utilities.formatDate(r[0], TZ, 'yyyy-MM-dd')] = m;
+  });
+  return out;
+}
+function busyEvents_(start, end) {
   let events = [];
   if (USE_GOOGLE_CALENDAR) {
     try {
       CalendarApp.getAllOwnedCalendars().forEach(cal => cal.getEvents(start, end).forEach(ev => {
-        const mine = ev.getMyStatus && ev.getMyStatus();
-        if (mine === CalendarApp.GuestStatus.NO) return;
+        if (ev.getMyStatus && ev.getMyStatus() === CalendarApp.GuestStatus.NO) return;
         events.push({ start: ev.getStartTime(), end: ev.getEndTime(), allDay: ev.isAllDayEvent() });
       }));
     } catch (err) { console.log(err); }
   }
-  if (CAL_ICS) {
-    try { events = events.concat(parseIcs_(UrlFetchApp.fetch(CAL_ICS, { muteHttpExceptions: true, followRedirects: true }).getContentText())); } catch (err) { console.log(err); }
-  }
-  for (let i = 0; i < 35; i++) {
-    const day = new Date(start); day.setDate(start.getDate() + i);
-    const k = Utilities.formatDate(day, TZ, 'yyyy-MM-dd');
-    const marks = SLOTS.map(([h1, m1, h2, m2]) => {
-      const a = atNY_(k, h1, m1), b = atNY_(k, h2, m2);
-      return events.some(ev => ev.allDay ? false : ev.start < b && ev.end > a) ? '×' : '';
-    });
-    if (marks.some(Boolean)) out.set(k, marks);
-  }
-  cache.put('busy', JSON.stringify([...out]), 600); // keep for 10 minutes
-  return out;
+  if (CAL_ICS) { try { events = events.concat(parseIcs_(UrlFetchApp.fetch(CAL_ICS, { muteHttpExceptions: true }).getContentText())); } catch (err) { console.log(err); } }
+  return events;
 }
+
+// ---------- Mari's buttons: confirm one time, or decline ----------
+function actionPage_(p) {
+  const sh = book_().getSheetByName(REQ);
+  const ids = sh.getLastRow() > 1 ? sh.getRange(2, C['id'], sh.getLastRow() - 1, 1).getValues().map(r => String(r[0])) : [];
+  const i = ids.indexOf(String(p.id));
+  if (i < 0) return page_('見つかりません', 'このリクエストは見つかりませんでした。');
+  const r = i + 2;
+  if (String(sh.getRange(r, C['key']).getValue()) !== String(p.k)) return page_('開けません', 'このボタンは使えません。');
+  const data = JSON.parse(sh.getRange(r, C['data']).getValue() || '{}');
+  const status = String(sh.getRange(r, C['状況']).getValue());
+  if (status === '予約確定' || status === 'お断り') return page_('対応済みです', 'このリクエストはもう「' + status + '」になっています。' + (status === '予約確定' ? '<br>確定した日時：' + esc_(sh.getRange(r, C['確定した日時']).getDisplayValue()) : ''));
+  const self = ScriptApp.getService().getUrl() + '?act=' + encodeURIComponent(p.act) + '&id=' + encodeURIComponent(p.id) + '&k=' + encodeURIComponent(p.k) + (p.c != null ? '&c=' + encodeURIComponent(p.c) : '');
+  if (p.act === 'confirm') {
+    const ch = (data.choices || [])[+p.c]; if (!ch) return page_('見つかりません', 'その希望日時が見つかりませんでした。');
+    const s = atNY_(ch.date, ...ch.start.split(':').map(Number)), en = new Date(s.getTime() + data.len * 60000);
+    const clash = busyEvents_(s, en).filter(ev => !ev.allDay && ev.start < en && ev.end > s).length;
+    if (!p.go) return page_('この時間で確定しますか？', '<b>' + esc_(data.name) + '</b> さん<br>' + choiceJa_(ch, data.len) + '<br>' + esc_(PLACES[data.place] ? PLACES[data.place].ja : '') + (clash ? '<p style="color:#8b3a3a">この時間には、Google カレンダーにほかの予定があります。</p>' : '') + '<p>確定すると、お客さんに確定メールが届き、Google カレンダーに入ります。</p>', self + '&go=1', '確定して、お客さんにメールを送る');
+    CalendarApp.getDefaultCalendar().createEvent('バレエレッスン：' + data.name, s, en, { location: PLACES[data.place] ? PLACES[data.place].en : '', description: 'メール：' + data.email + (data.area ? '\nエリア：' + data.area : '') + '\n（予約サイトから）' });
+    sendCustomer_(data, 'confirm', ch);
+    sh.getRange(r, C['状況']).setValue('予約確定'); sh.getRange(r, C['確定した日時']).setValue(choiceJa_(ch, data.len));
+    CacheService.getScriptCache().remove('free');
+    return page_('確定しました', esc_(data.name) + ' さんに確定メールを送り、Google カレンダーに入れました。<br>' + choiceJa_(ch, data.len));
+  }
+  if (p.act === 'decline') {
+    if (!p.go) return page_('お断りしますか？', '<b>' + esc_(data.name) + '</b> さんに、「希望の時間はうまってしまいました。ほかの日時を選び直してください」というメールを送ります。', self + '&go=1', 'お断りのメールを送る');
+    sendCustomer_(data, 'decline');
+    sh.getRange(r, C['状況']).setValue('お断り');
+    return page_('送りました', esc_(data.name) + ' さんに、ほかの日時を選び直してもらうメールを送りました。');
+  }
+  return page_('?', '');
+}
+function page_(title, body, goHref, goLabel) {
+  const html = '<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><div style="font-family:Georgia,serif;color:#2c2a30;max-width:520px;margin:40px auto;padding:0 18px;line-height:1.7;font-size:17px">'
+    + '<h1 style="font-weight:400;font-size:28px;margin:0 0 14px">' + title + '</h1><div>' + body + '</div>'
+    + (goHref ? '<p style="margin-top:22px"><a href="' + goHref + '" target="_top" style="display:inline-block;padding:14px 22px;background:#ecdfc6;border:1px solid #c9b48c;color:#2c2a30;text-decoration:none">' + goLabel + '</a></p>' : '') + '</div>';
+  return HtmlService.createHtmlOutput(html).setTitle(title).addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+function sendCustomer_(data, kind, ch) {
+  if (!data.email) return;
+  const ja = data.language === 'ja';
+  const place = PLACES[data.place] ? PLACES[data.place][ja ? 'ja' : 'en'] : '';
+  let subject, body;
+  if (kind === 'confirm') {
+    const when = ja ? choiceJa_(ch, data.len) : choiceEn_(ch, data.len);
+    subject = ja ? 'レッスンのご予約が確定しました（' + when + '）' : 'Your ballet lesson is confirmed — ' + when;
+    body = ja
+      ? data.name + ' 様\n\nご予約ありがとうございます。レッスンの日時が確定しました。\n\n日時：' + when + '（ニューヨーク時間）\n場所：' + place + (data.area ? '（' + data.area + '）' : '') + '\nレッスン：' + data.len + '分\n\n動きやすい服装でお越しください。バレエシューズがあればお持ちください（靴下でも大丈夫です）。\n変更やキャンセルは、このメールにご返信ください。\n\nお会いできるのを楽しみにしています。\n髙山まり'
+      : 'Hi ' + data.name + ',\n\nThank you for booking — your lesson is confirmed.\n\nWhen: ' + when + ' (New York time)\nWhere: ' + place + (data.area ? ' (' + data.area + ')' : '') + '\nLesson: ' + data.len + ' minutes\n\nPlease wear comfortable clothes you can move in, and bring ballet slippers if you have them (socks are fine too).\nTo change or cancel, just reply to this email.\n\nSee you soon!\nMari Takayama';
+  } else {
+    subject = ja ? 'レッスンのご希望日時について' : 'About your lesson request';
+    body = ja
+      ? data.name + ' 様\n\nお問い合わせありがとうございます。申し訳ありません、ご希望の日時はほかの予定が入ってしまいました。\n\nお手数ですが、こちらからほかの日時を選び直していただけますか。\n' + BOOKING_PAGE + '\n\nよろしくお願いいたします。\n髙山まり'
+      : 'Hi ' + data.name + ',\n\nThank you for your request. I’m sorry — the times you chose are no longer available.\n\nCould you pick another time here?\n' + BOOKING_PAGE + '\n\nThank you,\nMari Takayama';
+  }
+  MailApp.sendEmail({ to: data.email, subject: subject, body: body, name: SENDER_NAME, replyTo: REPLY_TO });
+}
+
+// ---------- helpers ----------
+function dateOf_(ymd) { return Utilities.parseDate(ymd + ' 12:00', TZ, 'yyyy-MM-dd HH:mm'); }
 function atNY_(ymd, h, m) { return Utilities.parseDate(ymd + ' ' + h + ':' + m, TZ, 'yyyy-MM-dd H:m'); }
+function addMin_(hhmm, n) { const t = mins_(hhmm) + n; return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); }
+function partOf_(c) { const t = mins_(c.start || '19:00'); return t < 720 ? '午前' : t < 1020 ? '午後' : '夜'; }
+function choiceJa_(c, len) { const d = dateOf_(c.date); return (d.getMonth() + 1) + '/' + d.getDate() + '（' + WD_JA[d.getDay()] + '）' + c.start + '〜' + addMin_(c.start, len); }
+function choiceEn_(c, len) {
+  const d = dateOf_(c.date); const f = hhmm => { let [h, m] = hhmm.split(':').map(Number); const ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return h + ':' + String(m).padStart(2, '0') + ' ' + ap; };
+  return WD_EN[d.getDay()] + ', ' + (d.getMonth() + 1) + '/' + d.getDate() + ', ' + f(c.start) + '–' + f(addMin_(c.start, len));
+}
+function esc_(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch])); }
+function clip(v, n) { v = String(v == null ? '' : v); v = v.replace(/^[=+\-@]/, "'$&"); return v.slice(0, n || 200); }
+
+// ---------- iCal reading (only used when CAL_ICS is set) ----------
 function icsDate_(v, params) {
   if (/VALUE=DATE(?!-)/.test(params) || /^\d{8}$/.test(v)) return { date: Utilities.parseDate(v.slice(0, 8), TZ, 'yyyyMMdd'), allDay: true };
-  const tz = (params.match(/TZID=([^;:]+)/) || [])[1];
   if (/Z$/.test(v)) return { date: Utilities.parseDate(v.slice(0, 15), 'UTC', "yyyyMMdd'T'HHmmss"), allDay: false };
-  let zone = TZ; if (tz) { try { zone = tz.replace(/"/g, ''); Utilities.formatDate(new Date(), zone, 'H'); } catch (err) { zone = TZ; } }
-  return { date: Utilities.parseDate(v.slice(0, 15), zone, "yyyyMMdd'T'HHmmss"), allDay: false };
+  const tz = (params.match(/TZID=([^;:]+)/) || [])[1];
+  return { date: Utilities.parseDate(v.slice(0, 15), tz ? tz.replace(/"/g, '') : TZ, "yyyyMMdd'T'HHmmss"), allDay: false };
 }
 function parseIcs_(text) {
-  const lines = text.replace(/\r?\n[ \t]/g, '').split(/\r?\n/);
   const events = []; let ev = null;
-  const horizon = new Date(); horizon.setDate(horizon.getDate() + 40);
-  const from = new Date(); from.setDate(from.getDate() - 1);
-  lines.forEach(line => {
-    if (line === 'BEGIN:VEVENT') { ev = { ex: [] }; return; }
-    if (line === 'END:VEVENT') { if (ev && ev.start && !/CANCELLED/i.test(ev.status || '') && !/TRANSPARENT/i.test(ev.transp || '')) expand_(ev, from, horizon).forEach(x => events.push(x)); ev = null; return; }
-    if (!ev) return;
-    const i = line.indexOf(':'); if (i < 0) return;
-    const head = line.slice(0, i), val = line.slice(i + 1); const name = head.split(';')[0].toUpperCase(); const params = head.slice(name.length);
+  text.replace(/\r?\n[ \t]/g, '').split(/\r?\n/).forEach(line => {
+    if (line === 'BEGIN:VEVENT') { ev = {}; return; }
+    if (line === 'END:VEVENT') { if (ev && ev.start && !/CANCELLED/i.test(ev.status || '')) events.push({ start: ev.start, end: ev.end || new Date(ev.start.getTime() + 3600000), allDay: ev.allDay }); ev = null; return; }
+    if (!ev) return; const i = line.indexOf(':'); if (i < 0) return;
+    const head = line.slice(0, i), val = line.slice(i + 1), name = head.split(';')[0].toUpperCase(), params = head.slice(name.length);
     if (name === 'DTSTART') { const d = icsDate_(val, params); ev.start = d.date; ev.allDay = d.allDay; }
     else if (name === 'DTEND') ev.end = icsDate_(val, params).date;
-    else if (name === 'DURATION') ev.dur = val;
-    else if (name === 'RRULE') ev.rrule = val;
-    else if (name === 'EXDATE') val.split(',').forEach(v => ev.ex.push(icsDate_(v, params).date.getTime()));
     else if (name === 'STATUS') ev.status = val;
-    else if (name === 'TRANSP') ev.transp = val;
   });
   return events;
 }
-function expand_(ev, from, horizon) {
-  let len = ev.end ? ev.end - ev.start : 0;
-  if (!ev.end && ev.dur) { const m = ev.dur.match(/P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?)?/); if (m) len = (((+m[1] || 0) * 24 + (+m[2] || 0)) * 60 + (+m[3] || 0)) * 60000; }
-  if (!len) len = ev.allDay ? 86400000 : 3600000;
-  const one = s => ({ start: s, end: new Date(s.getTime() + len), allDay: ev.allDay });
-  if (!ev.rrule) return ev.start < horizon && new Date(ev.start.getTime() + len) > from ? [one(ev.start)] : [];
-  const r = {}; ev.rrule.split(';').forEach(p => { const [a, b] = p.split('='); r[a] = b; });
-  const until = r.UNTIL ? icsDate_(r.UNTIL, '').date : null; const count = r.COUNT ? +r.COUNT : Infinity; const step = +(r.INTERVAL || 1);
-  const wd = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA']; const byday = r.BYDAY ? r.BYDAY.split(',').map(x => wd.indexOf(x.slice(-2))) : null;
-  const out = []; let n = 0;
-  for (let d = new Date(ev.start), guard = 0; d < horizon && guard < 3000; guard++) {
-    const hits = [];
-    if (r.FREQ === 'WEEKLY' && byday) { const ws = new Date(d); ws.setDate(d.getDate() - d.getDay()); byday.forEach(k => { const x = new Date(ws); x.setDate(ws.getDate() + k); if (x >= ev.start) hits.push(x); }); hits.sort((a, b) => a - b); }
-    else hits.push(new Date(d));
-    for (const x of hits) {
-      if (until && x > until) return out; if (n >= count) return out; n++;
-      if (x >= from && x < horizon && ev.ex.indexOf(x.getTime()) < 0) out.push(one(x));
-    }
-    if (r.FREQ === 'DAILY') d.setDate(d.getDate() + step);
-    else if (r.FREQ === 'WEEKLY') d.setDate(d.getDate() - (byday ? d.getDay() : 0) + 7 * step);
-    else if (r.FREQ === 'MONTHLY') d.setMonth(d.getMonth() + step);
-    else if (r.FREQ === 'YEARLY') d.setFullYear(d.getFullYear() + step);
-    else break;
-  }
-  return out;
-}
-
-function clip(v, n) { v = String(v == null ? '' : v); v = v.replace(/^[=+\-@]/, "'$&"); return v.slice(0, n || 200); }
