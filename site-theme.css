@@ -295,3 +295,23 @@ html[lang=ja] .contact-mail-big { font-family: var(--font-display) !important; }
   #grid:has(> button:hover) > button:not(:hover) img, .home-strip:has(a:hover) a:not(:hover) img { opacity: .72; filter: saturate(.85) !important; }
 }
 .home-strip a:hover img { transform: none !important; }
+
+/* ---------- Button color: clean champagne (replaces the brown) ---------- */
+:root { --champagne: #ecdfc6; --champagne-deep: #dfcda8; --champagne-line: #c9b48c; --champagne-pale: #f6f0e4; }
+.home-button:not(.ghost):not(.dark):not(.light), .lesson-inquiry-button, .booking-button:not(.ghost), #interview .interview-feature-link, .rates-page .button, .form-actions button, button.primary {
+  background: var(--champagne) !important; border-color: var(--champagne) !important; color: var(--ink) !important;
+}
+.home-button.ghost, .home-button.dark, .home-button.light, .booking-button.ghost { background: transparent !important; color: var(--ink) !important; border-color: var(--champagne-line) !important; }
+.home-button:not(.ghost):not(.dark):not(.light):hover, .lesson-inquiry-button:hover, .booking-button:not(.ghost):hover, #interview .interview-feature-link:hover {
+  background: var(--champagne) !important; border-color: var(--champagne-deep) !important; color: var(--ink) !important; box-shadow: inset 0 -4em 0 0 var(--champagne-deep);
+}
+.home-button.ghost:hover, .home-button.dark:hover, .home-button.light:hover, .booking-button.ghost:hover {
+  background: transparent !important; color: var(--ink) !important; border-color: var(--champagne-line) !important; box-shadow: inset 0 -4em 0 0 var(--champagne-pale);
+}
+/* top photo: white button + champagne button */
+.hero .hero-actions .home-button:not(.ghost) { background: #fff !important; border-color: #fff !important; color: var(--ink) !important; }
+.hero .hero-actions .home-button.ghost { background: var(--champagne) !important; border-color: var(--champagne) !important; color: var(--ink) !important; }
+.hero .hero-actions .home-button:not(.ghost):hover { border-color: #fff !important; color: var(--ink) !important; box-shadow: inset 0 -4em 0 0 var(--champagne-pale); }
+.hero .hero-actions .home-button.ghost:hover { border-color: var(--champagne-deep) !important; color: var(--ink) !important; box-shadow: inset 0 -4em 0 0 var(--champagne-deep); }
+/* language switch */
+.site-language-switch button[aria-pressed="true"] { background: var(--champagne) !important; color: var(--ink) !important; }
