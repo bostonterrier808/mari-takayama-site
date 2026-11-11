@@ -561,6 +561,14 @@ html[lang="ja"] .home-intro-body > p[data-box-slot]::first-letter { float: none;
   .home-intro-photo { margin-left: 2rem !important; max-width: 82% !important; }
 }
 </style>
+<style id="home-about-soft">
+/* About Mari: two photos that melt softly into the page, overlapping just a little */
+.home-intro-photo::before, .home-intro-photo::after { display: none !important; }
+.home-intro-photo { max-width: 32rem !important; padding-bottom: 42% !important; }
+.home-intro-photo > img[data-photo-id="home/about"] { position: relative; z-index: 2; width: 64% !important; filter: none !important; -webkit-mask-image: radial-gradient(ellipse 70% 72% at 50% 46%, #000 60%, transparent 100%); mask-image: radial-gradient(ellipse 70% 72% at 50% 46%, #000 60%, transparent 100%); }
+.home-intro-photo .intro-dance { position: absolute !important; right: 0; bottom: 0; z-index: 1; width: 50% !important; border: 0 !important; box-shadow: none !important; -webkit-mask-image: radial-gradient(ellipse 72% 72% at 50% 50%, #000 55%, transparent 100%); mask-image: radial-gradient(ellipse 72% 72% at 50% 50%, #000 55%, transparent 100%); }
+@media (max-width: 760px) { .home-intro-photo { max-width: 92% !important; } }
+</style>
 <style id="site-nav-style">
 /* Main menu. PC: one line, About opens a small list (Credits, Gallery, Interview). Phone: Menu button opens cards. */
 header.top { position: sticky; top: 0; z-index: 20; padding: 0 !important; background: color-mix(in srgb, var(--paper) 92%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
