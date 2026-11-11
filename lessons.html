@@ -79,6 +79,9 @@
   .btn.ghost:hover { filter: none; background: rgba(44,42,48,.04); }
   .btn:disabled { opacity: .45; cursor: default; filter: none; }
   .send-help { margin: 10px 0 0; color: var(--muted); font-size: .9rem; }
+  .remember { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 14px 0 0; font-size: .92rem; color: var(--muted); }
+  .remember input { width: 17px; height: 17px; accent-color: var(--gold-ink); }
+  section.who .step-title { margin: 0 0 14px; font-size: 1.3rem; }
   .error { margin: 10px 0 0; color: #8b3a3a; font-size: .95rem; }
   .done { background: #fff; border: 1px solid var(--line); padding: 30px 22px; text-align: center; }
   .done h2 { margin: 0 0 10px; font: 400 2rem var(--font-display); }
@@ -110,6 +113,14 @@
   <p class="lead">Pick a few times that suit you and tell Mari how to reach you. Mari will message you to confirm. It takes about a minute.</p>
 
   <form id="book" novalidate>
+    <section class="step who" aria-labelledby="s0">
+      <h2 class="step-title" id="s0">Is this your first lesson with Mari?</h2>
+      <div class="chips" data-group="visit" data-single>
+        <button type="button" class="chip" data-value="First">First lesson</button>
+        <button type="button" class="chip" data-value="Returning">I’ve had lessons before</button>
+      </div>
+      <p class="contact-hint" id="saved-note" hidden>Your details from last time are filled in.</p>
+    </section>
     <section class="step" aria-labelledby="s1">
       <div class="step-head"><span class="step-num">1</span><h2 class="step-title" id="s1">Your lesson</h2></div>
       <p class="q">Where?</p>
@@ -120,6 +131,7 @@
         <button type="button" class="chip" data-value="Any">Any is fine</button>
       </div>
       <label class="field" id="area-field" hidden>Neighborhood or venue <small>(optional)</small><input type="text" name="area" maxlength="120" placeholder="e.g. Upper West Side"></label>
+      <div id="first-only">
       <p class="q">Who is the lesson for?</p>
       <div class="chips" data-group="age" data-single>
         <button type="button" class="chip" data-value="Child">Child</button>
@@ -131,6 +143,7 @@
         <button type="button" class="chip" data-value="New to ballet">New to ballet</button>
         <button type="button" class="chip" data-value="Some classes">Some classes</button>
         <button type="button" class="chip" data-value="Trains regularly">Trains regularly</button>
+      </div>
       </div>
     </section>
 
@@ -167,6 +180,7 @@
 
     <div class="send">
       <button type="submit" class="btn" id="send-btn">Send request</button>
+      <label class="remember"><input type="checkbox" id="remember" checked> Remember my details on this device for next time</label>
       <p class="send-help">Nothing is booked until Mari confirms with you.</p>
       <p class="error" id="error" role="alert" hidden></p>
     </div>
@@ -189,12 +203,13 @@
 <script>
 (() => {
   // ---- Settings Mari can change -------------------------------------------------
-  // 1) Where requests are sent. Paste the Formspree address here (https://formspree.io/f/...)
-  //    so visitors can send with one tap. Empty = visitors send by Instagram DM or email.
+  // 1) The Google Sheet web address (Apps Script "Web app" URL, https://script.google.com/macros/s/.../exec).
+  //    With it, requests go straight into Mari's sheet (and her email), the sheet counts them,
+  //    and the calendar reads the Availability tab. Empty = visitors send by Instagram DM or email.
+  const SHEET_APP = '';
+  // 2) Or: a Formspree address (https://formspree.io/f/...) if you prefer it for requests.
   const FORM_ENDPOINT = '';
-  // 2) The availability sheet: a Google Sheet "Published to the web" as CSV.
-  //    Columns: date (2026-11-20), morning, afternoon, evening — each ◯, △ or ×.
-  //    Empty = every time is shown as "likely open".
+  // 3) Or: an availability sheet published as CSV (date, morning, afternoon, evening — ◯ / △ / ×).
   const AVAILABILITY_CSV = '';
   // 3) Usual week, used when the sheet has no line for a day.
   //    o = likely open, m = ask Mari, x = not available. Order: [morning, afternoon, evening]
@@ -243,7 +258,8 @@
     titleSent: { en: 'Thank you!', ja: 'ありがとうございます' },
     titleManual: { en: 'One more step', ja: 'あと少しです' },
     copied: { en: 'Copied. Paste it into the Instagram message and send.', ja: 'コピーしました。Instagram のメッセージに貼り付けて送ってください。' },
-    sending: { en: 'Sending…', ja: '送信中…' }
+    sending: { en: 'Sending…', ja: '送信中…' },
+    visitErr: { en: 'Please choose first lesson or lessons before.', ja: '初めてか、2回目以降かを選んでください。' }
   };
   const t = o => o[ja() ? 'ja' : 'en'];
 
@@ -272,9 +288,19 @@
       if (on) { b.setAttribute('aria-pressed', 'true'); choice[name] = b.dataset.value; } else delete choice[name];
       if (name === 'place') document.getElementById('area-field').hidden = choice.place !== 'Travel';
       if (name === 'via') showContact();
+      if (name === 'visit') document.getElementById('first-only').hidden = choice.visit === 'Returning';
     });
     group.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
   });
+  const STORE = 'mt-booking-me';
+  const pick = (group, value) => { const b = value && form.querySelector('[data-group=' + group + '] [data-value="' + value + '"]'); if (b && b.getAttribute('aria-pressed') !== 'true') b.click(); };
+  let saved = null; try { saved = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch {}
+  if (saved && saved.name) {
+    pick('visit', 'Returning');
+    form.name.value = saved.name || ''; pick('via', saved.via); form.contact.value = saved.contact || '';
+    pick('place', saved.place); if (saved.area) form.area.value = saved.area;
+    document.getElementById('saved-note').hidden = false;
+  }
   if (new URLSearchParams(location.search).get('place') === 'travel') form.querySelector('[data-group=place] [data-value=Travel]').click();
 
   function showContact() {
@@ -349,13 +375,21 @@
     });
     return map;
   }
-  if (AVAILABILITY_CSV) fetch(AVAILABILITY_CSV).then(r => r.ok ? r.text() : '').then(txt => { if (txt) { availability = parseCSV(txt); renderWeek(); } }).catch(() => {});
+  // the sheet sends {days: {'2026-11-20': ['◯', '△', '×'], ...}}; a blank cell keeps the usual week
+  const mark = v => /×|✕|^x$/i.test(v) ? 'x' : /△|\?/.test(v) ? 'm' : /◯|○|〇|^o$/i.test(v) ? 'o' : null;
+  if (SHEET_APP) fetch(SHEET_APP + '?availability=1').then(r => r.ok ? r.json() : null).then(j => {
+    if (!j || !j.days) return;
+    availability = {};
+    Object.entries(j.days).forEach(([k, v]) => { const usual = USUAL_WEEK[new Date(k + 'T00:00').getDay()] || ['o', 'o', 'o']; availability[k] = [0, 1, 2].map(i => mark(String(v[i] || '')) || usual[i]); });
+    renderWeek();
+  }).catch(() => {});
+  else if (AVAILABILITY_CSV) fetch(AVAILABILITY_CSV).then(r => r.ok ? r.text() : '').then(txt => { if (txt) { availability = parseCSV(txt); renderWeek(); } }).catch(() => {});
 
   // the request message
   function message() {
     const lines = ja() ? [
       'Mariさん、個人レッスンの予約をお願いしたいです。', '',
-      'お名前：' + form.name.value.trim(),
+      'お名前：' + form.name.value.trim() + (choice.visit === 'Returning' ? '（2回目以降）' : '（初めて）'),
       choice.place && '場所：' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'ダンススタジオ', Travel: '自宅・会場（出張）', Any: 'どこでも' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? '（' + form.area.value.trim() + '）' : ''),
       choice.age && '対象：' + ({ Child: '子ども', Teen: '10代', Adult: '大人' }[choice.age]),
       choice.level && 'バレエ経験：' + ({ 'New to ballet': '初めて', 'Some classes': '少し習ったことがある', 'Trains regularly': '定期的に練習している' }[choice.level]),
@@ -364,7 +398,7 @@
       form.note.value.trim() && '\nメッセージ：' + form.note.value.trim()
     ] : [
       'Hi Mari, I would like to book a private lesson.', '',
-      'Name: ' + form.name.value.trim(),
+      'Name: ' + form.name.value.trim() + (choice.visit === 'Returning' ? ' (has had lessons before)' : ' (first lesson)'),
       choice.place && 'Place: ' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'A dance studio', Travel: 'At my place', Any: 'Any is fine' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? ' (' + form.area.value.trim() + ')' : ''),
       choice.age && 'For: ' + choice.age,
       choice.level && 'Experience: ' + choice.level,
@@ -379,13 +413,32 @@
   form.addEventListener('submit', async e => {
     e.preventDefault(); err.hidden = true;
     const fail = (m, el) => { err.textContent = t(m); err.hidden = false; if (el) el.focus(); };
+    if (!choice.visit) return fail(T.visitErr);
     if (!form.name.value.trim()) return fail(T.errors.name, form.name);
     if (!picks.length) return fail(T.errors.times);
     if (!choice.via) return fail(T.errors.via);
     if (!form.contact.value.trim()) return fail(T.errors.contact, form.contact);
     const text = message();
     const viaName = { Instagram: 'Instagram', WhatsApp: 'WhatsApp', LINE: 'LINE', Email: ja() ? 'メール' : 'email' }[choice.via];
-    if (FORM_ENDPOINT) {
+    try {
+      if (document.getElementById('remember').checked) localStorage.setItem(STORE, JSON.stringify({ name: form.name.value.trim(), via: choice.via, contact: form.contact.value.trim(), place: choice.place || '', area: form.area.value.trim() }));
+      else localStorage.removeItem(STORE);
+    } catch {}
+    const record = {
+      visit: choice.visit, name: form.name.value.trim(), via: choice.via, contact: form.contact.value.trim(),
+      place: choice.place || '', area: form.area.value.trim(), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
+      choices: picks.map(p => ({ date: key(p.date), weekday: T.days.en[p.date.getDay()], time: T.slots.en[p.slot] })),
+      note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
+    };
+    if (SHEET_APP) {
+      const btn = document.getElementById('send-btn'); const label = btn.textContent;
+      btn.disabled = true; btn.textContent = t(T.sending);
+      try {
+        // plain text body keeps this a simple request that Google accepts from any site
+        await fetch(SHEET_APP, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(record) });
+        finish(t(T.doneSent)(viaName), false, text);
+      } catch { fail(T.errors.send); btn.disabled = false; btn.textContent = label; }
+    } else if (FORM_ENDPOINT) {
       const btn = document.getElementById('send-btn'); const label = btn.textContent;
       btn.disabled = true; btn.textContent = t(T.sending);
       try {
@@ -420,7 +473,7 @@
   renderWeek(); renderPicks();
 })();
 </script>
-<script src="site-language.js?v=42"></script>
+<script src="site-language.js?v=43"></script>
 <script src="site-motion.js?v=9"></script>
 </body>
 </html>
