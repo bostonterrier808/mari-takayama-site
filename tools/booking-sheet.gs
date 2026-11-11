@@ -14,8 +14,10 @@
 const SHEET_ID = '';
 const book_ = () => SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActive();
 const TZ = 'America/New_York';
-// Mari's calendar as an iCal (.ics) link, e.g. Yahoo Calendar > Share > "ICS" link. Busy times become × on the site.
+// Busy times in Mari's Google Calendar (every calendar she owns) become × on the site.
 // Only free/busy goes to the website — never the titles or details of her plans.
+const USE_GOOGLE_CALENDAR = true;
+// Or another calendar as an iCal (.ics) link (e.g. Yahoo Calendar > Share > ICS link).
 const CAL_ICS = '';
 // the three lesson times on the site (24-hour clock, New York time)
 const SLOTS = [[9, 0, 12, 0], [12, 0, 17, 0], [19, 0, 21, 30]];
@@ -116,14 +118,25 @@ function doGet(e) {
 // ---------- calendar (free / busy only) ----------
 function busyDays_() {
   const out = new Map();
-  if (!CAL_ICS) return out;
+  if (!USE_GOOGLE_CALENDAR && !CAL_ICS) return out;
   const cache = CacheService.getScriptCache();
   const hit = cache.get('busy');
   if (hit) { JSON.parse(hit).forEach(([k, v]) => out.set(k, v)); return out; }
-  let text = '';
-  try { text = UrlFetchApp.fetch(CAL_ICS, { muteHttpExceptions: true, followRedirects: true }).getContentText(); } catch (err) { return out; }
-  const events = parseIcs_(text);
   const start = new Date(); start.setHours(0, 0, 0, 0);
+  const end = new Date(start); end.setDate(start.getDate() + 36);
+  let events = [];
+  if (USE_GOOGLE_CALENDAR) {
+    try {
+      CalendarApp.getAllOwnedCalendars().forEach(cal => cal.getEvents(start, end).forEach(ev => {
+        const mine = ev.getMyStatus && ev.getMyStatus();
+        if (mine === CalendarApp.GuestStatus.NO) return;
+        events.push({ start: ev.getStartTime(), end: ev.getEndTime(), allDay: ev.isAllDayEvent() });
+      }));
+    } catch (err) { console.log(err); }
+  }
+  if (CAL_ICS) {
+    try { events = events.concat(parseIcs_(UrlFetchApp.fetch(CAL_ICS, { muteHttpExceptions: true, followRedirects: true }).getContentText())); } catch (err) { console.log(err); }
+  }
   for (let i = 0; i < 35; i++) {
     const day = new Date(start); day.setDate(start.getDate() + i);
     const k = Utilities.formatDate(day, TZ, 'yyyy-MM-dd');
