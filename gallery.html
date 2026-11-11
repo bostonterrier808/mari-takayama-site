@@ -363,7 +363,15 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
   .banner .wrap { align-items: flex-start; padding-top: 1.25rem; }
 }
 </style>
-<style id="manual-box-styles">@media(min-width:761px){}@media(max-width:760px){}</style></head>
+<style id="manual-box-styles">@media(min-width:761px){}@media(max-width:760px){}</style><meta name="editor-published-at" content="1794370915803">
+<style id="gallery-whole-photos">
+/* Gallery: show every photo whole (no cropping), in its own shape */
+body #gallery #grid { display: block !important; columns: 3 260px; column-gap: 20px; }
+body #gallery #grid > button[data-photo-slot] { display: block !important; width: 100% !important; height: auto !important; margin: 0 0 20px !important; break-inside: avoid; grid-column: auto !important; grid-row: auto !important; translate: none !important; }
+body #gallery #grid > button[data-photo-slot] img { display: block; width: 100% !important; height: auto !important; aspect-ratio: auto !important; object-fit: contain !important; transform: none !important; translate: none !important; }
+@media (max-width: 760px) { body #gallery #grid { columns: 2; column-gap: 12px; } body #gallery #grid > button[data-photo-slot] { margin-bottom: 12px !important; } }
+</style>
+</head>
 <body>
 
 <header class="top" data-box-slot="0">
