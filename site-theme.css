@@ -144,3 +144,54 @@ html[lang=ja] .banner h2, html[lang=ja] .plain-banner h2, html[lang=ja] .credits
 html[lang=ja] header.top #site-menu a { font-family: "Shippori Mincho", serif !important; font-weight: 500 !important; font-size: 0.98rem !important; letter-spacing: 0.12em !important; }
 /* Japanese never uses slanted (fake italic) letters */
 html[lang=ja] body * { font-style: normal !important; }
+
+/* =====================================================================
+   Refined, not "cute": no rounded pills or boxes anywhere.
+   ===================================================================== */
+.home-button, .booking-button, .lesson-inquiry-button, #interview .interview-feature-link, .form-actions button, button.primary,
+.site-language-switch, .site-language-switch button, .travel-points li, .booking-tags li, #interview .press-language-nav a,
+.strip-arrow, .copy, footer .copy, .lesson-inquiry, .place-card, .travel-lesson, header.top .menu-toggle {
+  border-radius: 0 !important;
+}
+.home-button, .booking-button, .lesson-inquiry-button, #interview .interview-feature-link {
+  font-family: var(--font-display) !important; font-weight: 600 !important; font-size: 0.86rem !important;
+  letter-spacing: 0.22em !important; text-transform: uppercase !important; padding: 0.95rem 1.9rem !important; line-height: 1.2 !important;
+}
+.lesson-inquiry-button span { letter-spacing: 0; }
+html[lang=ja] :is(.home-button, .booking-button, .lesson-inquiry-button, #interview .interview-feature-link) { font-family: "Shippori Mincho", serif !important; font-size: 0.9rem !important; letter-spacing: 0.16em !important; }
+.site-language-switch { padding: 2px !important; }
+.site-language-switch button { font-family: var(--font-display) !important; font-weight: 600 !important; letter-spacing: 0.12em !important; }
+
+/* ---------- ≡ menu: an elegant list, not boxes ---------- */
+@media (max-width: 1180px) {
+  header.top .menu-toggle { width: 44px !important; height: 44px !important; padding: 0 !important; justify-content: center !important; border: 1px solid var(--gold-line) !important; background: #fff !important; color: var(--ink) !important; }
+  header.top .menu-toggle span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  header.top.menu-open .menu-toggle { background: #fff !important; color: var(--gold-ink) !important; border-color: var(--gold) !important; }
+  header.top #site-menu { background: #fff !important; padding-top: 8px !important; gap: 0 !important; }
+  header.top #site-menu > li, header.top #site-menu > li.menu-home, header.top #site-menu > li.menu-group + li,
+  header.top #site-menu > li:has(+ li.menu-group), header.top #site-menu > li:not(.menu-solo):has(+ li.menu-solo),
+  header.top #site-menu > li.menu-group + li:has(+ li.menu-group), header.top #site-menu > li.menu-group + li:has(+ li.menu-solo) {
+    background: none !important; border: 0 !important; border-radius: 0 !important; margin-top: 0 !important; box-shadow: none !important;
+  }
+  header.top #site-menu > li:not(.menu-group):not(.menu-solo) { border-bottom: 1px solid color-mix(in srgb, var(--gold) 30%, transparent) !important; }
+  header.top #site-menu > li:not(.menu-group):not(.menu-solo) + li:not(.menu-group):not(.menu-solo) > a { border-top: 0 !important; }
+  header.top #site-menu > li.menu-group { padding: 28px 2px 10px !important; font-family: var(--font-display) !important; font-size: 0.74rem !important; font-weight: 600 !important; letter-spacing: 0.32em !important; color: var(--gold-ink) !important; border-bottom: 1px solid color-mix(in srgb, var(--gold) 30%, transparent) !important; }
+  header.top #site-menu > li > a { padding: 16px 2px 14px !important; font-size: 1.7rem !important; font-weight: 300 !important; letter-spacing: 0.01em !important; color: var(--ink) !important; box-shadow: none !important; }
+  header.top #site-menu > li > a::after { content: "" !important; }
+  header.top #site-menu > li > a[aria-current="page"] { color: var(--gold-ink) !important; box-shadow: none !important; }
+  header.top #site-menu > li > a[aria-current="page"]::before { content: "" !important; position: absolute; left: -12px; top: 50%; width: 5px; height: 5px; margin-top: -2px; border: 0 !important; background: var(--gold); transform: rotate(45deg) !important; }
+  header.top #site-menu .menu-desc { margin-top: 4px !important; font-family: var(--font-body) !important; font-size: 0.86rem !important; font-style: italic; color: var(--ink-soft) !important; }
+  header.top #site-menu .menu-sub { gap: 0 1.4rem !important; padding: 0 2px 16px !important; margin-top: -4px; }
+  header.top #site-menu .menu-sub a, header.top #site-menu .menu-sub a[aria-current="page"] { padding: 2px 0 !important; border: 0 !important; border-radius: 0 !important; background: none !important; font-family: var(--font-display) !important; font-size: 1.1rem !important; font-style: italic; font-weight: 400 !important; color: var(--ink-soft) !important; text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--gold) 45%, transparent); text-underline-offset: 0.3em; }
+  header.top #site-menu .menu-sub a[aria-current="page"] { color: var(--gold-ink) !important; text-decoration-color: var(--gold); }
+  header.top #site-menu > li.menu-solo { margin-top: 32px !important; }
+  header.top #site-menu > li.menu-solo > a, header.top #site-menu > li.menu-solo:last-child > a { padding: 16px 10px !important; border: 1px solid var(--gold-deep) !important; border-radius: 0 !important; background: none !important; color: var(--gold-ink) !important; font-family: var(--font-display) !important; font-size: 0.86rem !important; font-weight: 600 !important; letter-spacing: 0.3em !important; text-transform: uppercase; }
+  html[lang=ja] header.top #site-menu > li > a { font-family: "Shippori Mincho", serif !important; font-size: 1.2rem !important; font-weight: 500 !important; letter-spacing: 0.14em !important; }
+  html[lang=ja] header.top #site-menu .menu-sub a { font-family: "Shippori Mincho", serif !important; font-size: 0.95rem !important; letter-spacing: 0.1em !important; }
+  html[lang=ja] header.top #site-menu > li.menu-group { font-family: "Shippori Mincho", serif !important; letter-spacing: 0.24em !important; }
+  html[lang=ja] header.top #site-menu > li.menu-solo > a { font-family: "Shippori Mincho", serif !important; font-size: 0.95rem !important; letter-spacing: 0.2em !important; }
+}
+@media (min-width: 1181px) {
+  header.top #site-menu .menu-sub { border-radius: 0 !important; border-color: var(--gold-line) !important; box-shadow: 0 18px 36px -24px rgba(60, 45, 20, 0.35) !important; padding: 10px 6px !important; }
+  header.top #site-menu .menu-sub a { border-radius: 0 !important; font-style: italic; }
+}
