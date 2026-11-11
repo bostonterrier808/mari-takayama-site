@@ -128,6 +128,19 @@ html.site-reveal .rv.in { opacity: 1; transform: none; }
 }
 
 /* ---------- Language switch (English / 日本語) ---------- */
-header.top .site-language-switch { border-color: var(--gold-line) !important; background: #fff !important; }
-header.top .site-language-switch button { color: var(--gold-ink) !important; background: transparent !important; }
-header.top .site-language-switch button[aria-pressed="true"] { background: var(--gold-deep) !important; color: #fff !important; }
+.site-language-switch { border-color: var(--gold-line) !important; background: #fff !important; }
+.site-language-switch button { color: var(--gold-ink) !important; background: transparent !important; }
+.site-language-switch button[aria-pressed="true"] { background: var(--gold-deep) !important; color: #fff !important; }
+
+/* ---------- Type: Cormorant Garamond (light) for titles, labels in spaced capitals ---------- */
+.banner h2, .plain-banner h2, #interview .plain-banner h2, .credits-page h1, .about h2, .booking-card h1 { font-weight: 300 !important; }
+.row h3, .travel-lesson h3, .lesson-places h3, .booking-info h2, .booking-steps h2, .booking-share h2, .credits-page h2, .rates-page h2, .lesson-inquiry-title, .place-card h4, #interview .press-language-title { font-weight: 400 !important; }
+header.top #site-menu a { font-family: var(--font-display) !important; font-size: 1.12rem !important; font-weight: 500 !important; letter-spacing: 0.03em !important; }
+header.top #site-menu .menu-sub a { font-size: 1.05rem !important; }
+header.top .brand { font-weight: 500 !important; letter-spacing: 0.06em !important; }
+header.top .brand small { font-family: var(--font-display) !important; font-weight: 600 !important; color: var(--gold-ink) !important; }
+footer nav a, footer .name { font-family: var(--font-display); font-weight: 400; }
+html[lang=ja] .banner h2, html[lang=ja] .plain-banner h2, html[lang=ja] .credits-page h1, html[lang=ja] .about h2, html[lang=ja] .booking-card h1 { font-weight: 500 !important; letter-spacing: 0.08em !important; }
+html[lang=ja] header.top #site-menu a { font-family: "Shippori Mincho", serif !important; font-weight: 500 !important; font-size: 0.98rem !important; letter-spacing: 0.12em !important; }
+/* Japanese never uses slanted (fake italic) letters */
+html[lang=ja] body * { font-style: normal !important; }
