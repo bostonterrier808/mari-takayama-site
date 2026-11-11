@@ -479,6 +479,42 @@ body:has(#home) main { background: var(--paper); color: var(--ink); }
   .home-facts div, .home-facts div:first-child { border-left-color: var(--gold-line); }
 }
 </style>
+<style id="home-motion">
+/* Home: refined type and gentle motion */
+.home-kicker { display: flex; align-items: center; gap: 0.8rem; margin: 0 0 1.1rem; color: var(--gold-ink); font-family: var(--font-display); font-size: 0.82rem; font-weight: 600; letter-spacing: 0.32em; text-transform: uppercase; }
+.home-kicker::before { content: ""; width: 2.5rem; height: 1px; background: var(--gold); }
+.home-intro h2 { font-weight: 400; font-size: clamp(2.4rem, 4.6vw, 4rem); line-height: 1.08; letter-spacing: 0.005em; }
+.home-lede { margin: -1rem auto clamp(2rem, 4vw, 3rem); max-width: 34em; text-align: center; color: var(--ink-soft); font-style: italic; font-size: clamp(1.1rem, 1.6vw, 1.3rem); }
+.home-eyebrow, .home-stage h2, .home-gallery h2, .home-press h2 { font-weight: 400 !important; letter-spacing: 0.01em; }
+.hero .kicker { font-weight: 500; font-size: clamp(0.85rem, 1.2vw, 1.05rem) !important; letter-spacing: 0.38em; text-transform: uppercase; color: #ecdcb6; }
+.hero h1 { font-weight: 400; letter-spacing: 0.05em; }
+.hero .sub { font-style: italic; letter-spacing: 0.02em; }
+.home-contact h2 { font-weight: 400; font-size: clamp(2rem, 3.6vw, 3rem); }
+.home-duo .home-path h2 { font-weight: 400; letter-spacing: 0.01em; }
+/* hover: cards lift, photos breathe */
+.home-duo .home-path { transition: transform 0.5s cubic-bezier(.2,.7,.2,1), box-shadow 0.5s ease; }
+.home-duo .home-path:hover { transform: translateY(-6px); box-shadow: 0 18px 40px -24px rgba(70, 50, 20, 0.45); }
+.home-duo .home-path > img { transition: filter 0.6s ease; }
+.home-duo .home-path:hover > img { filter: brightness(1.04) saturate(1.06); }
+.home-button { transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.25s ease; }
+.home-button:hover { transform: translateY(-2px); }
+/* first view: the top photo settles in, words rise one by one */
+@keyframes home-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes home-settle { from { opacity: 0; transform: scale(1.06); } to { opacity: 1; transform: scale(1); } }
+.hero-photo img { animation: home-settle 1.8s cubic-bezier(.2,.7,.2,1) both; }
+.hero .kicker { animation: home-rise 1s 0.35s cubic-bezier(.2,.7,.2,1) both; }
+.hero h1 { animation: home-rise 1.1s 0.55s cubic-bezier(.2,.7,.2,1) both; }
+.hero .sub { animation: home-rise 1s 0.8s cubic-bezier(.2,.7,.2,1) both; }
+.hero-actions { animation: home-rise 1s 1s cubic-bezier(.2,.7,.2,1) both; }
+/* while scrolling: each part fades up as it comes into view */
+html.home-reveal .rv { opacity: 0; transform: translateY(28px); transition: opacity 0.9s ease, transform 0.9s cubic-bezier(.2,.7,.2,1); transition-delay: var(--rv-delay, 0s); }
+html.home-reveal .rv.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-photo img, .hero .kicker, .hero h1, .hero .sub, .hero-actions { animation: none; }
+  html.home-reveal .rv { opacity: 1; transform: none; transition: none; }
+  .home-duo .home-path, .home-duo .home-path:hover, .home-button:hover { transform: none; }
+}
+</style>
 <style id="site-nav-style">
 /* Main menu. PC: one line, About opens a small list (Credits, Gallery, Interview). Phone: Menu button opens cards. */
 header.top { position: sticky; top: 0; z-index: 20; padding: 0 !important; background: color-mix(in srgb, var(--paper) 92%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
@@ -576,13 +612,24 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu"><i aria-hidden="true"></i><span class="when-closed">Menu</span><span class="when-open">Close</span></button>
   </nav>
 </header>
+<script id="home-motion-script">
+(() => {
+  if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const groups = ['.home-intro-photo', '.home-intro-body > *', '.home-eyebrow', '.home-lede', '.home-duo > .home-path', '.home-stage h2', '.home-upcoming', '.home-past', '.home-gallery-head', '.home-strip > a', '.home-press h2', '.press-list li', '.home-press .home-link', '.home-contact .wrap > *'];
+  const items = [];
+  groups.forEach(sel => document.querySelectorAll(sel).forEach((el, i) => { el.classList.add('rv'); el.style.setProperty('--rv-delay', Math.min(i, 5) * 0.12 + 's'); items.push(el); }));
+  document.documentElement.classList.add('home-reveal');
+  const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+  items.forEach(el => io.observe(el));
+})();
+</script>
 <script id="site-nav-script">(()=>{const h=document.querySelector('header.top'),b=h&&h.querySelector('.menu-toggle');if(!b)return;const set=o=>{h.classList.toggle('menu-open',o);b.setAttribute('aria-expanded',String(o));document.documentElement.classList.toggle('menu-lock',o)};b.addEventListener('click',()=>set(!h.classList.contains('menu-open')));h.querySelectorAll('#site-menu a').forEach(a=>a.addEventListener('click',()=>set(false)));addEventListener('keydown',e=>{if(e.key==='Escape'&&h.classList.contains('menu-open')){set(false);b.focus()}});matchMedia('(min-width: 1181px)').addEventListener('change',()=>set(false))})()</script>
 
 <main>
   <section class="hero" id="home" data-box-slot="1" data-section-key="#home">
     <div class="hero-photo" data-box-slot="2"><img src="img/hero.jpg?v=full-body" alt="Mari Takayama leaping in a purple and black leotard, with her full body visible" data-photo-id="img/hero.jpg?v=full-body" style="filter: brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%); translate: 0px;"></div>
     <div class="wrap" data-box-slot="3">
-      <p class="kicker" data-box-slot="21" data-text-slot="14">Welcome to Explore</p>
+      <p class="kicker" data-box-slot="21" data-text-slot="14">Classical Ballet · New York</p>
       <h1 data-box-slot="22" data-text-slot="15">Mari Takayama</h1>
       <p class="sub" data-box-slot="23" data-text-slot="16">Professional ballet dancer and teacher based in NYC</p>
       <p class="hero-actions" data-box-slot="24"><a class="home-button" href="private-lessons.html">Book a private lesson</a><a class="home-button ghost" href="booking.html">Book Mari to perform</a></p>
@@ -598,8 +645,9 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
         <img src="img/about.jpg" alt="Portrait of Mari Takayama" data-photo-id="home/about" loading="lazy" data-box-slot="57" style="filter: brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%); translate: 0px;">
       </figure>
       <div class="home-intro-body" data-box-slot="25">
-        <h2 id="intro-title" data-box-slot="26">Classical ballet, on stage and in the studio.</h2>
-        <p data-box-slot="27">Born in Japan and trained in classical ballet from early childhood, Mari Takayama now dances on New York stages, in roles from Kitri in Don Quixote to the Sugar Plum Fairy. In the studio, she teaches children and adults with the same care, one step at a time.</p>
+        <p class="home-kicker">About Mari</p>
+        <h2 id="intro-title" data-box-slot="26">Grace learned in Japan,<br>danced in New York.</h2>
+        <p data-box-slot="27">Mari Takayama began classical ballet as a child in Japan. Today she performs on New York stages, from Kitri in Don Quixote to the Sugar Plum Fairy, a role she has danced four seasons in a row. In the studio, she gives every student the same discipline and warmth, from a first plié to pointe.</p>
         <dl class="home-facts" data-box-slot="28">
           <div data-box-slot="29"><dt>Home stage</dt><dd>New York City</dd></div>
           <div data-box-slot="30"><dt>Roots</dt><dd>Japan</dd></div>
@@ -613,12 +661,13 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
   <section class="home-paths duo" aria-labelledby="work-title" data-box-slot="8" data-section-key="section.home-paths.duo:2">
     <div class="wrap" data-box-slot="9">
       <h2 class="home-eyebrow" id="work-title" data-box-slot="32">Lessons &amp; Performances</h2>
+      <p class="home-lede">Learn with a professional dancer, or bring live ballet to your occasion.</p>
       <div class="home-duo" data-box-slot="33">
     <article class="home-path lessons" data-box-slot="34">
       <img src="img/lesson.jpg" alt="Mari correcting a student's pointe at the barre" data-photo-id="home/lesson" loading="lazy" data-box-slot="58" style="filter: brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%); translate: 0px;">
       <div class="home-path-text" data-box-slot="35">
         <h2 data-box-slot="36">Private Lessons</h2>
-        <p data-box-slot="37">One-on-one and small group ballet for children and adults, at a studio or at your place. Every class starts at the barre and builds clean, strong technique.</p>
+        <p data-box-slot="37">Personal attention from a professional dancer. One-on-one or small group classes for children and adults, at a studio or at your place, built on clean, strong technique.</p>
         <a class="home-button" href="private-lessons.html">See lesson details</a>
       </div>
     </article>
@@ -626,7 +675,7 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
       <img src="img/g08.jpg" alt="Mari in an arabesque with a flowing kimono" data-photo-id="home/events" loading="lazy" data-box-slot="59">
       <div class="home-path-text" data-box-slot="39">
         <h2 data-box-slot="40">Ballet for your event</h2>
-        <p data-box-slot="41">Parties, weddings, galas, and cultural festivals. Mari performs classical ballet and Japanese-inspired dance, planned with you for the occasion.</p>
+        <p data-box-slot="41">Weddings, galas, private parties, and cultural festivals. Classical ballet or Japanese-inspired dance, choreographed for your occasion.</p>
         <a class="home-button" href="booking.html">Book Mari to perform</a>
       </div>
     </article>
@@ -702,8 +751,8 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
 
   <section class="home-contact" aria-labelledby="contact-title" data-box-slot="19" data-section-key="section.home-contact:7">
     <div class="wrap" data-box-slot="20">
-      <h2 id="contact-title" data-box-slot="55">Lessons, performances, collaborations</h2>
-      <p data-box-slot="56">Write to Mari and she will reply personally.</p>
+      <h2 id="contact-title" data-box-slot="55">Let’s create something beautiful together.</h2>
+      <p data-box-slot="56">Lessons, performances, and collaborations. Write to Mari and she will reply personally.</p>
       <a class="home-button light" href="mailto:maritakayama.official@gmail.com">Email Mari</a>
     </div>
   </section>
