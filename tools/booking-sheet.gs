@@ -56,7 +56,7 @@ function setup() {
   req.getRange(1, 1, 1, HEAD.length).setValues([HEAD]).setFontWeight('bold').setBackground('#ecdfc6');
   req.setFrozenRows(1);
   req.getRange('A2:A').setNumberFormat('yyyy/mm/dd hh:mm');
-  req.getRange(2, C['状況'], req.getMaxRows() - 1, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['新規', '返信済み', '予約確定', 'レッスン済み', 'お断り'], true).build());
+  req.getRange(2, C['状況'], req.getMaxRows() - 1, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['新規', '時間を提案中', '返信済み', '予約確定', 'レッスン済み', 'お断り'], true).build());
   req.setColumnWidths(1, HEAD.length, 120);
   try { req.hideColumns(C['id'], 3); } catch (e) {}
   const av = ss.getSheetByName(AV) || ss.insertSheet(AV, 1);
@@ -106,7 +106,7 @@ function doPost(e) {
       JA.age[d.age] || d.age || '', JA.level[d.level] || d.level || ''];
     for (let i = 0; i < 3; i++) row.push(c[i] ? choiceJa_(c[i], len) : '');
     for (let i = 0; i < 3; i++) row.push(c[i] ? WD_JA[dateOf_(c[i].date).getDay()] : '', c[i] ? partOf_(c[i]) : '');
-    row.push(clip(d.note, 700), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en' }));
+    row.push(clip(d.note, 700), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en' }));
     book_().getSheetByName(REQ).appendRow(row);
     notifyMari_(d, c, len, id, key);
     return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
@@ -128,7 +128,8 @@ function notifyMari_(d, c, len, id, key) {
   const html = '<div style="font-family:sans-serif;color:#2c2a30;font-size:15px;line-height:1.6">'
     + '<p><b>レッスンのリクエストが届きました。</b>確定する時間のボタンを押すと、お客さんに確定メールが届き、Google カレンダーにも入ります。</p>'
     + rows
-    + '<p style="margin:16px 0">' + btn(url + '?act=decline&id=' + id + '&k=' + key, 'どの時間も無理なので、お断りする（ほかの日を選び直してもらう）', false) + '</p>'
+    + '<p style="margin:16px 0 6px">' + btn(url + '?act=propose&id=' + id + '&k=' + key, '時間を変えて提案する（例：30分ずらす）', false) + '</p>'
+    + '<p style="margin:6px 0 16px">' + btn(url + '?act=decline&id=' + id + '&k=' + key, 'どの時間も無理なので、お断りする（ほかの日を選び直してもらう）', false) + '</p>'
     + '<table style="margin-top:14px;font-size:14px">' + info + '</table>'
     + '<p style="color:#6a6670;font-size:13px;margin-top:18px">ボタンを押すと確認の画面が出ます。そこでもう一度押すと送られます。<br>シート：' + book_().getUrl() + '</p></div>';
   MailApp.sendEmail({ to: me, subject: 'レッスンのリクエスト：' + String(d.name || '').slice(0, 60) + '（' + (JA.visit[d.visit] || '') + '）', htmlBody: html, body: String(d.message || '').slice(0, 3000), name: 'Lesson booking' });
@@ -215,9 +216,10 @@ function actionPage_(p) {
   const i = ids.indexOf(String(p.id));
   if (i < 0) return page_('見つかりません', 'このリクエストは見つかりませんでした。');
   const r = i + 2;
-  if (String(sh.getRange(r, C['key']).getValue()) !== String(p.k)) return page_('開けません', 'このボタンは使えません。');
   const data = JSON.parse(sh.getRange(r, C['data']).getValue() || '{}');
   const status = String(sh.getRange(r, C['状況']).getValue());
+  if (p.act === 'accept') return acceptPage_(p, sh, r, data, status);
+  if (String(sh.getRange(r, C['key']).getValue()) !== String(p.k)) return page_('開けません', 'このボタンは使えません。');
   if (status === '予約確定' || status === 'お断り') return page_('対応済みです', 'このリクエストはもう「' + status + '」になっています。' + (status === '予約確定' ? '<br>確定した日時：' + esc_(sh.getRange(r, C['確定した日時']).getDisplayValue()) : ''));
   const self = ScriptApp.getService().getUrl() + '?act=' + encodeURIComponent(p.act) + '&id=' + encodeURIComponent(p.id) + '&k=' + encodeURIComponent(p.k) + (p.c != null ? '&c=' + encodeURIComponent(p.c) : '');
   if (p.act === 'confirm') {
@@ -231,6 +233,31 @@ function actionPage_(p) {
     CacheService.getScriptCache().remove('free');
     return page_('確定しました', esc_(data.name) + ' さんに確定メールを送り、Google カレンダーに入れました。<br>' + choiceJa_(ch, data.len));
   }
+  if (p.act === 'propose') {
+    const ch0 = (data.choices || [])[0] || { date: Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'), start: '19:00' };
+    if (!p.go) {
+      const opt = (v, cur, label) => '<option value="' + v + '"' + (String(v) === String(cur) ? ' selected' : '') + '>' + (label || v) + '</option>';
+      let times = ''; for (let t = 7 * 60; t <= 22 * 60; t += 15) times += opt(Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'), ch0.start.replace(/^0/, ''));
+      const lens = [30, 45, 60, 75, 90, 120, 150, 180].map(n => opt(n, data.len, n + '分')).join('');
+      const base = ScriptApp.getService().getUrl();
+      const asked = (data.choices || []).map((x, j) => '第' + (j + 1) + '希望：' + choiceJa_(x, data.len)).join('<br>');
+      const form = '<form method="get" action="' + base + '" target="_top" style="margin-top:14px">'
+        + '<input type="hidden" name="act" value="propose"><input type="hidden" name="id" value="' + esc_(p.id) + '"><input type="hidden" name="k" value="' + esc_(p.k) + '"><input type="hidden" name="go" value="1">'
+        + '<p>日にち<br><input type="date" name="date" value="' + ch0.date + '" style="font-size:17px;padding:8px;width:100%;box-sizing:border-box"></p>'
+        + '<p>始まる時間<br><select name="start" style="font-size:17px;padding:8px;width:100%">' + times + '</select></p>'
+        + '<p>長さ<br><select name="len" style="font-size:17px;padding:8px;width:100%">' + lens + '</select></p>'
+        + '<p>ひとこと（なくても大丈夫）<br><textarea name="msg" rows="3" style="font-size:16px;padding:8px;width:100%;box-sizing:border-box" placeholder="例：19:30 だと少し間に合わないので、20:00 からでいかがでしょうか。"></textarea></p>'
+        + '<p><button type="submit" style="font-size:17px;padding:14px 22px;background:#ecdfc6;border:1px solid #c9b48c;color:#2c2a30">この時間をお客さんに提案する</button></p></form>';
+      return page_('時間を変えて提案する', '<b>' + esc_(data.name) + '</b> さんの希望：<br>' + asked + form);
+    }
+    if (!/^\d{4}-\d\d-\d\d$/.test(p.date || '') || !/^\d{1,2}:\d\d$/.test(p.start || '')) return page_('入力を確かめてください', '日にちと時間を選んでください。');
+    const prop = { date: p.date, start: p.start, len: Math.max(15, Math.min(240, +p.len || data.len)) };
+    data.id = data.id || String(p.id); data.proposal = prop; data.ckey = data.ckey || Utilities.getUuid().replace(/-/g, '');
+    sh.getRange(r, C['data']).setValue(JSON.stringify(data));
+    sh.getRange(r, C['状況']).setValue('時間を提案中');
+    sendCustomer_(data, 'propose', prop, String(p.msg || '').slice(0, 500));
+    return page_('提案を送りました', esc_(data.name) + ' さんに、' + choiceJa_(prop, prop.len) + '（' + prop.len + '分）を提案しました。<br>お客さんが「この時間で予約する」を押すと、自動で確定して、Google カレンダーに入り、Mari さんにもメールが届きます。');
+  }
   if (p.act === 'decline') {
     if (!p.go) return page_('お断りしますか？', '<b>' + esc_(data.name) + '</b> さんに、「希望の時間はうまってしまいました。ほかの日時を選び直してください」というメールを送ります。', self + '&go=1', 'お断りのメールを送る');
     sendCustomer_(data, 'decline');
@@ -239,13 +266,33 @@ function actionPage_(p) {
   }
   return page_('?', '');
 }
+function acceptPage_(p, sh, r, data, status) {
+  const ja = data.language === 'ja';
+  if (!data.ckey || String(p.k) !== data.ckey || !data.proposal) return page_(ja ? '開けません' : 'Link not valid', ja ? 'このリンクは使えません。' : 'This link can no longer be used.');
+  const prop = data.proposal; const when = ja ? choiceJa_(prop, prop.len) : choiceEn_(prop, prop.len);
+  if (status === '予約確定') return page_(ja ? '予約は確定しています' : 'Your lesson is booked', (ja ? '日時：' : 'When: ') + esc_(sh.getRange(r, C['確定した日時']).getDisplayValue() || when));
+  if (status === 'お断り') return page_(ja ? 'このご予約は終了しています' : 'This request is closed', ja ? 'お手数ですが、予約ページから選び直してください。<br>' + BOOKING_PAGE : 'Please choose a new time here:<br>' + BOOKING_PAGE);
+  if (!p.go) {
+    const self = ScriptApp.getService().getUrl() + '?act=accept&id=' + encodeURIComponent(p.id) + '&k=' + encodeURIComponent(p.k) + '&go=1';
+    return page_(ja ? 'この時間で予約しますか？' : 'Book this time?', '<b>' + when + '</b>' + (ja ? '（ニューヨーク時間）' : ' (New York time)') + '<br>' + esc_(PLACES[data.place] ? PLACES[data.place][ja ? 'ja' : 'en'] : ''), self, ja ? 'この時間で予約する' : 'Book this time');
+  }
+  const s = atNY_(prop.date, ...prop.start.split(':').map(Number)), en = new Date(s.getTime() + prop.len * 60000);
+  CalendarApp.getDefaultCalendar().createEvent('バレエレッスン：' + data.name, s, en, { location: PLACES[data.place] ? PLACES[data.place].en : '', description: 'メール：' + data.email + '\n（予約サイトから・提案した時間）' });
+  data.len = prop.len;
+  sendCustomer_(data, 'confirm', prop);
+  sh.getRange(r, C['状況']).setValue('予約確定'); sh.getRange(r, C['確定した日時']).setValue(choiceJa_(prop, prop.len));
+  CacheService.getScriptCache().remove('free');
+  const me = Session.getEffectiveUser().getEmail();
+  if (me) MailApp.sendEmail({ to: me, subject: '予約が確定しました：' + data.name + '（' + choiceJa_(prop, prop.len) + '）', body: data.name + ' さんが、提案した時間で予約しました。\n\n日時：' + choiceJa_(prop, prop.len) + '\n場所：' + (PLACES[data.place] ? PLACES[data.place].ja : '') + '\nメール：' + data.email + '\n\nGoogle カレンダーに入れました。', name: 'Lesson booking' });
+  return page_(ja ? '予約が確定しました' : 'Your lesson is booked', (ja ? '確定のメールをお送りしました。<br>日時：' : 'A confirmation email is on its way.<br>When: ') + when);
+}
 function page_(title, body, goHref, goLabel) {
   const html = '<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><div style="font-family:Georgia,serif;color:#2c2a30;max-width:520px;margin:40px auto;padding:0 18px;line-height:1.7;font-size:17px">'
     + '<h1 style="font-weight:400;font-size:28px;margin:0 0 14px">' + title + '</h1><div>' + body + '</div>'
     + (goHref ? '<p style="margin-top:22px"><a href="' + goHref + '" target="_top" style="display:inline-block;padding:14px 22px;background:#ecdfc6;border:1px solid #c9b48c;color:#2c2a30;text-decoration:none">' + goLabel + '</a></p>' : '') + '</div>';
   return HtmlService.createHtmlOutput(html).setTitle(title).addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
-function sendCustomer_(data, kind, ch) {
+function sendCustomer_(data, kind, ch, note) {
   if (!data.email) return;
   const ja = data.language === 'ja';
   const place = PLACES[data.place] ? PLACES[data.place][ja ? 'ja' : 'en'] : '';
@@ -256,6 +303,13 @@ function sendCustomer_(data, kind, ch) {
     body = ja
       ? data.name + ' 様\n\nご予約ありがとうございます。レッスンの日時が確定しました。\n\n日時：' + when + '（ニューヨーク時間）\n場所：' + place + (data.area ? '（' + data.area + '）' : '') + '\nレッスン：' + data.len + '分\n\n動きやすい服装でお越しください。バレエシューズがあればお持ちください（靴下でも大丈夫です）。\n変更やキャンセルは、このメールにご返信ください。\n\nお会いできるのを楽しみにしています。\n髙山まり'
       : 'Hi ' + data.name + ',\n\nThank you for booking — your lesson is confirmed.\n\nWhen: ' + when + ' (New York time)\nWhere: ' + place + (data.area ? ' (' + data.area + ')' : '') + '\nLesson: ' + data.len + ' minutes\n\nPlease wear comfortable clothes you can move in, and bring ballet slippers if you have them (socks are fine too).\nTo change or cancel, just reply to this email.\n\nSee you soon!\nMari Takayama';
+  } else if (kind === 'propose') {
+    const when = ja ? choiceJa_(ch, ch.len) : choiceEn_(ch, ch.len);
+    const link = ScriptApp.getService().getUrl() + '?act=accept&id=' + encodeURIComponent(data.id || '') + '&k=' + data.ckey;
+    subject = ja ? 'レッスンの時間のご提案（' + when + '）' : 'A time for your lesson — ' + when;
+    body = ja
+      ? data.name + ' 様\n\nお問い合わせありがとうございます。ご希望の時間に近い、こちらの時間はいかがでしょうか。\n\n日時：' + when + '（ニューヨーク時間）\n場所：' + place + '\nレッスン：' + ch.len + '分\n' + (note ? '\n' + note + '\n' : '') + '\nこの時間でよろしければ、下のリンクを開いて「この時間で予約する」を押してください。予約が確定します。\n' + link + '\n\nほかの日時がよろしければ、こちらから選び直していただけます。\n' + BOOKING_PAGE + '\n\n髙山まり'
+      : 'Hi ' + data.name + ',\n\nThank you for your request. Would this time work for you?\n\nWhen: ' + when + ' (New York time)\nWhere: ' + place + '\nLesson: ' + ch.len + ' minutes\n' + (note ? '\n' + note + '\n' : '') + '\nIf it does, open this link and tap “Book this time” — your lesson will be confirmed:\n' + link + '\n\nIf another time is better, you can choose here:\n' + BOOKING_PAGE + '\n\nMari Takayama';
   } else {
     subject = ja ? 'レッスンのご希望日時について' : 'About your lesson request';
     body = ja
