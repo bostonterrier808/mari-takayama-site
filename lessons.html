@@ -144,6 +144,7 @@
       </div>
       <div class="days" id="days"></div>
       <div class="legend"><span class="l-open">Likely open</span><span class="l-maybe">Ask Mari</span><span class="l-no">Not available</span></div>
+      <p class="note-flex">Weekday evenings start at 7:00 or 7:30 pm at FuncPhysio. Sundays are usually open.</p>
       <p class="note-flex">Mari’s schedule changes often, so this is a guide. She will confirm the time with you.</p>
       <ol class="picked" id="picked"></ol>
       <p class="picked-empty" id="picked-empty">No times chosen yet.</p>
@@ -195,6 +196,17 @@
   //    Columns: date (2026-11-20), morning, afternoon, evening — each ◯, △ or ×.
   //    Empty = every time is shown as "likely open".
   const AVAILABILITY_CSV = '';
+  // 3) Usual week, used when the sheet has no line for a day.
+  //    o = likely open, m = ask Mari, x = not available. Order: [morning, afternoon, evening]
+  const USUAL_WEEK = {
+    0: ['o', 'o', 'o'],   // Sunday: usually free
+    1: ['m', 'm', 'o'],   // Mon–Fri: evenings at FuncPhysio from 7:00 or 7:30 pm
+    2: ['m', 'm', 'o'],
+    3: ['m', 'm', 'o'],
+    4: ['m', 'm', 'o'],
+    5: ['m', 'm', 'o'],
+    6: ['m', 'm', 'm']    // Saturday: ask Mari
+  };
   const WEEKS = 4;          // how many weeks ahead people can choose
   const MAIL = 'maritakayama.official@gmail.com';
   // -------------------------------------------------------------------------------
@@ -202,7 +214,7 @@
   const ja = () => window.mariSiteLanguage === 'ja';
   const T = {
     slots: { en: ['Morning', 'Afternoon', 'Evening'], ja: ['午前', '午後', '夜'] },
-    slotHours: { en: ['9–12', '12–5', '5–9'], ja: ['9〜12時', '12〜17時', '17〜21時'] },
+    slotHours: { en: ['9 am–12', '12–5 pm', 'from 7 pm'], ja: ['9〜12時', '12〜17時', '19時〜'] },
     days: { en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], ja: ['日', '月', '火', '水', '木', '金', '土'] },
     choice: { en: ['1st choice', '2nd choice', '3rd choice'], ja: ['第1希望', '第2希望', '第3希望'] },
     remove: { en: 'Remove', ja: '外す' },
@@ -249,7 +261,7 @@
   const fmtLong = (d, s) => ja()
     ? (d.getMonth() + 1) + '月' + d.getDate() + '日（' + T.days.ja[d.getDay()] + '）' + T.slots.ja[s] + '（' + T.slotHours.ja[s] + '）'
     : T.days.en[d.getDay()] + ' ' + (d.getMonth() + 1) + '/' + d.getDate() + ', ' + T.slots.en[s] + ' (' + T.slotHours.en[s] + ')';
-  const stateOf = (d, s) => { const a = availability[key(d)]; return a ? a[s] : 'o'; };
+  const stateOf = (d, s) => { const a = availability[key(d)]; return a ? a[s] : (USUAL_WEEK[d.getDay()] || ['o', 'o', 'o'])[s]; };
 
   // chips (single choice)
   form.querySelectorAll('.chips[data-group]').forEach(group => {
@@ -408,7 +420,7 @@
   renderWeek(); renderPicks();
 })();
 </script>
-<script src="site-language.js?v=41"></script>
+<script src="site-language.js?v=42"></script>
 <script src="site-motion.js?v=9"></script>
 </body>
 </html>
