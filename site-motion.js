@@ -37,7 +37,20 @@
       if (hero && y < innerHeight * 1.2) hero.style.transform = `translateY(${y * 0.18}px)`;
       if (script) { const r = script.parentElement.getBoundingClientRect(); const p = (innerHeight - r.top) / (innerHeight + r.height); if (p > -0.2 && p < 1.2) script.style.translate = `${(0.5 - p) * 120}px 0`; }
     };
-    addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
-    onScroll();
+    const drift = [...document.querySelectorAll('.home-duo .home-path > img, .home-intro-photo')];
+    const onScroll2 = () => drift.forEach((el, i) => { const r = el.getBoundingClientRect(); if (r.bottom < -100 || r.top > innerHeight + 100) return; const p = (r.top + r.height / 2 - innerHeight / 2) / innerHeight; el.style.translate = `0 ${(-p * (i % 2 ? 36 : 24)).toFixed(1)}px`; });
+    addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { onScroll(); onScroll2(); }); } }, { passive: true });
+    onScroll(); onScroll2();
+    // gallery strip drifts slowly on its own; stops while you touch, drag or hover it
+    const strip = document.querySelector('.home-strip');
+    if (strip) {
+      let hold = false, dir = 1, visible = false, last = 0;
+      ['pointerenter', 'pointerdown', 'touchstart', 'focusin'].forEach(t => strip.addEventListener(t, () => { hold = true; }, { passive: true }));
+      ['pointerleave', 'touchend', 'focusout'].forEach(t => strip.addEventListener(t, () => { setTimeout(() => { hold = false; }, 1200); }, { passive: true }));
+      new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(strip);
+      const step = t => { const dt = Math.min(48, t - last || 16); last = t; if (visible && !hold) { const max = strip.scrollWidth - strip.clientWidth; if (max > 0) { strip.scrollLeft += dir * dt * 0.03; if (strip.scrollLeft >= max - 1) dir = -1; else if (strip.scrollLeft <= 0) dir = 1; } } requestAnimationFrame(step); };
+      strip.style.scrollSnapType = 'none';
+      requestAnimationFrame(step);
+    }
   }
 })();

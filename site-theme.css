@@ -2,11 +2,11 @@
    Loaded after each page's own CSS and before the editor's styles, so editor adjustments still win. */
 :root {
   --ivory: #faf6ee;
-  --gold: #b0883a;
-  --gold-deep: #9a742c;
-  --gold-ink: #876221;
-  --gold-line: #c9a663;
-  --slate: #876221;            /* old blue accent → gold, so links and menu accents match */
+  --gold: #ab9264;            /* champagne / antique gold */
+  --gold-deep: #977f55;
+  --gold-ink: #7d6845;
+  --gold-line: #d3c29f;
+  --slate: #7d6845;            /* old blue accent → gold, so links and menu accents match */
   --ink-soft: #6a6670;
 }
 body { background: #fff; }
@@ -229,3 +229,7 @@ html.site-reveal .rv-img.in { clip-path: inset(0 0 0 0); }
   header.top #site-menu > li { opacity: 1 !important; transform: none !important; transition: none !important; }
   .banner h2, .plain-banner h2, .credits-page h1, .hero h1 { animation: none !important; }
 }
+@media (max-width: 760px) {
+  .hero-actions .home-button { font-size: 0.7rem !important; letter-spacing: 0.12em !important; padding: 0.85rem 0.5rem !important; white-space: nowrap; }
+}
+@media (max-width: 380px) { .hero-actions .home-button { font-size: 0.64rem !important; letter-spacing: 0.08em !important; } }
