@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Book a Private Lesson — Mari Takayama</title>
+<title>Lesson Request — Mari Takayama</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&amp;family=EB+Garamond:ital,wght@0,400;0,500;1,400&amp;display=swap">
 <style>
   :root {
@@ -124,8 +124,8 @@
 <main>
   <a class="back" href="private-lessons.html">← Private Lessons</a>
   <p class="eyebrow">Private lessons</p>
-  <h1>Book a lesson</h1>
-  <p class="lead">Choose your lesson and a time that suits you. Mari will confirm by email. It takes about a minute.</p>
+  <h1>Ask for a lesson</h1>
+  <p class="lead">Pick a time that works for you, and Mari will get back to you by email.</p>
 
   <form id="book" novalidate>
     <section class="step who" aria-labelledby="s0">
@@ -200,9 +200,10 @@
     </section>
 
     <div class="send">
-      <button type="submit" class="btn" id="send-btn">Send request</button>
+      <button type="submit" class="btn" id="send-btn">Send</button>
       <label class="remember"><input type="checkbox" id="remember" checked> Remember my details on this device for next time</label>
       <p class="send-help">Nothing is booked until Mari confirms by email.</p>
+      <p class="send-help">Lessons are paid ahead by Venmo — no cash, please. If plans change, it’s fully refunded up to 2 days before, half the day before, and not on the day.</p>
       <p class="error" id="error" role="alert" hidden></p>
     </div>
   </form>
@@ -489,7 +490,7 @@
   renderPicks();
 })();
 </script>
-<script src="site-language.js?v=45"></script>
+<script src="site-language.js?v=46"></script>
 <script src="site-motion.js?v=9"></script>
 </body>
 </html>

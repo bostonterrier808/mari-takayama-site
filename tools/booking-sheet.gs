@@ -23,6 +23,9 @@ const REPLY_TO = 'maritakayama.official@gmail.com';  // customers' replies go he
 // Confirmed lessons are also sent as a calendar invitation here (e.g. Mari's Yahoo address), so they appear in that calendar.
 const EXTRA_CALENDAR_EMAIL = '';
 const SENDER_NAME = 'Mari Takayama';
+// Paying ahead: Venmo name without @ (empty = the email says Mari will send the details). No cash.
+const VENMO = 'maritakayama_ballet';
+const RATE_PER_30 = 65;   // dollars per 30 minutes, used for FuncPhysio lessons
 const BOOKING_PAGE = 'https://bostonterrier808.github.io/mari-takayama-site/lessons.html';
 // Lesson hours by weekday (0 = Sunday), 24-hour clock, New York time. A lesson must fit inside these hours.
 const HOURS = { 0: [['09:00', '21:00']], 1: [['19:00', '22:00']], 2: [['19:00', '22:00']], 3: [['19:00', '22:00']], 4: [['19:00', '22:00']], 5: [['19:00', '22:00']], 6: [] };
@@ -309,6 +312,26 @@ function page_(title, body, goHref, goLabel) {
     + (goHref ? '<p style="margin-top:22px"><a href="' + goHref + '" target="_top" style="display:inline-block;padding:14px 22px;background:#ecdfc6;border:1px solid #c9b48c;color:#2c2a30;text-decoration:none">' + goLabel + '</a></p>' : '') + '</div>';
   return HtmlService.createHtmlOutput(html).setTitle(title).addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
+// the friendly "please pay ahead" part of the confirmation email
+function payNote_(data, ch, ja) {
+  const amount = data.place === 'FuncPhysio' ? Math.round(RATE_PER_30 * data.len / 30) : 0;
+  const d = dateOf_(ch.date); const memo = 'Ballet lesson ' + (d.getMonth() + 1) + '/' + d.getDate();
+  const link = VENMO ? 'https://venmo.com/' + VENMO + '?txn=pay' + (amount ? '&amount=' + amount : '') + '&note=' + encodeURIComponent(memo) : '';
+  const lines = ja ? [
+    'レッスン代は、前もって Venmo でお願いします（現金は受け取っていません）。',
+    amount ? '金額：$' + amount : '金額は、別のメールでお知らせします。',
+    link ? 'こちらを開くと、Venmo に金額が入った状態で開きます：\n' + link : (VENMO ? '' : '送り先は、別のメールでお知らせします。'),
+    '', 'ご予定が変わったときは：',
+    '・2日前まで：全額お返しします', '・前日：半分お返しします', '・当日：お返しできません'
+  ] : [
+    'Please pay for the lesson ahead of time by Venmo (sorry, no cash).',
+    amount ? 'Amount: $' + amount : 'Mari will send you the amount in a separate email.',
+    link ? 'This link opens Venmo with everything filled in:\n' + link : (VENMO ? '' : 'Mari will send you where to send it.'),
+    '', 'If your plans change:',
+    '• Up to 2 days before: fully refunded', '• The day before: half refunded', '• On the day: no refund'
+  ];
+  return lines.filter(x => x !== '' || true).join('\n').replace(/\n\n\n+/g, '\n\n');
+}
 function sendCustomer_(data, kind, ch, note) {
   if (!data.email) return;
   const ja = data.language === 'ja';
@@ -318,8 +341,8 @@ function sendCustomer_(data, kind, ch, note) {
     const when = ja ? choiceJa_(ch, data.len) : choiceEn_(ch, data.len);
     subject = ja ? 'レッスンのご予約が確定しました（' + when + '）' : 'Your ballet lesson is confirmed — ' + when;
     body = ja
-      ? data.name + ' 様\n\nご予約ありがとうございます。レッスンの日時が確定しました。\n\n日時：' + when + '（ニューヨーク時間）\n場所：' + place + (data.area ? '（' + data.area + '）' : '') + '\nレッスン：' + data.len + '分\n\n動きやすい服装でお越しください。バレエシューズがあればお持ちください（靴下でも大丈夫です）。\n変更やキャンセルは、このメールにご返信ください。\n\nお会いできるのを楽しみにしています。\n髙山まり'
-      : 'Hi ' + data.name + ',\n\nThank you for booking — your lesson is confirmed.\n\nWhen: ' + when + ' (New York time)\nWhere: ' + place + (data.area ? ' (' + data.area + ')' : '') + '\nLesson: ' + data.len + ' minutes\n\nPlease wear comfortable clothes you can move in, and bring ballet slippers if you have them (socks are fine too).\nTo change or cancel, just reply to this email.\n\nSee you soon!\nMari Takayama';
+      ? data.name + ' 様\n\nご予約ありがとうございます。レッスンの日時が確定しました。\n\n日時：' + when + '（ニューヨーク時間）\n場所：' + place + (data.area ? '（' + data.area + '）' : '') + '\nレッスン：' + data.len + '分\n\n' + payNote_(data, ch, true) + '\n\n動きやすい服装でお越しください。バレエシューズがあればお持ちください（靴下でも大丈夫です）。\n変更やキャンセルは、このメールにご返信ください。\n\nお会いできるのを楽しみにしています。\n髙山まり'
+      : 'Hi ' + data.name + ',\n\nThank you for booking — your lesson is confirmed.\n\nWhen: ' + when + ' (New York time)\nWhere: ' + place + (data.area ? ' (' + data.area + ')' : '') + '\nLesson: ' + data.len + ' minutes\n\n' + payNote_(data, ch, false) + '\n\nPlease wear comfortable clothes you can move in, and bring ballet slippers if you have them (socks are fine too).\nTo change or cancel, just reply to this email.\n\nSee you soon!\nMari Takayama';
   } else if (kind === 'propose') {
     const when = ja ? choiceJa_(ch, ch.len) : choiceEn_(ch, ch.len);
     const link = ScriptApp.getService().getUrl() + '?act=accept&id=' + encodeURIComponent(data.id || '') + '&k=' + data.ckey;
