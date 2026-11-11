@@ -15,9 +15,9 @@ const SHEET_ID = '';
 const book_ = () => SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActive();
 const TZ = 'America/New_York';
 const REQ = 'リクエスト', AV = '空き状況', ST = '統計';
-const HEAD = ['受付日時', '初めて／2回目以降', '名前', '連絡方法', '連絡先', '場所', 'エリア', '対象', 'バレエ経験',
+const HEAD = ['受付日時', '初めて／2回目以降', '名前', '連絡方法', 'メール', '場所', 'エリア', '対象', 'バレエ経験',
   '第1希望', '第2希望', '第3希望', '第1希望の曜日', '第1希望の時間帯', '第2希望の曜日', '第2希望の時間帯', '第3希望の曜日', '第3希望の時間帯',
-  'メッセージ', '言語', '状況'];
+  'メッセージ', '言語', '状況', 'その他の連絡先'];
 const JA = {
   visit: { First: '初めて', Returning: '2回目以降' },
   place: { FuncPhysio: 'FuncPhysio', Studio: 'ダンススタジオ', Travel: '出張', Any: 'どこでも' },
@@ -78,14 +78,14 @@ function doPost(e) {
     const d = JSON.parse(e.postData.contents);
     const c = (d.choices || []).slice(0, 3);
     const choiceText = i => c[i] ? Utilities.formatDate(new Date(c[i].date + 'T12:00:00'), TZ, 'M/d') + '（' + (JA.day[c[i].weekday] || c[i].weekday) + '）' + (JA.time[c[i].time] || c[i].time) : '';
-    const row = [new Date(), JA.visit[d.visit] || d.visit || '', clip(d.name), d.via || '', clip(d.contact), JA.place[d.place] || d.place || '', clip(d.area),
+    const row = [new Date(), JA.visit[d.visit] || d.visit || '', clip(d.name), d.via || '', clip(d.email), JA.place[d.place] || d.place || '', clip(d.area),
       JA.age[d.age] || d.age || '', JA.level[d.level] || d.level || '', choiceText(0), choiceText(1), choiceText(2)];
     for (let i = 0; i < 3; i++) row.push(c[i] ? (JA.day[c[i].weekday] || c[i].weekday) : '', c[i] ? (JA.time[c[i].time] || c[i].time) : '');
-    row.push(clip(d.note, 700), d.language || '', '新規');
+    row.push(clip(d.note, 700), d.language || '', '新規', clip(d.contact));
     book_().getSheetByName(REQ).appendRow(row);
     const me = Session.getEffectiveUser().getEmail();
     if (me) MailApp.sendEmail(me, 'レッスンのリクエスト：' + String(d.name || '').slice(0, 100) + '（' + (JA.visit[d.visit] || '') + '）',
-      String(d.message || '').slice(0, 3000) + '\n\n――\n連絡方法：' + (d.via || '') + '　' + String(d.contact || '').slice(0, 200) + '\nシート：' + book_().getUrl());
+      String(d.message || '').slice(0, 3000) + '\n\n――\nメール：' + String(d.email || '').slice(0, 200) + (d.contact ? '\n連絡方法：' + (d.via || '') + '　' + String(d.contact).slice(0, 200) : '') + '\nシート：' + book_().getUrl());
     return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
   } finally { lock.releaseLock(); }
 }

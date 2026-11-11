@@ -71,6 +71,7 @@
   input[type=text], input[type=email], input[type=tel], textarea { display: block; width: 100%; margin-top: 6px; padding: 11px 12px; border: 1px solid #cfc7ba; background: #fff; color: var(--ink); font: 1rem var(--font-body); border-radius: 0; }
   textarea { resize: vertical; }
   .contact-hint { margin: 6px 0 0; font-size: .88rem; color: var(--muted); }
+  label.field small.req { color: var(--gold-ink); }
 
   .send { margin: 26px 0 0; text-align: center; }
   .btn { appearance: none; display: inline-block; border: 1px solid var(--champagne); background: var(--champagne); color: var(--ink); font: 500 1.12rem var(--font-body); letter-spacing: .03em; padding: 14px 34px; cursor: pointer; text-decoration: none; transition: filter .6s ease, background-color .6s ease; }
@@ -165,8 +166,9 @@
 
     <section class="step" aria-labelledby="s3">
       <div class="step-head"><span class="step-num">3</span><h2 class="step-title" id="s3">How can Mari reach you?</h2></div>
-      <label class="field">Your name<input type="text" name="name" autocomplete="name" maxlength="100" required></label>
-      <p class="q">Reach me by</p>
+      <label class="field">Your name <small class="req">(required)</small><input type="text" name="name" autocomplete="name" maxlength="100" required></label>
+      <label class="field">Your email <small class="req">(required)</small><input type="email" name="email" autocomplete="email" maxlength="120" required></label>
+      <p class="q">Best way to reach you</p>
       <div class="chips" data-group="via" data-single>
         <button type="button" class="chip" data-value="Instagram">Instagram</button>
         <button type="button" class="chip" data-value="WhatsApp">WhatsApp</button>
@@ -246,6 +248,7 @@
       Email: { en: 'Mari will reply from ' + MAIL + '.', ja: MAIL + ' から返信します。' }
     },
     errors: {
+      email: { en: 'Please write your email address.', ja: 'メールアドレスを入れてください。' },
       name: { en: 'Please write your name.', ja: 'お名前を入れてください。' },
       times: { en: 'Please choose at least one time.', ja: '希望の時間を1つ以上選んでください。' },
       via: { en: 'Please choose how Mari can reach you.', ja: '連絡方法を選んでください。' },
@@ -294,10 +297,11 @@
   });
   const STORE = 'mt-booking-me';
   const pick = (group, value) => { const b = value && form.querySelector('[data-group=' + group + '] [data-value="' + value + '"]'); if (b && b.getAttribute('aria-pressed') !== 'true') b.click(); };
+  pick('via', 'Email');
   let saved = null; try { saved = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch {}
   if (saved && saved.name) {
     pick('visit', 'Returning');
-    form.name.value = saved.name || ''; pick('via', saved.via); form.contact.value = saved.contact || '';
+    form.name.value = saved.name || ''; form.email.value = saved.email || ''; pick('via', saved.via || 'Email'); form.contact.value = saved.contact || '';
     pick('place', saved.place); if (saved.area) form.area.value = saved.area;
     document.getElementById('saved-note').hidden = false;
   }
@@ -305,8 +309,8 @@
 
   function showContact() {
     const f = document.getElementById('contact-field'), hint = document.getElementById('contact-hint'), input = document.getElementById('contact-input');
-    f.hidden = hint.hidden = !choice.via;
-    if (!choice.via) return;
+    f.hidden = hint.hidden = !choice.via || choice.via === 'Email';
+    if (!choice.via || choice.via === 'Email') return;
     document.getElementById('contact-label').textContent = t(T.contactLabel[choice.via]);
     hint.textContent = t(T.contactHint[choice.via]);
     input.type = choice.via === 'Email' ? 'email' : choice.via === 'WhatsApp' ? 'tel' : 'text';
@@ -394,7 +398,8 @@
       choice.age && '対象：' + ({ Child: '子ども', Teen: '10代', Adult: '大人' }[choice.age]),
       choice.level && 'バレエ経験：' + ({ 'New to ballet': '初めて', 'Some classes': '少し習ったことがある', 'Trains regularly': '定期的に練習している' }[choice.level]),
       '', '希望の日時（ニューヨーク時間）：', ...picks.map((p, i) => T.choice.ja[i] + '　' + fmtLong(p.date, p.slot)), '',
-      '連絡方法：' + choice.via + '　' + form.contact.value.trim(),
+      'メール：' + form.email.value.trim(),
+      choice.via !== 'Email' && '連絡方法：' + choice.via + '　' + form.contact.value.trim(),
       form.note.value.trim() && '\nメッセージ：' + form.note.value.trim()
     ] : [
       'Hi Mari, I would like to book a private lesson.', '',
@@ -403,7 +408,8 @@
       choice.age && 'For: ' + choice.age,
       choice.level && 'Experience: ' + choice.level,
       '', 'Times that suit me (New York time):', ...picks.map((p, i) => T.choice.en[i] + ': ' + fmtLong(p.date, p.slot)), '',
-      'Reach me by ' + choice.via + ': ' + form.contact.value.trim(),
+      'Email: ' + form.email.value.trim(),
+      choice.via !== 'Email' && 'Best way to reach me: ' + choice.via + ' ' + form.contact.value.trim(),
       form.note.value.trim() && '\nNote: ' + form.note.value.trim()
     ];
     return lines.filter(l => l !== undefined && l !== false && l !== null).join('\n');
@@ -416,16 +422,17 @@
     if (!choice.visit) return fail(T.visitErr);
     if (!form.name.value.trim()) return fail(T.errors.name, form.name);
     if (!picks.length) return fail(T.errors.times);
-    if (!choice.via) return fail(T.errors.via);
-    if (!form.contact.value.trim()) return fail(T.errors.contact, form.contact);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.value.trim())) return fail(T.errors.email, form.email);
+    if (!choice.via) pick('via', 'Email');
+    if (choice.via !== 'Email' && !form.contact.value.trim()) return fail(T.errors.contact, form.contact);
     const text = message();
     const viaName = { Instagram: 'Instagram', WhatsApp: 'WhatsApp', LINE: 'LINE', Email: ja() ? 'メール' : 'email' }[choice.via];
     try {
-      if (document.getElementById('remember').checked) localStorage.setItem(STORE, JSON.stringify({ name: form.name.value.trim(), via: choice.via, contact: form.contact.value.trim(), place: choice.place || '', area: form.area.value.trim() }));
+      if (document.getElementById('remember').checked) localStorage.setItem(STORE, JSON.stringify({ name: form.name.value.trim(), email: form.email.value.trim(), via: choice.via, contact: form.contact.value.trim(), place: choice.place || '', area: form.area.value.trim() }));
       else localStorage.removeItem(STORE);
     } catch {}
     const record = {
-      visit: choice.visit, name: form.name.value.trim(), via: choice.via, contact: form.contact.value.trim(),
+      visit: choice.visit, name: form.name.value.trim(), email: form.email.value.trim(), via: choice.via, contact: choice.via === 'Email' ? '' : form.contact.value.trim(),
       place: choice.place || '', area: form.area.value.trim(), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
       choices: picks.map(p => ({ date: key(p.date), weekday: T.days.en[p.date.getDay()], time: T.slots.en[p.slot] })),
       note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
@@ -443,7 +450,7 @@
       btn.disabled = true; btn.textContent = t(T.sending);
       try {
         const res = await fetch(FORM_ENDPOINT, { method: 'POST', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-          body: JSON.stringify({ _subject: 'Lesson request — ' + form.name.value.trim(), name: form.name.value.trim(), reach_by: choice.via, contact: form.contact.value.trim(), ...(choice.via === 'Email' ? { email: form.contact.value.trim() } : {}), message: text }) });
+          body: JSON.stringify({ _subject: 'Lesson request — ' + form.name.value.trim(), name: form.name.value.trim(), reach_by: choice.via, contact: choice.via === 'Email' ? '' : form.contact.value.trim(), email: form.email.value.trim(), message: text }) });
         if (!res.ok) throw new Error('send');
         finish(t(T.doneSent)(viaName), false, text);
       } catch { fail(T.errors.send); btn.disabled = false; btn.textContent = label; }
@@ -473,7 +480,7 @@
   renderWeek(); renderPicks();
 })();
 </script>
-<script src="site-language.js?v=43"></script>
+<script src="site-language.js?v=44"></script>
 <script src="site-motion.js?v=9"></script>
 </body>
 </html>
