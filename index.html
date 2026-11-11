@@ -540,6 +540,27 @@ html.home-reveal .rv.in { opacity: 1; transform: none; }
 .home-intro-photo::after { content: ""; position: absolute; right: -14px; bottom: -14px; width: 52%; height: 3rem; border-right: 1px solid var(--gold-line); border-bottom: 1px solid var(--gold-line); pointer-events: none; }
 @media (max-width: 760px) { .home-intro-photo { max-width: 88% !important; margin-inline: auto; } }
 </style>
+<style id="home-about-art">
+/* About Mari: editorial, artistic touches */
+.home-intro { position: relative; isolation: isolate; }
+.intro-script { position: absolute; z-index: -1; right: -2vw; top: 50%; transform: translateY(-50%); font-family: var(--font-display); font-style: italic; font-weight: 300; font-size: clamp(9rem, 26vw, 24rem); line-height: 0.8; letter-spacing: -0.02em; color: transparent; -webkit-text-stroke: 1px color-mix(in srgb, var(--gold) 35%, transparent); pointer-events: none; user-select: none; white-space: nowrap; }
+.intro-kanji { position: absolute; left: -2.6rem; top: 0.5rem; writing-mode: vertical-rl; font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1.05rem; letter-spacing: 0.6em; color: var(--gold-ink); }
+.intro-kanji::after { content: ""; display: block; width: 1px; height: 4.5rem; margin: 0.9rem auto 0; background: var(--gold); }
+.home-intro-photo > img[data-photo-id="home/about"] { filter: grayscale(0.15) contrast(1.03); }
+.home-intro h2 em { font-style: italic; color: var(--gold-ink); }
+.home-intro h2 em { white-space: nowrap; }
+html[lang="ja"] .home-intro h2 em { font-style: normal; }
+html[lang="ja"] .home-intro-body > p[data-box-slot]::first-letter { float: none; font-size: inherit; margin: 0; color: inherit; font-family: inherit; line-height: inherit; }
+.home-intro h2 { font-style: normal !important; }
+.home-intro-body > p[data-box-slot]::first-letter { float: left; margin: 0.08em 0.12em 0 0; font-family: var(--font-display); font-size: 3.6em; line-height: 0.82; color: var(--gold-deep); }
+.home-facts { border-top: 1px solid var(--gold-line); border-bottom: 1px solid var(--gold-line); padding-block: 1rem; }
+.home-facts dd { font-weight: 500 !important; font-style: italic; }
+@media (max-width: 760px) {
+  .intro-script { top: 1.5rem; transform: none; right: -1rem; font-size: 9rem; }
+  .intro-kanji { left: -1.9rem; font-size: 0.9rem; letter-spacing: 0.45em; }
+  .home-intro-photo { margin-left: 2rem !important; max-width: 82% !important; }
+}
+</style>
 <style id="site-nav-style">
 /* Main menu. PC: one line, About opens a small list (Credits, Gallery, Interview). Phone: Menu button opens cards. */
 header.top { position: sticky; top: 0; z-index: 20; padding: 0 !important; background: color-mix(in srgb, var(--paper) 92%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
@@ -654,14 +675,16 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
 
 
   <section class="home-intro" aria-labelledby="intro-title" data-box-slot="6" data-section-key="section.home-intro:1">
+    <span class="intro-script" aria-hidden="true">Mari</span>
     <div class="wrap" data-box-slot="7">
       <figure class="home-intro-photo" data-box-slot="4">
+        <span class="intro-kanji" aria-hidden="true">髙山まり</span>
         <img src="img/about.jpg" alt="Portrait of Mari Takayama" data-photo-id="home/about" loading="lazy" data-box-slot="57" style="filter: brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%); translate: 0px;">
         <img class="intro-dance" src="img/g02.jpg" alt="Mari in a black and gold tutu beside a red stage curtain" data-photo-id="home/about-dance" loading="lazy">
       </figure>
       <div class="home-intro-body" data-box-slot="25">
         <p class="home-kicker">About Mari</p>
-        <h2 id="intro-title" data-box-slot="26">Grace learned in Japan,<br>danced in New York.</h2>
+        <h2 id="intro-title" data-box-slot="26">Grace learned in <em>Japan,</em><br>danced in <em>New York.</em></h2>
         <p data-box-slot="27">Mari Takayama began classical ballet as a child in Japan. Today she performs on New York stages, from Kitri in Don Quixote to the Sugar Plum Fairy, a role she has danced four seasons in a row. In the studio, she gives every student the same discipline and warmth, from a first plié to pointe.</p>
         <dl class="home-facts" data-box-slot="28">
           <div data-box-slot="29"><dt>Home stage</dt><dd>New York City</dd></div>
