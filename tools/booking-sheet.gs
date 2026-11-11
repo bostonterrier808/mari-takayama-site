@@ -14,6 +14,11 @@
 const SHEET_ID = '';
 const book_ = () => SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActive();
 const TZ = 'America/New_York';
+// Mari's calendar as an iCal (.ics) link, e.g. Yahoo Calendar > Share > "ICS" link. Busy times become × on the site.
+// Only free/busy goes to the website — never the titles or details of her plans.
+const CAL_ICS = '';
+// the three lesson times on the site (24-hour clock, New York time)
+const SLOTS = [[9, 0, 12, 0], [12, 0, 17, 0], [19, 0, 21, 30]];
 const REQ = 'リクエスト', AV = '空き状況', ST = '統計';
 const HEAD = ['受付日時', '初めて／2回目以降', '名前', '連絡方法', 'メール', '場所', 'エリア', '対象', 'バレエ経験',
   '第1希望', '第2希望', '第3希望', '第1希望の曜日', '第1希望の時間帯', '第2希望の曜日', '第2希望の時間帯', '第3希望の曜日', '第3希望の時間帯',
@@ -91,18 +96,100 @@ function doPost(e) {
 }
 
 // the website asks for availability: ?availability=1
+// the sheet wins when a cell has ◯ / △ / ×; otherwise a busy calendar time becomes ×
 function doGet(e) {
   const days = {};
   if (e && e.parameter && e.parameter.availability) {
+    busyDays_().forEach((v, k) => { days[k] = v; });
     const av = book_().getSheetByName(AV);
     const today = new Date(); today.setHours(0, 0, 0, 0);
     if (av && av.getLastRow() > 1) av.getRange(2, 1, av.getLastRow() - 1, 5).getValues().forEach(r => {
       if (!(r[0] instanceof Date) || r[0] < today) return;
       if (!r[2] && !r[3] && !r[4]) return;
-      days[Utilities.formatDate(r[0], TZ, 'yyyy-MM-dd')] = [String(r[2]), String(r[3]), String(r[4])];
+      const k = Utilities.formatDate(r[0], TZ, 'yyyy-MM-dd'); const cal = days[k] || ['', '', ''];
+      days[k] = [0, 1, 2].map(i => String(r[2 + i] || cal[i] || ''));
     });
   }
   return ContentService.createTextOutput(JSON.stringify({ days })).setMimeType(ContentService.MimeType.JSON);
+}
+
+// ---------- calendar (free / busy only) ----------
+function busyDays_() {
+  const out = new Map();
+  if (!CAL_ICS) return out;
+  const cache = CacheService.getScriptCache();
+  const hit = cache.get('busy');
+  if (hit) { JSON.parse(hit).forEach(([k, v]) => out.set(k, v)); return out; }
+  let text = '';
+  try { text = UrlFetchApp.fetch(CAL_ICS, { muteHttpExceptions: true, followRedirects: true }).getContentText(); } catch (err) { return out; }
+  const events = parseIcs_(text);
+  const start = new Date(); start.setHours(0, 0, 0, 0);
+  for (let i = 0; i < 35; i++) {
+    const day = new Date(start); day.setDate(start.getDate() + i);
+    const k = Utilities.formatDate(day, TZ, 'yyyy-MM-dd');
+    const marks = SLOTS.map(([h1, m1, h2, m2]) => {
+      const a = atNY_(k, h1, m1), b = atNY_(k, h2, m2);
+      return events.some(ev => ev.allDay ? false : ev.start < b && ev.end > a) ? '×' : '';
+    });
+    if (marks.some(Boolean)) out.set(k, marks);
+  }
+  cache.put('busy', JSON.stringify([...out]), 600); // keep for 10 minutes
+  return out;
+}
+function atNY_(ymd, h, m) { return Utilities.parseDate(ymd + ' ' + h + ':' + m, TZ, 'yyyy-MM-dd H:m'); }
+function icsDate_(v, params) {
+  if (/VALUE=DATE(?!-)/.test(params) || /^\d{8}$/.test(v)) return { date: Utilities.parseDate(v.slice(0, 8), TZ, 'yyyyMMdd'), allDay: true };
+  const tz = (params.match(/TZID=([^;:]+)/) || [])[1];
+  if (/Z$/.test(v)) return { date: Utilities.parseDate(v.slice(0, 15), 'UTC', "yyyyMMdd'T'HHmmss"), allDay: false };
+  let zone = TZ; if (tz) { try { zone = tz.replace(/"/g, ''); Utilities.formatDate(new Date(), zone, 'H'); } catch (err) { zone = TZ; } }
+  return { date: Utilities.parseDate(v.slice(0, 15), zone, "yyyyMMdd'T'HHmmss"), allDay: false };
+}
+function parseIcs_(text) {
+  const lines = text.replace(/\r?\n[ \t]/g, '').split(/\r?\n/);
+  const events = []; let ev = null;
+  const horizon = new Date(); horizon.setDate(horizon.getDate() + 40);
+  const from = new Date(); from.setDate(from.getDate() - 1);
+  lines.forEach(line => {
+    if (line === 'BEGIN:VEVENT') { ev = { ex: [] }; return; }
+    if (line === 'END:VEVENT') { if (ev && ev.start && !/CANCELLED/i.test(ev.status || '') && !/TRANSPARENT/i.test(ev.transp || '')) expand_(ev, from, horizon).forEach(x => events.push(x)); ev = null; return; }
+    if (!ev) return;
+    const i = line.indexOf(':'); if (i < 0) return;
+    const head = line.slice(0, i), val = line.slice(i + 1); const name = head.split(';')[0].toUpperCase(); const params = head.slice(name.length);
+    if (name === 'DTSTART') { const d = icsDate_(val, params); ev.start = d.date; ev.allDay = d.allDay; }
+    else if (name === 'DTEND') ev.end = icsDate_(val, params).date;
+    else if (name === 'DURATION') ev.dur = val;
+    else if (name === 'RRULE') ev.rrule = val;
+    else if (name === 'EXDATE') val.split(',').forEach(v => ev.ex.push(icsDate_(v, params).date.getTime()));
+    else if (name === 'STATUS') ev.status = val;
+    else if (name === 'TRANSP') ev.transp = val;
+  });
+  return events;
+}
+function expand_(ev, from, horizon) {
+  let len = ev.end ? ev.end - ev.start : 0;
+  if (!ev.end && ev.dur) { const m = ev.dur.match(/P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?)?/); if (m) len = (((+m[1] || 0) * 24 + (+m[2] || 0)) * 60 + (+m[3] || 0)) * 60000; }
+  if (!len) len = ev.allDay ? 86400000 : 3600000;
+  const one = s => ({ start: s, end: new Date(s.getTime() + len), allDay: ev.allDay });
+  if (!ev.rrule) return ev.start < horizon && new Date(ev.start.getTime() + len) > from ? [one(ev.start)] : [];
+  const r = {}; ev.rrule.split(';').forEach(p => { const [a, b] = p.split('='); r[a] = b; });
+  const until = r.UNTIL ? icsDate_(r.UNTIL, '').date : null; const count = r.COUNT ? +r.COUNT : Infinity; const step = +(r.INTERVAL || 1);
+  const wd = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA']; const byday = r.BYDAY ? r.BYDAY.split(',').map(x => wd.indexOf(x.slice(-2))) : null;
+  const out = []; let n = 0;
+  for (let d = new Date(ev.start), guard = 0; d < horizon && guard < 3000; guard++) {
+    const hits = [];
+    if (r.FREQ === 'WEEKLY' && byday) { const ws = new Date(d); ws.setDate(d.getDate() - d.getDay()); byday.forEach(k => { const x = new Date(ws); x.setDate(ws.getDate() + k); if (x >= ev.start) hits.push(x); }); hits.sort((a, b) => a - b); }
+    else hits.push(new Date(d));
+    for (const x of hits) {
+      if (until && x > until) return out; if (n >= count) return out; n++;
+      if (x >= from && x < horizon && ev.ex.indexOf(x.getTime()) < 0) out.push(one(x));
+    }
+    if (r.FREQ === 'DAILY') d.setDate(d.getDate() + step);
+    else if (r.FREQ === 'WEEKLY') d.setDate(d.getDate() - (byday ? d.getDay() : 0) + 7 * step);
+    else if (r.FREQ === 'MONTHLY') d.setMonth(d.getMonth() + step);
+    else if (r.FREQ === 'YEARLY') d.setFullYear(d.getFullYear() + step);
+    else break;
+  }
+  return out;
 }
 
 function clip(v, n) { v = String(v == null ? '' : v); v = v.replace(/^[=+\-@]/, "'$&"); return v.slice(0, n || 200); }
