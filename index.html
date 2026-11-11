@@ -551,6 +551,16 @@ html.home-reveal .rv.in { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) { .hero-proof { animation: none; } .book-bar { transition: none; } }
 </style>
+<style id="home-about-duo">
+/* About Mari: portrait and a stage photo, overlapping */
+.home-intro-photo { position: relative; width: 100%; max-width: 30rem !important; padding-bottom: 30%; }
+@media (min-width: 761px) { .home-intro .wrap { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) !important; } }
+.home-intro-photo::before { inset: -14px auto auto -14px !important; width: 68%; aspect-ratio: 805 / 850; height: auto; }
+.home-intro-photo > img[data-photo-id="home/about"] { width: 68% !important; height: auto !important; aspect-ratio: 805 / 850; object-fit: cover; }
+.home-intro-photo .intro-dance { position: absolute; right: 0; bottom: 0; width: 52%; height: auto; aspect-ratio: auto; border: 6px solid #fff; box-shadow: 0 24px 48px -24px rgba(40, 30, 20, 0.45); }
+.home-intro-photo::after { content: ""; position: absolute; right: -14px; bottom: -14px; width: 52%; height: 3rem; border-right: 1px solid var(--gold-line); border-bottom: 1px solid var(--gold-line); pointer-events: none; }
+@media (max-width: 760px) { .home-intro-photo { max-width: 88% !important; margin-inline: auto; } }
+</style>
 <style id="site-nav-style">
 /* Main menu. PC: one line, About opens a small list (Credits, Gallery, Interview). Phone: Menu button opens cards. */
 header.top { position: sticky; top: 0; z-index: 20; padding: 0 !important; background: color-mix(in srgb, var(--paper) 92%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
@@ -676,6 +686,7 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
     <div class="wrap" data-box-slot="7">
       <figure class="home-intro-photo" data-box-slot="4">
         <img src="img/about.jpg" alt="Portrait of Mari Takayama" data-photo-id="home/about" loading="lazy" data-box-slot="57" style="filter: brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%); translate: 0px;">
+        <img class="intro-dance" src="img/g02.jpg" alt="Mari in a black and gold tutu beside a red stage curtain" data-photo-id="home/about-dance" loading="lazy">
       </figure>
       <div class="home-intro-body" data-box-slot="25">
         <p class="home-kicker">About Mari</p>
