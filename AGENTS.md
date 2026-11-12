@@ -7,7 +7,7 @@ Two people edit this repo with different AI tools (Claude Code and Codex). These
 
 - One HTML file per page, each with its own CSS (in `<style>`) and small script. No build step, no framework.
   - `index.html` — Home: hero + a short overview card for each page, linking to the details
-  - `about.html`, `private-lessons.html`, `radio-taiso.html`, `gallery.html`, `interview.html`, `credits.html`, `booking.html` — one page each
+  - `about.html`, `private-lessons.html`, `radio-taiso.html`, `gallery.html`, `interview.html`, `credits.html`, `booking.html`, `study-in-ny.html` — one page each
   - `lessons.html` — private lesson request form
 - `editor.html` — photo/text editor; pick the page to edit at the top. Each page keeps its editor settings in `<script id="photo-editor-settings">`.
 - `site-theme.css` — shared white-and-gold look (page titles, colors, buttons, menu), loaded by every page just before the editor styles. `site-motion.js` — scroll fade-ins, photo motion, soft page changes and the desktop cursor ring (off inside the editor).
@@ -18,7 +18,7 @@ Two people edit this repo with different AI tools (Claude Code and Codex). These
 
 ## Design (keep it)
 
-- Menu order: Home → About Mari (About, Credits, Gallery, Interview) → Work with Mari (Private Lessons, Book a Performance) → Community (Radio Taiso) → Contact. Group labels are `li.menu-group`, shown only in the phone menu. Every page shares the same nav and footer; keep them in sync.
+- Menu order: Home → About Mari (About, Credits, Gallery, Interview) → Work with Mari (Private Lessons, Book a Performance, Ballet Study in NY) → Community (Radio Taiso) → Contact. Group labels are `li.menu-group`, shown only in the phone menu. Every page shares the same nav and footer; keep them in sync.
 - Colors are tokens on `:root` (`--slate`, `--mauve`, `--rose`, `--stage`, …). Change a token rather than adding new literal colors.
 - Fonts: Cormorant Garamond (headings, nav), EB Garamond (body), from Google Fonts.
 - Site copy is in English.

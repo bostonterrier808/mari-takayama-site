@@ -405,6 +405,10 @@
   const askPlace = new URLSearchParams(location.search).get('place');
   if (askPlace === 'travel') pick('place', 'Travel');
   if (askPlace === 'zoom') pick('place', 'Zoom');
+  // from the Ballet Study page: start the message for them
+  const STUDY = { ja: 'バレエ留学について相談したいです。', en: "I'd like to talk about studying ballet in New York." };
+  const studyNote = () => { if (new URLSearchParams(location.search).get('topic') === 'study' && (!form.note.value || form.note.value === STUDY.ja || form.note.value === STUDY.en)) form.note.value = STUDY[ja() ? 'ja' : 'en']; };
+  studyNote(); document.addEventListener('mari-language-change', studyNote);
 
   function showContact() {
     const f = document.getElementById('contact-field'), hint = document.getElementById('contact-hint'), input = document.getElementById('contact-input');
@@ -576,7 +580,7 @@
   renderTz(); renderPicks();
 })();
 </script>
-<script src="site-language.js?v=49"></script>
+<script src="site-language.js?v=50"></script>
 <script src="site-motion.js?v=9"></script>
 </body>
 </html>

@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ballet Study in New York — Mari Takayama</title>
+<meta name="description" content="Advice for ballet students coming to New York from Japan and elsewhere: schools and summer intensives, auditions, daily life and visas — talk with dancer Mari Takayama in Japanese or English.">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&amp;family=EB+Garamond:ital,wght@0,400;0,500;1,400&amp;display=swap">
+<style>
+/* Layout: 白いナビ → 写真の帯 → 色面（スレートブルー／モーブ）が交互に続く、写真主役の一枚ページ。
+   参考サイトの配色を踏襲した単一テーマ（ダークモードでも同じ見た目） */
+:root {
+  --paper: #ffffff;
+  --ink: #2c2a30;
+  --ink-soft: #6a6670;
+  --stage: #2d2b2f;       /* トップ写真の背景に合わせた暗いグレー */
+  --slate: #6f83a6;       /* About・Gallery の青 */
+  --mauve: #a8979a;       /* Works・Interview のモーブ */
+  --rose: #bd9597;        /* Interview のカード */
+  --on-color: #ffffff;
+  --font-display: "Cormorant Garamond", "EB Garamond", Garamond, "Times New Roman", serif;
+  --font-body: "EB Garamond", Garamond, "Times New Roman", serif;
+  --step--1: 0.9375rem;
+  --step-0: 1.125rem;
+  --step-1: 1.5rem;
+  --step-2: clamp(1.75rem, 3vw, 2.25rem);
+  --step-3: clamp(2.5rem, 6vw, 4.25rem);
+  --step-4: clamp(3rem, 9vw, 6.5rem);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--font-body); font-size: var(--step-0); line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 10; background: var(--paper);
+}
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+a:focus-visible, button:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+
+.wrap {
+  max-width: 76rem; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* ナビ */
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--paper); border-bottom: 1px solid #ecebee;
+}
+header.top ul {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 0.25rem clamp(1.25rem, 4vw, 3rem);
+  list-style: none; margin: 0; padding-block: 1.1rem;
+}
+header.top a {
+  font-family: var(--font-display); font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+  letter-spacing: 0.06em; text-decoration: none; color: var(--ink);
+}
+header.top a:hover { color: var(--slate); }
+
+/* トップ */
+.hero { background: var(--stage); color: var(--on-color); text-align: center; position: relative; overflow: hidden; }
+/* 写真全体を見切れずに中央に置き、左右は写真の端の色に溶け込ませる。文字は中央（胴のあたり）に重ねる */
+#home { scroll-margin-top: 12rem; }
+.hero { height: max(26rem, min(56.25vw, 88vh)); display: grid; background: #232124; }
+.hero-photo { position: absolute; inset: 0; display: flex; justify-content: center; }
+.hero-photo img {
+  width: auto; height: 100%; max-width: 100%; flex-shrink: 0; object-fit: contain; object-position: center;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+.hero-photo::after { content: ""; position: absolute; inset: 0; background: rgba(20, 18, 24, 0.12); }
+.hero .wrap { position: relative; align-self: center; width: 100%; padding-block: 18% 0; text-shadow: 0 1px 18px rgba(0, 0, 0, 0.35); }
+.hero .kicker { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); letter-spacing: 0.04em; }
+.hero h1 { margin: 0.15em 0 0.35em; font-family: var(--font-display); font-weight: 600; font-size: var(--step-4); line-height: 1; letter-spacing: 0.02em; text-wrap: balance; }
+.hero .sub { margin: 0; font-size: var(--step-1); }
+@media (max-width: 760px) {
+  /* スマホでは文字を写真の上に分けて置き（手と重ならない）、写真の下の床部分は少し削る */
+  .hero { height: auto; display: flex; flex-direction: column; background: #252224; } /* 写真の上端と同じ色 */
+  .hero-photo::after { display: none; }
+  .hero .wrap { order: 0; position: relative; z-index: 1; padding-block: 1.25rem 0; }
+  .hero-photo { order: 1; position: relative; inset: auto; display: block; margin-top: -4.75rem; height: auto; overflow: hidden; }
+  .hero-photo img { width: 100%; height: auto; object-fit: contain; -webkit-mask-image: linear-gradient(to bottom, transparent, #000 20%); mask-image: linear-gradient(to bottom, transparent, #000 20%); }
+  .hero .kicker { font-size: 1.05rem; }
+  .hero h1 { font-size: 2.25rem; margin: 0.1em 0 0.2em; }
+  .hero .sub { font-size: 0.95rem; }
+}
+
+/* 写真付きの見出し帯（WORKS / GALLERY） */
+.banner { position: relative; overflow: hidden; color: var(--on-color); }
+.banner img { width: 100%; height: clamp(9rem, 17vw, 16rem); object-fit: cover; object-position: 30% 35%; }
+.banner.works { background: #3a3a3a; }
+.banner.gallery { background: #120c0c; }
+.banner.gallery img { object-position: 40% 50%; }
+.banner::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,0.45), transparent 55%); z-index: 1; }
+.banner .wrap { position: absolute; inset: 0; display: flex; align-items: center; z-index: 2; left: 0; right: 0; }
+.banner h2, .plain-banner h2 {
+  margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-3);
+  letter-spacing: 0.08em; text-transform: uppercase; line-height: 1;
+}
+
+/* About */
+.about { background: var(--slate); color: var(--on-color); }
+.about .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(2rem, 6vw, 6rem); align-items: center; padding-block: clamp(3rem, 6vw, 5rem); }
+.about img { width: 100%; aspect-ratio: 805 / 850; object-fit: cover; }
+.about h2, .row h3 { margin: 0 0 0.5rem; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); letter-spacing: 0.03em; }
+.about p { margin: 0 0 1em; max-width: 34em; }
+.about .meta { list-style: none; padding: 0; margin: 1.75rem 0 0; display: grid; gap: 0.35rem; border-top: 1px solid rgba(255,255,255,0.4); padding-top: 1.25rem; }
+.about .meta li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 1rem; }
+.about .meta span { font-size: var(--step--1); letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.8; }
+
+/* Works */
+.works-body { background: var(--mauve); color: var(--on-color); }
+.works-body .wrap { padding-block: clamp(3rem, 6vw, 5rem); display: grid; gap: clamp(3rem, 6vw, 5rem); }
+.row { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: clamp(2rem, 6vw, 5rem); align-items: center; }
+.row.flip { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); }
+.row.flip .row-photo { order: -1; }
+.row p { margin: 0; max-width: 34em; }
+.row .tag { display: block; font-size: var(--step--1); letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.85; margin-bottom: 0.25rem; }
+.row-photo img { width: 100%; object-fit: cover; }
+.row-photo.tall img { aspect-ratio: 562 / 888; max-height: 38rem; }
+.row-photo.wide img { aspect-ratio: 566 / 422; }
+.more { text-align: center; }
+.more a {
+  display: inline-block; font-family: var(--font-display); font-size: var(--step-1); text-decoration: none;
+  background: #6e6a70; color: var(--on-color); padding: 0.35em 1.4em; border-radius: 6px 6px 0 0;
+}
+.more a:hover { background: var(--ink); }
+
+/* Gallery */
+.gallery-body { background: radial-gradient(ellipse at top, #302932, #1b181e 70%); }
+.gallery-body .wrap { padding-block: clamp(2.5rem, 5vw, 4rem); }
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(0.75rem, 2vw, 2.25rem); }
+.grid button { all: unset; cursor: zoom-in; display: block; }
+.grid button:focus-visible { outline: 2px solid var(--on-color); outline-offset: 4px; }
+.grid img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; transition: transform 0.4s ease, filter 0.4s ease; }
+@media (prefers-reduced-motion: reduce) { .grid img { transition: none; } }
+
+#gallery .banner .wrap h2 { letter-spacing: 0.12em; text-shadow: 0 2px 24px rgba(0,0,0,0.6); }
+#gallery #grid { counter-reset: gallery-photo; }
+#gallery #grid > button {
+  position: relative;
+  counter-increment: gallery-photo;
+  outline: 1px solid rgba(246,229,210,0.22);
+  outline-offset: 2px;
+}
+#gallery #grid > button:hover,
+#gallery #grid > button:focus-visible { outline-color: #e7cfb4; }
+#gallery #grid > button::after {
+  content: counter(gallery-photo, decimal-leading-zero);
+  position: absolute;
+  right: 0.45rem;
+  bottom: 0.45rem;
+  padding: 0.2rem 0.35rem;
+  background: rgba(24,20,26,0.82);
+  color: #fff4e6;
+  font: 0.65rem/1.1 system-ui, sans-serif;
+  letter-spacing: 0.12em;
+  pointer-events: none;
+}
+
+.lightbox {
+  position: fixed; inset: 0; z-index: 20; background: rgba(20, 18, 22, 0.92);
+  display: grid; place-items: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.lightbox img { max-height: 86vh; width: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.lightbox button {
+  position: absolute; background: none; border: 0; color: #fff; font-family: var(--font-display);
+  font-size: 2.25rem; line-height: 1; cursor: pointer; padding: 0.5rem 0.75rem;
+}
+.lb-close { top: calc(env(safe-area-inset-top, 0px) + 0.5rem); right: calc(env(safe-area-inset-right, 0px) + 0.75rem); }
+.lb-prev { left: calc(env(safe-area-inset-left, 0px) + 0.5rem); top: 50%; transform: translateY(-50%); }
+.lb-next { right: calc(env(safe-area-inset-right, 0px) + 0.5rem); top: 50%; transform: translateY(-50%); }
+
+/* Interview */
+.interview { background: var(--mauve); color: var(--on-color); }
+.plain-banner .wrap { padding-block: clamp(3rem, 7vw, 5.5rem) clamp(2rem, 4vw, 3rem); border-bottom: 1px solid rgba(255,255,255,0.35); }
+.qa { max-width: 52rem; margin: 0 auto; display: grid; gap: 1.75rem; padding-block: clamp(2.5rem, 5vw, 4rem) clamp(3rem, 6vw, 5rem); }
+.qa article { background: var(--rose); padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1.25rem, 3vw, 2.75rem); }
+.qa h3 { margin: 0 0 0.75rem; font-family: var(--font-display); font-weight: 600; font-size: var(--step-1); line-height: 1.35; }
+.qa h3 span { display: block; font-size: var(--step--1); letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.85; font-weight: 500; }
+.qa p { margin: 0; }
+
+/* Footer */
+footer { background: var(--paper); color: var(--ink); }
+footer .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2rem; align-items: end; padding-block: clamp(2.5rem, 5vw, 4rem); }
+footer nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+footer nav a { font-family: var(--font-display); font-size: var(--step-1); letter-spacing: 0.06em; text-decoration: none; }
+footer nav a:hover { color: var(--slate); }
+.sign { text-align: right; display: grid; gap: 0.5rem; justify-items: end; }
+.sign .name { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); line-height: 1.1; }
+.sign .mail { margin: 0; font-family: var(--font-display); font-size: clamp(14px, 4.4vw, var(--step-1)); white-space: nowrap; letter-spacing: normal; word-break: normal; user-select: all; }
+.copy { font: inherit; font-size: var(--step--1); background: none; color: var(--ink-soft); border: 1px solid #d9d7dc; padding: 0.2em 0.9em; cursor: pointer; }
+.copy:hover { color: var(--ink); border-color: var(--ink); }
+.social { display: flex; gap: 1.25rem; margin-top: 0.75rem; }
+.social a { color: var(--ink); display: block; }
+.social a:hover { color: var(--slate); }
+.social svg { width: 30px; height: 30px; display: block; }
+.legal { text-align: center; font-size: var(--step--1); color: var(--ink-soft); padding-bottom: 2rem; margin: 0; }
+
+@media (max-width: 760px) {
+  .about .wrap, .row, .row.flip { grid-template-columns: 1fr; }
+  .row.flip .row-photo { order: 0; }
+  .row-photo.tall img { max-height: 28rem; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  footer .wrap { grid-template-columns: 1fr; }
+  .sign { text-align: left; justify-items: start; }
+}
+.published-interview{margin:0 0 38px;padding:clamp(22px,4vw,40px);border:1px solid currentColor;border-radius:8px;background:rgba(255,255,255,.07)}.interview-publication{font:11px/1.6 Arial,sans-serif;letter-spacing:.13em;margin-bottom:13px;opacity:.8}.interview-feature-title{font-size:clamp(25px,3.5vw,38px);line-height:1.2;max-width:700px;margin-bottom:16px}.interview-feature-summary{font-size:18px;line-height:1.65;max-width:680px;margin-bottom:22px}.interview-feature-link{display:inline-block;padding:12px 18px;border:1px solid currentColor;border-radius:4px;color:inherit;text-decoration:none;font:14px/1.5 Arial,sans-serif}.interview-feature-link:hover{background:rgba(255,255,255,.15)}
+/* Readable Interview typography and contrast */
+#interview{background:#f4f0ec;color:#292632}
+#interview .plain-banner{color:#292632}
+#interview .published-interview,#interview .qa article{background:#fff;color:#292632;border:1px solid #d9d1cb;border-radius:8px}
+#interview .interview-publication{font-size:13px;line-height:1.7;color:#59515b;opacity:1;letter-spacing:.08em;font-weight:600}
+#interview .interview-feature-title{font-weight:600;font-size:clamp(28px,3.5vw,40px);line-height:1.25}
+#interview .interview-feature-summary,#interview .qa p{font-family:Arial,sans-serif;font-size:18px;line-height:1.8;color:#38323d}
+#interview .qa h3{color:#292632;font-weight:600}
+#interview .qa h3 span{color:#645466;opacity:1;font-weight:600}
+#interview .interview-feature-link{background:#45364d;color:#fff;border-color:#45364d;font-weight:600;font-size:15px;padding:14px 20px}
+#interview .interview-feature-link:hover{background:#302336}
+#interview .interview-feature-link:focus-visible{outline:3px solid #95632e;outline-offset:4px}
+.press-interview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-bottom:38px}.press-interview-grid .published-interview{margin:0;display:flex;flex-direction:column;padding:28px}.press-interview-grid .interview-feature-title{font-size:clamp(23px,2.4vw,29px)}.press-interview-grid .interview-feature-summary{font-size:17px}.press-interview-grid .interview-feature-link{align-self:flex-start;margin-top:auto}.press-interview-grid [lang=ja] .interview-feature-title{font-family:system-ui,sans-serif;line-height:1.6;font-weight:600}@media(max-width:760px){.press-interview-grid{grid-template-columns:minmax(0,1fr);gap:18px}.press-interview-grid .published-interview{padding:22px}}
+.press-language-nav{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 32px}.press-language-nav a{padding:11px 20px;border:1px solid #645466;border-radius:99px;background:#fff;color:#45364d;font:600 15px/1.5 Arial,sans-serif;text-decoration:none}.press-language-nav a:hover{background:#ede5ef}.press-language-group{scroll-margin-top:100px;margin-bottom:52px}.press-language-title{display:flex;gap:18px;align-items:center;font:600 clamp(25px,3vw,32px)/1.5 system-ui,sans-serif;color:#292632;margin-bottom:8px}.press-language-title span{font:400 13px/1.5 Arial,sans-serif;color:#655d68}.press-language-note{font:16px/1.7 system-ui,sans-serif;color:#59515b;margin-bottom:22px}.press-interview-grid{gap:24px}.press-interview-grid .interview-publication{font-size:12px;letter-spacing:.04em}.press-interview-grid .interview-feature-title{line-height:1.4}.press-interview-grid .published-interview{box-shadow:0 3px 12px #30233608}.press-interview-grid .interview-feature-summary{margin-bottom:24px}.press-language-group:lang(ja){font-family:system-ui,sans-serif}@media(max-width:760px){.press-language-title{align-items:baseline}.press-language-nav a{padding:10px 16px}.press-language-group{margin-bottom:36px}}
+/* Compact Interview cards */
+#interview .plain-banner{padding-block:24px}
+#interview .plain-banner h2{font-size:clamp(32px,4vw,48px)}
+#interview .press-language-nav{gap:9px;margin-bottom:22px}
+#interview .press-language-nav a{font-size:13px;padding:8px 15px}
+#interview .press-language-group{margin-bottom:34px}
+#interview .press-language-title{font-size:clamp(21px,2.5vw,26px);gap:12px;margin-bottom:5px}
+#interview .press-language-note{font-size:14px;margin-bottom:16px}
+#interview .press-language-group,
+#interview .press-language-nav { max-width: 54rem; margin-inline: auto; }
+#interview .press-interview-grid { gap: 14px; margin-bottom: 24px; }
+#interview .press-interview-grid .published-interview {
+  padding: 16px 18px;
+  border-color: #ded5ce;
+  border-top: 2px solid #8a6d84;
+  border-radius: 4px;
+  background: #fffcf9;
+}
+#interview .interview-publication{font-size:11px;line-height:1.6;margin-bottom:10px}
+#interview .press-interview-grid .interview-feature-title{font-size:clamp(19px,2vw,22px);line-height:1.4;margin-bottom:8px}
+#interview .press-interview-grid [lang=ja] .interview-feature-title{font-size:clamp(18px,1.9vw,21px);line-height:1.5}
+#interview .press-interview-grid .interview-feature-summary{font-size:14px;line-height:1.65;margin-bottom:12px}
+#interview .interview-feature-link { font-size: 13px; padding: 7px 11px; background: transparent; color: #45364d; }
+#interview .interview-feature-link:hover { color: #fff; }
+#interview .qa{gap:18px;padding-block:24px 40px}
+#interview .qa article{padding:22px}
+#interview .qa h3{font-size:22px}
+#interview .qa p{font-size:16px;line-height:1.7}
+@media(max-width:760px){#interview .press-interview-grid .published-interview{padding:14px 16px}#interview .press-interview-grid{gap:14px}}
+  #study .row p + p { margin-top: .8em; }
+  .study-note { margin: 14px 0 22px; font-size: .92rem; color: var(--muted); }
+  .lesson-inquiry-note a { color: inherit; }
+</style>
+<style id="photo-layout">.grid { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: clamp(40px, 8vw, 160px); gap: 20px; align-items: stretch; } .grid button { min-height: 0; overflow: hidden; } .grid img { height: 100%; } @media (max-width: 760px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; align-items: start; } .grid button { grid-column: span 1 !important; grid-row: auto !important; } .grid img { height: auto !important; aspect-ratio: 3 / 4 !important; } }
+#grid button, .hero-photo, .about .wrap > img, .row-photo, .banner { overflow: hidden; }
+@media(min-width:761px){}
+@media(max-width:760px){#grid { grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:clamp(28px, 15vw, 100px);gap:20px;align-items:stretch;}#grid button[data-photo-slot="img/g01.jpg"]{grid-column:1 / span 2 !important;grid-row:1 / span 3 !important;translate:0px 0px !important;}#grid button[data-photo-slot="img/g01.jpg"] img{height:100% !important;aspect-ratio:auto !important;object-fit:cover !important;object-position:0% 50% !important;transform:scale(1) !important;transform-origin:0% 50% !important;filter:brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%) !important;translate:none !important;}#grid button[data-photo-slot="img/g02.jpg"]{grid-column:3 / span 2 !important;grid-row:1 / span 3 !important;translate:0px 0px !important;}#grid button[data-photo-slot="img/g02.jpg"] img{height:100% !important;aspect-ratio:auto !important;object-fit:cover !important;object-position:52.32892286159111% 50% !important;transform:scale(1) !important;transform-origin:52.32892286159111% 50% !important;filter:brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%) !important;translate:none !important;}#grid button[data-photo-slot="img/g03.jpg"]{grid-column:5 / span 2 !important;grid-row:1 / span 3 !important;translate:0px 0px !important;}#grid button[data-photo-slot="img/g03.jpg"] img{height:100% !important;aspect-ratio:auto !important;object-fit:cover !important;object-position:58.98735631515264% 50% !important;transform:scale(1) !important;transform-origin:58.98735631515264% 50% !important;filter:brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%) !important;translate:none !important;}#grid button[data-photo-slot="img/g04.jpg"]{grid-column:1 / span 2 !important;grid-row:4 / span 3 !important;translate:0px 0px !important;}#grid button[data-photo-slot="img/g04.jpg"] img{height:100% !important;aspect-ratio:auto !important;object-fit:cover !important;object-position:50% 50% !important;transform:scale(1) !important;transform-origin:50% 50% !important;filter:brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%) !important;translate:none !important;}#grid button[data-photo-slot="img/g05.jpg"]{grid-column:3 / span 2 !important;grid-row:4 / span 3 !important;translate:0px 0px !important;}#grid button[data-photo-slot="img/g05.jpg"] img{height:100% !important;aspect-ratio:auto !important;object-fit:cover !important;object-position:50% 50% !important;transform:scale(1) !important;transform-origin:50% 50% !important;filter:brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%) !important;translate:none !important;}#grid button[data-photo-slot="img/g06.jpg"]{grid-column:5 / span 2 !important;grid-row:4 / span 3 !important;translate:0px 0px !important;}#grid button[data-photo-slot="img/g06.jpg"] img{height:100% !important;aspect-ratio:auto !important;object-fit:cover !important;object-position:50% 50% !important;transform:scale(1) !important;transform-origin:50% 50% !important;filter:brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%) !important;translate:none !important;}#grid button[data-photo-slot="img/g07.jpg"]{grid-column:1 / span 2 !important;grid-row:7 / span 3 !important;translate:0px 0px !important;}#grid button[data-photo-slot="img/g07.jpg"] img{height:100% !important;aspect-ratio:auto !important;object-fit:cover !important;object-position:50% 50% !important;transform:scale(1) !important;transform-origin:50% 50% !important;filter:brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%) !important;translate:none !important;}#grid button[data-photo-slot="img/g08.jpg"]{grid-column:3 / span 2 !important;grid-row:7 / span 3 !important;translate:0px 0px !important;}#grid button[data-photo-slot="img/g08.jpg"] img{height:100% !important;aspect-ratio:auto !important;object-fit:cover !important;object-position:50% 50% !important;transform:scale(1) !important;transform-origin:50% 50% !important;filter:brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%) !important;translate:none !important;}#grid button[data-photo-slot="img/g09.jpg"]{grid-column:5 / span 2 !important;grid-row:7 / span 3 !important;translate:0px 0px !important;}#grid button[data-photo-slot="img/g09.jpg"] img{height:100% !important;aspect-ratio:auto !important;object-fit:cover !important;object-position:52.84711359787364% 50% !important;transform:scale(1) !important;transform-origin:52.84711359787364% 50% !important;filter:brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%) !important;translate:none !important;}#grid button[data-photo-slot="img/g10.jpg"]{grid-column:1 / span 2 !important;grid-row:10 / span 3 !important;translate:0px 0px !important;}#grid button[data-photo-slot="img/g10.jpg"] img{height:100% !important;aspect-ratio:auto !important;object-fit:cover !important;object-position:50.234808738618696% 50% !important;transform:scale(1) !important;transform-origin:50.234808738618696% 50% !important;filter:brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%) !important;translate:none !important;}#grid button[data-photo-slot="img/g11.jpg"]{grid-column:3 / span 2 !important;grid-row:10 / span 3 !important;translate:0px 0px !important;}#grid button[data-photo-slot="img/g11.jpg"] img{height:100% !important;aspect-ratio:auto !important;object-fit:cover !important;object-position:50% 50% !important;transform:scale(1) !important;transform-origin:50% 50% !important;filter:brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%) !important;translate:none !important;}#grid button[data-photo-slot="img/g12.jpg"]{grid-column:5 / span 2 !important;grid-row:10 / span 3 !important;translate:0px 0px !important;}#grid button[data-photo-slot="img/g12.jpg"] img{height:100% !important;aspect-ratio:auto !important;object-fit:cover !important;object-position:50% 50% !important;transform:scale(1) !important;transform-origin:50% 50% !important;filter:brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%) !important;translate:none !important;}main img[data-photo-id="img/works.jpg"]{translate:0px 0px !important;}main img[data-photo-id="img/lesson.jpg"]{object-fit:cover !important;object-position:50% 36.40510596943636% !important;transform:scale(1) !important;transform-origin:50% 36.40510596943636% !important;filter:brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%) !important;width:98% !important;height:420px !important;position:relative;translate:0px 0px !important;}main img[data-photo-id="img/funcphysio-logo.jpg"]{translate:0px 0px !important;}}</style><style>
+.lesson-inquiry {
+  margin-top: 1.5rem;
+  padding: clamp(1.1rem, 3vw, 1.75rem);
+  background: #fffaf8;
+  color: #322e36;
+  border-radius: 10px;
+  border: 1px solid #e7dadd;
+  box-shadow: 0 6px 22px #49354212;
+}
+.lesson-inquiry-title { font-family: var(--font-display); font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 600; line-height: 1.2; margin-bottom: .65rem; }
+.lesson-inquiry-copy { font-size: 1.05rem; line-height: 1.5; }
+.lesson-inquiry-button { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 1rem; padding: .8rem 1rem; background: #465b7a; color: #fff; font-family: var(--font-display); font-size: 1.35rem; line-height: 1.3; font-weight: 600; text-decoration: none; border-radius: 5px; min-height: 50px; }
+.lesson-inquiry-button:hover { background: #354761; }
+.lesson-inquiry-note { margin-top: .6rem; font-size: .9rem; line-height: 1.4; color: #615b64; }
+header.top a.lesson-nav { color: #465b7a; font-weight: 600; border-bottom: 2px solid #6f83a6; }
+</style>
+<style id="travel-lesson-style">
+.travel-lesson { margin-top: clamp(2.5rem, 6vw, 4rem); padding: clamp(1.5rem, 4vw, 2.5rem); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 6px; max-width: 46rem; }
+.travel-lesson h3 { margin: 0 0 0.75rem; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); line-height: 1.15; }
+.travel-lesson p { margin: 0 0 1rem; max-width: 36em; }
+.travel-points { margin: 0 0 1.5rem; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.travel-points li { padding: 0.35rem 0.9rem; border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 999px; font-size: var(--step--1); }
+</style><style id="lesson-places-style">
+.lesson-places { margin-top: clamp(2.5rem, 6vw, 4rem); max-width: 46rem; }
+.lesson-places > h3 { margin: 0 0 1rem; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); line-height: 1.15; }
+.place-card { display: flex; gap: 1.25rem; align-items: center; padding: 1.25rem 1.5rem; margin-bottom: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 6px; }
+.place-card.partner { background: var(--paper); color: var(--ink); border-color: transparent; }
+.place-card img { flex: 0 0 auto; width: clamp(9rem, 30%, 13rem); height: auto; }
+.place-card h4 { margin: 0 0 0.3rem; font-family: var(--font-display); font-weight: 600; font-size: var(--step-1); line-height: 1.2; }
+.place-card p { margin: 0; }
+@media (max-width: 760px) { .place-card { flex-direction: column; align-items: flex-start; } .place-card img { width: 11rem; } }
+</style><style id="site-nav-style">
+/* Main menu. PC: one line, About opens a small list (Credits, Gallery, Interview). Phone: Menu button opens cards. */
+header.top { position: sticky; top: 0; z-index: 20; padding: 0 !important; background: color-mix(in srgb, var(--paper) 92%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
+header.top nav.wrap { max-width: 88rem; min-height: 68px; display: flex; align-items: center; gap: clamp(14px, 2vw, 28px); }
+header.top .brand { margin-right: auto; font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; letter-spacing: 0.05em; color: var(--ink); text-decoration: none; white-space: nowrap; border: 0; }
+header.top .brand small { display: block; font-family: var(--font-body); font-size: 0.62rem; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase; color: var(--slate); margin-top: -0.15rem; }
+header.top #site-menu { display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-end; gap: clamp(16px, 1.8vw, 30px); margin: 0; padding: 0; list-style: none; }
+header.top #site-menu ul { list-style: none; margin: 0; padding: 0; text-align: left; justify-content: flex-start; }
+header.top #site-menu a { position: relative; display: inline-block; padding: 8px 0; font-family: var(--font-body); font-size: 1.04rem; font-weight: 500; letter-spacing: 0.015em; text-transform: none; white-space: nowrap; color: var(--ink); text-decoration: none; border: 0; }
+header.top #site-menu > li > a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 2px; height: 2px; border-radius: 2px; background: var(--slate); transform: scaleX(0); transform-origin: left; transition: transform .25s ease; }
+header.top #site-menu > li > a:hover::after, header.top #site-menu > li > a[aria-current="page"]::after, header.top #site-menu > li.has-sub:has([aria-current="page"]) > a::after { transform: scaleX(1); }
+header.top #site-menu a:hover, header.top #site-menu a[aria-current="page"] { color: var(--slate); }
+header.top #site-menu a.lesson-nav { color: var(--slate); font-weight: 600; }
+header.top #site-menu li.menu-group, header.top #site-menu .menu-desc { display: none; }
+header.top #site-menu li.has-sub { position: relative; }
+header.top #site-menu li.has-sub > a { padding-right: 16px; }
+header.top #site-menu li.has-sub > a::before { content: ""; position: absolute; right: 2px; top: 50%; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-75%) rotate(45deg); }
+header.top #site-menu .menu-sub { position: absolute; left: -16px; top: 100%; min-width: 190px; padding: 8px; background: var(--paper); border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent); border-radius: 12px; box-shadow: 0 14px 34px color-mix(in srgb, var(--ink) 16%, transparent); opacity: 0; visibility: hidden; transform: translateY(6px); transition: opacity .2s, transform .2s, visibility 0s .2s; }
+header.top #site-menu li.has-sub:hover .menu-sub, header.top #site-menu li.has-sub:focus-within .menu-sub { opacity: 1; visibility: visible; transform: none; transition: opacity .2s, transform .2s; }
+header.top #site-menu .menu-sub li { display: block; width: 100%; }
+header.top #site-menu .menu-sub a { display: block; padding: 9px 12px; border-radius: 8px; font-size: 0.98rem; }
+header.top #site-menu .menu-sub a:hover, header.top #site-menu .menu-sub a[aria-current="page"] { background: color-mix(in srgb, var(--slate) 12%, var(--paper)); }
+header.top .site-language-switch { position: static !important; transform: none !important; order: 3; flex: none; box-shadow: none; border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); background: transparent; }
+header.top .menu-toggle { display: none; }
+html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06em; }
+@media (max-width: 1180px) {
+  header.top { background: var(--paper); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  header.top nav.wrap { min-height: 60px; gap: 10px; }
+  header.top .brand { font-size: 1.3rem; }
+  header.top .menu-toggle { order: 4; display: inline-flex; align-items: center; gap: 9px; flex: none; padding: 8px 14px; border: 1px solid var(--ink); border-radius: 999px; background: var(--ink); color: var(--paper); font: 600 13px/1 system-ui, sans-serif; letter-spacing: 0.08em; cursor: pointer; }
+  header.top .menu-toggle i { position: relative; width: 16px; height: 9px; border-top: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transition: border-color .2s; }
+  header.top .menu-toggle i::before, header.top .menu-toggle i::after { content: ""; position: absolute; left: 0; right: 0; top: 2.5px; height: 1.5px; background: currentColor; opacity: 0; transition: transform .25s, opacity .2s; }
+  header.top.menu-open .menu-toggle i { border-color: transparent; }
+  header.top.menu-open .menu-toggle i::before { opacity: 1; transform: rotate(45deg); }
+  header.top.menu-open .menu-toggle i::after { opacity: 1; transform: rotate(-45deg); }
+  header.top .menu-toggle .when-open, header.top.menu-open .menu-toggle .when-closed { display: none; }
+  header.top.menu-open .menu-toggle .when-open { display: inline; }
+  header.top #site-menu { position: fixed; left: 0; right: 0; top: 61px; bottom: 0; display: flex; flex-flow: row wrap; align-items: stretch; align-content: start; justify-content: flex-start; gap: 0 10px; padding: 6px max(18px, env(safe-area-inset-right, 0px)) calc(32px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--ink) 5%, var(--paper)); overflow-y: auto; overscroll-behavior: contain; opacity: 0; visibility: hidden; transform: translateY(-8px); transition: opacity .25s ease, transform .25s ease, visibility 0s .25s; }
+  header.top.menu-open #site-menu { opacity: 1; visibility: visible; transform: none; transition: opacity .25s ease, transform .25s ease; }
+  header.top #site-menu > li { flex: 1 1 100%; background: var(--paper); border-left: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); border-right: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
+  header.top #site-menu > li.menu-group { display: block; background: none; border: 0; padding: 20px 4px 8px; font-family: var(--font-body); font-size: 0.74rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--slate); }
+  header.top #site-menu > li.menu-group + li { border-top: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); border-radius: 14px 14px 0 0; }
+  header.top #site-menu > li:has(+ li.menu-group), header.top #site-menu > li:not(.menu-solo):has(+ li.menu-solo) { border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); border-radius: 0 0 14px 14px; }
+  header.top #site-menu > li.menu-group + li:has(+ li.menu-group), header.top #site-menu > li.menu-group + li:has(+ li.menu-solo) { border-radius: 14px; }
+  header.top #site-menu > li:not(.menu-group):not(.menu-solo) + li:not(.menu-group):not(.menu-solo) > a { border-top: 1px solid color-mix(in srgb, var(--ink) 9%, transparent); }
+  header.top #site-menu > li > a { display: block; width: 100%; padding: 13px 40px 13px 16px; font-size: 1.14rem; font-weight: 600; letter-spacing: 0.01em; line-height: 1.2; white-space: normal; }
+  header.top #site-menu > li > a::after { content: "›"; position: absolute; right: 16px; top: 50%; left: auto; bottom: auto; height: auto; background: none; border-radius: 0; transform: translateY(-50%); font-size: 1.45rem; font-weight: 400; color: var(--ink-soft); }
+  header.top #site-menu > li > a[aria-current="page"] { box-shadow: inset 3px 0 0 var(--slate); }
+  header.top #site-menu .menu-desc { display: block; margin-top: 3px; font-size: 0.84rem; font-weight: 400; letter-spacing: 0.01em; color: var(--ink-soft); }
+  header.top #site-menu a[aria-current="page"] .menu-desc::after { content: " · now viewing"; }
+  html[lang=ja] header.top #site-menu a[aria-current="page"] .menu-desc::after { content: "・表示中"; }
+  header.top #site-menu li.has-sub > a { padding-right: 40px; }
+  header.top #site-menu li.has-sub > a::before { content: none; }
+  header.top #site-menu li.has-sub > a::after { top: 26px; transform: none; }
+  header.top #site-menu .menu-sub { position: static; display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; padding: 0 16px 14px; background: none; border: 0; border-radius: 0; box-shadow: none; opacity: 1; visibility: inherit; transform: none; transition: none; }
+  header.top #site-menu .menu-sub li { width: auto; }
+  header.top #site-menu .menu-sub a { padding: 6px 12px; border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); border-radius: 999px; font-size: 0.9rem; font-weight: 500; }
+  header.top #site-menu .menu-sub a[aria-current="page"] { border-color: var(--slate); }
+  header.top #site-menu > li.menu-home { margin-top: 14px; border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); border-radius: 14px; }
+  header.top #site-menu > li.menu-solo { order: 10; flex: 1 1 100%; margin-top: 22px; background: none; border: 0; }
+  header.top #site-menu > li.menu-solo > a { padding: 12px 10px; text-align: center; border: 1px solid var(--ink); border-radius: 999px; font-size: 1rem; box-shadow: none; }
+  header.top #site-menu > li.menu-solo > a::after, header.top #site-menu > li.menu-solo .menu-desc { display: none; }
+  header.top #site-menu > li.menu-solo:last-child > a { background: var(--ink); color: var(--paper); }
+  html[lang=ja] header.top #site-menu > li > a { font-size: 1rem; letter-spacing: 0.06em; }
+  html[lang=ja] header.top #site-menu > li.menu-group { letter-spacing: 0.1em; }
+  html.menu-lock, html.menu-lock body { overflow: hidden; }
+}
+@media (max-width: 480px) { header.top .brand { font-size: 1.12rem; } header.top .brand small { font-size: 0.55rem; letter-spacing: 0.22em; } header.top .site-language-switch { padding: 3px; } header.top .site-language-switch button { padding: 4px 8px; font-size: 11px; } header.top .menu-toggle { width: 40px; height: 40px; padding: 0; justify-content: center; } header.top .menu-toggle span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }
+@media (max-width: 350px) { header.top .brand small { display: none; } }
+@media (prefers-reduced-motion: reduce) { header.top #site-menu, header.top #site-menu a::after, header.top .menu-sub, header.top .menu-toggle i::before, header.top .menu-toggle i::after { transition: none !important; } }
+</style>
+<style id="banner-fit-style">
+/* Banner photos: show the whole photo (no cropping) */
+.banner img, .banner.gallery img { display: block; height: clamp(16rem, 30vw, 28rem); object-fit: contain; object-position: 85% 50%; }
+@media (max-width: 760px) {
+  .banner img, .banner.gallery img { height: auto; max-height: 80vh; object-position: 50% 50%; }
+  .banner::before { background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent 45%); }
+  .banner .wrap { align-items: flex-start; padding-top: 1.25rem; }
+}
+</style>
+<link rel="stylesheet" href="site-theme.css?v=28">
+<style id="manual-box-styles">@media(min-width:761px){}@media(max-width:760px){}</style><style id="manual-text-styles">@media(min-width:761px){}@media(max-width:760px){}</style><meta name="editor-published-at" content="1794434805000">
+<style id="lesson-photo-whole">
+/* Lesson photo: show the whole photo (no cropping) */
+body .row-photo.tall[data-box-slot] img[data-photo-id="img/lesson.jpg"] { height: auto !important; width: auto !important; max-width: 100% !important; max-height: 38rem; margin-inline: auto; display: block; aspect-ratio: auto !important; transform: none !important; }
+@media (max-width: 760px) { body .row-photo.tall[data-box-slot] img[data-photo-id="img/lesson.jpg"] { max-height: 28rem; } }
+body .row-photo.tall[data-box-slot] { height: auto !important; }
+</style>
+</head>
+<body>
+
+<header class="top" data-box-slot="0">
+  <nav class="wrap" aria-label="Main">
+    <a class="brand" href="./">Mari Takayama<small>Ballet · New York</small></a>
+    <ul id="site-menu">
+      <li class="menu-home"><a href="./">Home<span class="menu-desc">Start here</span></a></li>
+      <li class="menu-group" aria-hidden="true">About Mari</li>
+      <li class="has-sub"><a href="about.html">About<span class="menu-desc">Mari's story</span></a>
+        <ul class="menu-sub">
+          <li><a href="credits.html">Credits</a></li>
+          <li><a href="gallery.html">Gallery</a></li>
+          <li><a href="interview.html">Interview</a></li>
+        </ul>
+      </li>
+      <li class="menu-group" aria-hidden="true">Work with Mari</li>
+      <li><a class="lesson-nav" href="private-lessons.html">Private Lessons<span class="menu-desc">Ballet lessons, all levels</span></a></li>
+      <li><a href="booking.html">Book a Performance<span class="menu-desc">Dance at your event</span></a></li>
+      <li><a href="study-in-ny.html" aria-current="page">Ballet Study in NY<span class="menu-desc">Advice for students</span></a></li>
+      <li class="menu-group" aria-hidden="true">Community</li>
+      <li><a href="radio-taiso.html">Radio Taiso<span class="menu-desc">Weekly in Central Park</span></a></li>
+      <li class="menu-solo"><a href="./#contact">Contact<span class="menu-desc">Email Mari</span></a></li>
+    </ul>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu"><i aria-hidden="true"></i><span class="when-closed">Menu</span><span class="when-open">Close</span></button>
+  </nav>
+</header>
+<script id="site-nav-script">(()=>{const h=document.querySelector('header.top'),b=h&&h.querySelector('.menu-toggle');if(!b)return;const set=o=>{h.classList.toggle('menu-open',o);b.setAttribute('aria-expanded',String(o));document.documentElement.classList.toggle('menu-lock',o)};b.addEventListener('click',()=>set(!h.classList.contains('menu-open')));h.querySelectorAll('#site-menu a').forEach(a=>a.addEventListener('click',()=>set(false)));addEventListener('keydown',e=>{if(e.key==='Escape'&&h.classList.contains('menu-open')){set(false);b.focus()}});matchMedia('(min-width: 1181px)').addEventListener('change',()=>set(false))})()</script>
+
+<main>
+  <section id="study" data-section-key="#study">
+    <div class="banner works" style="overflow: hidden;">
+      <img src="img/works-banner.jpg" alt="" data-photo-id="img/works.jpg">
+      <div class="wrap" style="position: relative; z-index: 1; background: inherit;"><h2>Ballet Study in New York</h2></div>
+    </div>
+    <div class="works-body">
+      <div class="wrap">
+        <div class="row">
+          <div>
+            <h3><span class="tag">Advice</span>Coming to New York to dance</h3>
+            <p>Mari came to New York from Japan in 2021, after the ballet course at Senzoku Gakuen College of Music. Before that she trained at summer intensives with the Bolshoi Ballet Academy, American Ballet Theatre, Kirov Ballet Academy and Miami City Ballet, and she was a trainee at American Repertory Ballet.</p>
+            <p>If you are thinking of studying here, or you have just arrived, Mari is happy to talk it through with you and your family, in Japanese or English.</p>
+            <div class="lesson-inquiry">
+  <div class="lesson-inquiry-title">Talk with Mari</div>
+  <div class="lesson-inquiry-copy">By Zoom from anywhere, or in person in New York. Tell Mari a little about yourself and what you would like to ask, and she will reply with times.</div>
+  <a class="lesson-inquiry-button" href="lessons.html?place=zoom&amp;topic=study">Ask for a time to talk <span aria-hidden="true">→</span></a>
+  <div class="lesson-inquiry-note">Or email <a href="mailto:maritakayama.official@gmail.com?subject=Ballet%20study%20in%20New%20York">maritakayama.official@gmail.com</a></div>
+</div>
+          </div>
+          <div class="row-photo"><img src="img/g04.jpg" alt="Mari in a high kick on a rooftop above Manhattan" data-photo-id="img/g04.jpg" style="aspect-ratio: auto; object-fit: contain;"></div>
+        </div>
+        <div class="lesson-places">
+          <h3>Who it is for</h3>
+          <div class="place-card">
+            <div>
+              <h4>Planning to come</h4>
+              <p>Students and parents choosing a school or a summer intensive, and wondering what life here is like.</p>
+            </div>
+          </div>
+          <div class="place-card">
+            <div>
+              <h4>Already in New York</h4>
+              <p>Students who have just arrived and want help with classes, daily life, or what to do next.</p>
+            </div>
+          </div>
+          <div class="place-card">
+            <div>
+              <h4>Aiming to dance professionally</h4>
+              <p>Dancers getting ready for company auditions and thinking about a career in the U.S.</p>
+            </div>
+          </div>
+        </div>
+        <div class="travel-lesson">
+          <h3>What you can ask about</h3>
+          <ul class="travel-points">
+            <li>Choosing schools and summer intensives</li>
+            <li>Getting ready for auditions: photos, videos, résumé, and the day itself</li>
+            <li>Life in New York: finding a place to live, getting around, taking class, and looking after your body</li>
+            <li>Visas: Mari's own path, up to her O-1 artist visa</li>
+          </ul>
+          <p class="study-note">About visas, Mari shares her own experience. For your own case, please check with an immigration attorney.</p>
+          <a class="lesson-inquiry-button" href="lessons.html?place=zoom&amp;topic=study">Ask for a time to talk <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="contact" data-box-slot="3">
+  <div class="wrap">
+    <nav aria-label="Footer">
+      <ul>
+        <li><a href="./">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="sign">
+      <p class="name">Mari Takayama</p>
+      <p class="mail" id="mail">maritakayama.official@gmail.com</p>
+      <button class="copy" id="copy-mail" type="button">Copy email</button>
+      <div class="social">
+        <a href="https://www.instagram.com/maritakayama_ballet/" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4.2"></circle><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"></circle></svg></a>
+        <a href="https://www.facebook.com/" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-1.6 19.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 12 2z"></path></svg></a>
+        <a href="https://www.linkedin.com/" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm2.3 7.3V18h2.5v-7.7H6.3zm1.3-3.8a1.4 1.4 0 1 0 0 2.9 1.4 1.4 0 0 0 0-2.9zM10.8 10.3V18h2.5v-3.8c0-1 .2-2 1.5-2s1.3 1.2 1.3 2.1V18h2.5v-4.2c0-2.1-.5-3.7-2.9-3.7-1.2 0-1.9.6-2.2 1.2v-1h-2.7z"></path></svg></a>
+        <a href="https://www.youtube.com/" target="_blank" rel="noopener" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8zM10 15V9l5.2 3-5.2 3z"></path></svg></a>
+      </div>
+    </div>
+  </div>
+  <p class="legal">© 2026 Mari Takayama</p>
+</footer>
+
+<script>
+// メールアドレスのコピー
+document.getElementById('copy-mail').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  const mail = document.getElementById('mail');
+  try {
+    await navigator.clipboard.writeText(mail.textContent);
+    btn.textContent = 'Copied';
+  } catch {
+    const r = document.createRange(); r.selectNodeContents(mail);
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    btn.textContent = 'Selected. Press ⌘C to copy';
+  }
+  setTimeout(() => { btn.textContent = 'Copy email'; }, 2400);
+});
+</script>
+<script id="photo-editor-settings" type="application/json">{"version":1,"columns":4,"mobile":2,"gap":20,"photos":[{"src":"img/g01.jpg","alt":"Posing en pointe in a greenhouse","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":1,"w":2,"h":3,"zoom":1},{"src":"img/g02.jpg","alt":"In a black and gold tutu beside a red stage curtain","span":1,"ratio":"3 / 4","fit":"cover","x":52.32892286159111,"y":50,"col":3,"row":1,"w":2,"h":3,"zoom":1,"preset":"natural","effects":{"brightness":100,"contrast":100,"saturate":100,"hue":0,"blur":0,"grayscale":0,"sepia":0}},{"src":"img/g03.jpg","alt":"Leaping in white on a snowy mountain","span":1,"ratio":"3 / 4","fit":"cover","x":58.98735631515264,"y":50,"col":5,"row":1,"w":2,"h":3,"zoom":1},{"src":"img/g04.jpg","alt":"High kick on a rooftop above Manhattan","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g05.jpg","alt":"Smiling portrait","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g06.jpg","alt":"In a white lace dress in the snow","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g07.jpg","alt":"Headshot with red lips","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g08.jpg","alt":"Arabesque with a flowing kimono","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g09.jpg","alt":"Dancing with a fan and silk on stage","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g10.jpg","alt":"In a white tutu among falling red leaves","span":1,"ratio":"3 / 4","fit":"cover","x":50.234808738618696,"y":50,"col":1,"row":10,"w":2,"h":3,"zoom":1},{"src":"img/g11.jpg","alt":"Dancing at dusk in front of a lit hotel","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":10,"w":2,"h":3,"zoom":1},{"src":"img/g12.jpg","alt":"In a pink kimono at Bethesda Terrace","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":10,"w":2,"h":3,"zoom":1}],"other":{"img/about.jpg":{"src":"img/about.jpg","label":"プロフィール写真","fit":"source","x":50,"y":50,"zoom":1},"img/gallery-banner.jpg":{"src":"img/gallery-banner.jpg","alt":"Dance photograph","label":"Galleryの見出し写真","fit":"source","x":50,"y":50,"replacement":"img/gallery-banner-photo.jpg","zoom":1,"effects":{"brightness":87,"contrast":105,"saturate":100,"hue":0,"blur":0,"grayscale":0,"sepia":0},"preset":"natural"},"img/hero.jpg":{"fit":"source","x":50,"y":50,"zoom":1},"img/hero.jpg?v=full-body":{"src":"img/hero.jpg?v=full-body","alt":"Mari Takayama leaping in a purple and black leotard, with her full body visible","label":"トップ写真","fit":"source","x":50,"y":50,"zoom":1},"img/works.jpg":{"src":"img/works.jpg","alt":"Dance photograph","label":"Worksの見出し写真","fit":"source","x":50,"y":50,"replacement":"img/works-banner.jpg","zoom":1},"img/lesson.jpg":{"src":"img/lesson.jpg","alt":"Mari correcting a student's pointe at the barre","label":"レッスンの写真","fit":"cover","x":50,"y":36.4051,"cssPos":false},"img/funcphysio-logo.jpg":{"src":"img/funcphysio-logo.jpg","alt":"FuncPhysio Physical Therapy logo","label":"FuncPhysio のロゴ","fit":"source","x":50,"y":50,"cssPos":false,"zoom":1}},"mode":"free","deviceLayouts":{"desktop":{"version":1,"mode":"free","columns":4,"mobile":2,"gap":20,"photos":[{"src":"img/g01.jpg","alt":"Posing en pointe in a greenhouse","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":1,"w":2,"h":3,"zoom":1},{"src":"img/g02.jpg","alt":"In a black and gold tutu beside a red stage curtain","span":1,"ratio":"3 / 4","fit":"cover","x":52.32892286159111,"y":50,"col":3,"row":1,"w":2,"h":3,"zoom":1,"preset":"natural","effects":{"brightness":100,"contrast":100,"saturate":100,"hue":0,"blur":0,"grayscale":0,"sepia":0}},{"src":"img/g03.jpg","alt":"Leaping in white on a snowy mountain","span":1,"ratio":"3 / 4","fit":"cover","x":58.98735631515264,"y":50,"col":5,"row":1,"w":2,"h":3,"zoom":1},{"src":"img/g04.jpg","alt":"High kick on a rooftop above Manhattan","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g05.jpg","alt":"Smiling portrait","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g06.jpg","alt":"In a white lace dress in the snow","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g07.jpg","alt":"Headshot with red lips","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g08.jpg","alt":"Arabesque with a flowing kimono","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g09.jpg","alt":"Dancing with a fan and silk on stage","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g10.jpg","alt":"In a white tutu among falling red leaves","span":1,"ratio":"3 / 4","fit":"cover","x":50.234808738618696,"y":50,"col":1,"row":10,"w":2,"h":3,"zoom":1},{"src":"img/g11.jpg","alt":"Dancing at dusk in front of a lit hotel","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":10,"w":2,"h":3,"zoom":1},{"src":"img/g12.jpg","alt":"In a pink kimono at Bethesda Terrace","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":10,"w":2,"h":3,"zoom":1}],"other":{"img/about.jpg":{"src":"img/about.jpg","label":"プロフィール写真","fit":"source","x":50,"y":50,"zoom":1},"img/gallery-banner.jpg":{"src":"img/gallery-banner.jpg","alt":"Dance photograph","label":"Galleryの見出し写真","fit":"source","x":50,"y":50,"replacement":"img/gallery-banner-photo.jpg","zoom":1,"effects":{"brightness":87,"contrast":105,"saturate":100,"hue":0,"blur":0,"grayscale":0,"sepia":0},"preset":"natural"},"img/hero.jpg":{"fit":"source","x":50,"y":50,"zoom":1},"img/hero.jpg?v=full-body":{"src":"img/hero.jpg?v=full-body","alt":"Mari Takayama leaping in a purple and black leotard, with her full body visible","label":"トップ写真","fit":"source","x":50,"y":50,"zoom":1},"img/works.jpg":{"src":"img/works.jpg","alt":"Dance photograph","label":"Worksの見出し写真","fit":"source","x":50,"y":50,"replacement":"img/works-banner.jpg","zoom":1},"img/lesson.jpg":{"src":"img/lesson.jpg","alt":"Mari correcting a student's pointe at the barre","label":"レッスンの写真","fit":"cover","x":50,"y":36.4051,"cssPos":false},"img/funcphysio-logo.jpg":{"src":"img/funcphysio-logo.jpg","alt":"FuncPhysio Physical Therapy logo","label":"FuncPhysio のロゴ","fit":"source","x":50,"y":50,"cssPos":false,"zoom":1}}},"mobile":{"version":1,"mode":"free","columns":2,"mobile":2,"gap":20,"photos":[{"src":"img/g01.jpg","alt":"Posing en pointe in a greenhouse","span":1,"ratio":"3 / 4","fit":"cover","x":0,"y":50,"col":1,"row":1,"w":2,"h":3,"zoom":1},{"src":"img/g02.jpg","alt":"In a black and gold tutu beside a red stage curtain","span":1,"ratio":"3 / 4","fit":"cover","x":52.32892286159111,"y":50,"col":3,"row":1,"w":2,"h":3,"zoom":1,"preset":"natural","effects":{"brightness":100,"contrast":100,"saturate":100,"hue":0,"blur":0,"grayscale":0,"sepia":0}},{"src":"img/g03.jpg","alt":"Leaping in white on a snowy mountain","span":1,"ratio":"3 / 4","fit":"cover","x":58.98735631515264,"y":50,"col":5,"row":1,"w":2,"h":3,"zoom":1},{"src":"img/g04.jpg","alt":"High kick on a rooftop above Manhattan","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g05.jpg","alt":"Smiling portrait","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g06.jpg","alt":"In a white lace dress in the snow","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":4,"w":2,"h":3,"zoom":1},{"src":"img/g07.jpg","alt":"Headshot with red lips","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":1,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g08.jpg","alt":"Arabesque with a flowing kimono","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g09.jpg","alt":"Dancing with a fan and silk on stage","span":1,"ratio":"3 / 4","fit":"cover","x":52.84711359787364,"y":50,"col":5,"row":7,"w":2,"h":3,"zoom":1},{"src":"img/g10.jpg","alt":"In a white tutu among falling red leaves","span":1,"ratio":"3 / 4","fit":"cover","x":50.234808738618696,"y":50,"col":1,"row":10,"w":2,"h":3,"zoom":1},{"src":"img/g11.jpg","alt":"Dancing at dusk in front of a lit hotel","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":3,"row":10,"w":2,"h":3,"zoom":1},{"src":"img/g12.jpg","alt":"In a pink kimono at Bethesda Terrace","span":1,"ratio":"3 / 4","fit":"cover","x":50,"y":50,"col":5,"row":10,"w":2,"h":3,"zoom":1}],"other":{"img/about.jpg":{"src":"img/about.jpg","label":"プロフィール写真","fit":"source","x":50,"y":50,"zoom":1},"img/gallery-banner.jpg":{"src":"img/gallery-banner.jpg","alt":"Dance photograph","label":"Galleryの見出し写真","fit":"source","x":50,"y":50,"replacement":"img/gallery-banner-photo.jpg","zoom":1},"img/hero.jpg?v=full-body":{"src":"img/hero.jpg?v=full-body","alt":"Mari Takayama leaping in a purple and black leotard, with her full body visible","label":"トップ写真","fit":"source","x":50,"y":50,"zoom":1},"img/hero.jpg":{"fit":"source","x":50,"y":50,"zoom":1},"img/works.jpg":{"src":"img/works.jpg","alt":"Dance photograph","label":"Worksの見出し写真","fit":"source","x":50,"y":50,"replacement":"img/works-banner.jpg","zoom":1},"img/lesson.jpg":{"src":"img/lesson.jpg","alt":"Mari correcting a student's pointe at the barre","label":"レッスンの写真","fit":"cover","x":50,"y":36.40510596943636,"frameWidth":98,"frameHeight":420},"img/funcphysio-logo.jpg":{"src":"img/funcphysio-logo.jpg","alt":"FuncPhysio Physical Therapy logo","label":"FuncPhysio のロゴ","fit":"source","x":50,"y":50,"cssPos":false,"zoom":1}}}},"positionRestoreVersion":1,"heroSourceRestore":2,"boxStyles":{"desktop":{},"mobile":{}},"worksPhotoSizeRestored":true}</script><script src="site-language.js?v=50"></script>
+
+
+
+
+<script src="site-motion.js?v=9"></script>
+</body></html>
