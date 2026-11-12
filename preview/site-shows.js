@@ -29,10 +29,12 @@ const MARI_SHOWS = [
   const times = list => {
     const byDay = []; list.forEach(([k, t]) => { const g = byDay.find(x => x.k === k); if (g) g.t.push(t); else byDay.push({ k, t: [t] }); });
     const one = byDay.length === 1;
-    return byDay.map(g => (one ? '' : when(g.k, g.k) + (ja() ? ' ' : ', ')) + g.t.map(clock).join(ja() ? '・' : ' & ')).join(ja() ? '　' : ' · ');
+    return byDay.map(g => (one ? '' : when(g.k, g.k) + (ja() ? ' ' : ', ')) + g.t.map(clock).join(ja() ? '・' : ' & '));
   };
   const workName = w => !ja() ? w : w === 'The Nutcracker' ? '『くるみ割り人形』' : '『' + w + '』';
   const roleName = r => !ja() ? r : r === 'Sugar Plum Fairy' ? '金平糖の精' : r;
+  // pieces that never break inside; lines break only between them
+  const pieces = (el, parts, sep) => { parts.forEach((t, i) => { if (i) el.append(sep); const n = document.createElement('span'); n.className = 'nb'; n.textContent = t; el.append(n); }); return el; };
   const span = (parent, cls, text) => { const e = document.createElement('span'); e.className = cls; e.textContent = text; parent.append(e); return e; };
   const prods = () => MARI_SHOWS.map(p => { const s = p.shows.map(x => x.split(' ')); return { ...p, s, first: s[0][0], last: s[s.length - 1][0] }; });
   const today = () => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; };
@@ -44,10 +46,10 @@ const MARI_SHOWS = [
       now.forEach(p => {
         const li = document.createElement('li'); li.setAttribute('translate', 'no');
         span(li, 'up-date', when(p.first, p.last));
-        span(li, 'up-work', workName(p.work) + (ja() ? '　' + roleName(p.role) + '（ゲスト出演）' : ' — ' + p.role + ' (guest artist)'));
-        span(li, 'up-meta up-times', times(p.s));
-        const meta = span(li, 'up-meta', p.company + ' · ' + p.place);
-        if (p.tickets) { const a = document.createElement('a'); a.href = p.tickets; a.target = '_blank'; a.rel = 'noopener'; a.textContent = ja() ? 'チケット' : 'Tickets'; meta.append(a); }
+        pieces(span(li, 'up-work', ''), [workName(p.work), ja() ? roleName(p.role) + '（ゲスト出演）' : '— ' + p.role + ' (guest artist)'], ' ');
+        pieces(span(li, 'up-meta up-times', ''), times(p.s), ja() ? '　' : ' · ');
+        const meta = pieces(span(li, 'up-meta', ''), [p.company, p.place], ' · ');
+        if (p.tickets) { const a = document.createElement('a'); a.href = p.tickets; a.target = '_blank'; a.rel = 'noopener'; a.textContent = ja() ? 'チケット' : 'Tickets'; a.className = 'nb'; meta.append(' ', a); }
         list.append(li);
       });
       list.hidden = !now.length;
@@ -64,7 +66,7 @@ const MARI_SHOWS = [
       const d = day(p.last);
       span(li, 'credit-work', workName(p.work));
       span(li, 'credit-role', roleName(p.role));
-      span(li, 'credit-note', ja() ? 'ゲスト出演・' + p.company + '・' + p.place + '（' + d.getFullYear() + '年' + (d.getMonth() + 1) + '月）' : 'Guest artist, ' + p.company + ', ' + p.place + ' (' + MON[d.getMonth()] + ' ' + d.getFullYear() + ')');
+      pieces(span(li, 'credit-note', ''), ja() ? ['ゲスト出演', p.company, p.place + '（' + d.getFullYear() + '年' + (d.getMonth() + 1) + '月）'] : ['Guest artist,', p.company + ',', p.place + ' (' + MON[d.getMonth()] + ' ' + d.getFullYear() + ')'], ja() ? '・' : ' ');
       list.prepend(li);
     });
   }
