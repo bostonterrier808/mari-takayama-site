@@ -45,7 +45,10 @@ const PLACES = {
   Any: { ja: '相談して決めます', en: 'To be decided together' }
 };
 
-const REQ = 'リクエスト', AV = '空き状況', ST = '統計';
+const REQ = 'リクエスト', AV = '空き状況', ST = '統計', PK = '回数券';
+// 5-lesson pack: paid ahead, half a lesson off, used within 3 months (for one lesson length)
+const PACK_SIZE = 5, PACK_MONTHS = 3;
+const PACK_HEAD = ['購入日', '名前', 'メール', '長さ（分）', '回数', '使った回数', '期限', 'メモ'];
 // Whole days with no lessons at all (tours, holidays): [first day, last day], New York dates. Keep in step with AWAY in lessons.html.
 const AWAY = [['2026-11-22', '2027-01-09']];
 const isAway_ = k => AWAY.some(([a, b]) => k >= a && k <= b);
@@ -90,6 +93,7 @@ function setup() {
   }
   av.getRange('C2:E').setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['◯', '×'], true).setAllowInvalid(true).build()).setHorizontalAlignment('center');
   av.getRange('G1').setValue('ふだんは使わなくて大丈夫です。◯ = いつもは閉じている時間を開ける　× = その時間を閉じる（Google カレンダーの予定は自動で×になります）');
+  packSheet_();
   const st = ss.getSheetByName(ST) || ss.insertSheet(ST, 2);
   st.clear();
   const R = "'" + REQ + "'!";
@@ -129,7 +133,7 @@ function doPost(e) {
       JA.age[d.age] || d.age || '', JA.level[d.level] || d.level || ''];
     for (let i = 0; i < 3; i++) row.push(c[i] ? choiceJa_(c[i], len) : '');
     for (let i = 0; i < 3; i++) row.push(c[i] ? WD_JA[dateOf_(c[i].date).getDay()] : '', c[i] ? partOf_(c[i]) : '');
-    row.push(clip(d.note, 700), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz }));
+    row.push(clip(d.note, 700), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '' }));
     book_().getSheetByName(REQ).appendRow(row);
     notifyMari_(d, c, len, id, key);
     return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
@@ -158,7 +162,7 @@ function notifyMari_(d, c, len, id, key) {
   const info = [
     ['名前', esc_(d.name) + '（' + (JA.visit[d.visit] || '') + '）'], ['メール', esc_(d.email)],
     d.contact ? ['連絡方法', esc_(d.via) + '　' + esc_(d.contact)] : null,
-    ['場所', esc_(JA.place[d.place] || d.place || '') + (d.area && d.place !== 'Zoom' ? '（' + esc_(d.area) + '）' : '')], ['長さ', len + '分'],
+    ['場所', esc_(JA.place[d.place] || d.place || '') + (d.area && d.place !== 'Zoom' ? '（' + esc_(d.area) + '）' : '')], ['長さ', len + '分' + (d.pack === '5' ? '（5回券を希望）' : '')],
     d.tz !== TZ ? ['お客さんの時間', esc_(zoneName_(d.tz, true)) + '<br>' + c.map((x, i) => '第' + (i + 1) + '希望：' + whenIn_(x, len, d.tz, true)).join('<br>')] : null,
     d.age ? ['対象', esc_(JA.age[d.age] || d.age)] : null, d.level ? ['バレエ経験', esc_(JA.level[d.level] || d.level)] : null,
     d.note ? ['メッセージ', esc_(d.note)] : null
@@ -311,12 +315,13 @@ function bookLesson_(sh, r, data, ch, len, how) {
   if (EXTRA_CALENDAR_EMAIL) { opts.guests = EXTRA_CALENDAR_EMAIL; opts.sendInvites = true; }
   CalendarApp.getDefaultCalendar().createEvent('バレエレッスン：' + data.name, s, en, opts);
   data.len = len;
+  data.packInfo = usePack_(data, ch, len);
   sendCustomer_(data, 'confirm', ch);
   sh.getRange(r, C['状況']).setValue('予約確定'); sh.getRange(r, C['確定した日時']).setValue(choiceJa_(ch, len));
   CacheService.getScriptCache().remove('free');
   const me = Session.getEffectiveUser().getEmail();
   if (me) MailApp.sendEmail({ to: me, subject: '予約が確定しました：' + data.name + '（' + choiceJa_(ch, len) + '）',
-    body: data.name + ' さんのレッスンが確定しました' + (how ? '（' + how + '）' : '') + '。\n\n日時：' + choiceJa_(ch, len) + '（' + len + '分・ニューヨーク時間）' + theirs + '\n場所：' + placeText_(data, true) + (data.area && data.place !== 'Zoom' ? '（' + data.area + '）' : '') + '\nメール：' + data.email + '\n\nお客さんにも確定メールを送りました。Google カレンダーに入れました' + (EXTRA_CALENDAR_EMAIL ? '（Yahoo カレンダーにも招待として送りました）' : '') + '。\n添付のファイルを開くと、ほかのカレンダーにも追加できます。',
+    body: data.name + ' さんのレッスンが確定しました' + (how ? '（' + how + '）' : '') + '。\n\n日時：' + choiceJa_(ch, len) + '（' + len + '分・ニューヨーク時間）' + theirs + '\n場所：' + placeText_(data, true) + (data.area && data.place !== 'Zoom' ? '（' + data.area + '）' : '') + '\nメール：' + data.email + packLine_(data.packInfo) + '\n\nお客さんにも確定メールを送りました。Google カレンダーに入れました' + (EXTRA_CALENDAR_EMAIL ? '（Yahoo カレンダーにも招待として送りました）' : '') + '。\n添付のファイルを開くと、ほかのカレンダーにも追加できます。',
     attachments: [ics_(data, ch, len)], name: 'Lesson booking' });
 }
 function ics_(data, ch, len) {
@@ -349,28 +354,66 @@ function page_(title, body, goHref, goLabel) {
 }
 // the friendly "please pay ahead" part of the confirmation email
 function payNote_(data, ch, ja) {
+  const pk = data.packInfo;
+  const rules = pk
+    ? (ja ? ['', 'ご予定が変わったときは：', '・2日前まで：回数券に1回分お戻しします', '・前日・当日：1回使ったことになります']
+          : ['', 'If your plans change:', '• Up to 2 days before: the lesson goes back on your pack', '• The day before or on the day: it counts as used'])
+    : (ja ? ['', 'ご予定が変わったときは：', '・2日前まで：全額お返しします', '・前日：半分お返しします', '・当日：お返しできません']
+          : ['', 'If your plans change:', '• Up to 2 days before: fully refunded', '• The day before: half refunded', '• On the day: no refund']);
+  const travel = data.place === 'Travel' ? [ja ? 'マンハッタンの外への出張は、交通費を別にお願いしています（金額は Mari からお知らせします）。' : 'For lessons outside Manhattan, travel costs are added; Mari will let you know the amount.'] : [];
+  // a lesson from a pack already paid for
+  if (pk && !pk.bought) return [ja ? '今回のレッスンは回数券を使います（お支払いはいりません）。' : 'This lesson uses your lesson pack, so there is nothing to pay.',
+    ja ? '残り：' + pk.left + '回（' + pk.until + 'まで）' : 'Left on your pack: ' + pk.left + ' (use by ' + pk.until + ')'].concat(travel, rules).join('\n');
+  const per = data.place === 'FuncPhysio' ? Math.round(RATE_PER_30 * data.len / 30) : 0;
+  const amount = pk ? (per ? Math.round(per * PACK_SIZE - per / 2) : 0) : per;
+  const what = pk ? (ja ? ['5回券（今回が1回目、残り' + pk.left + '回は' + pk.until + 'まで使えます）'] : ['5-lesson pack (this is lesson 1; the other ' + pk.left + ' can be used until ' + pk.until + ')']) : [];
   const z = ZONES[data.tz || TZ];
-  if (!z || !z[2]) return (ja ? ['レッスン代は前もってお願いしています。お支払いの方法は、別のメールでお知らせします。', '', 'ご予定が変わったときは：', '・2日前まで：全額お返しします', '・前日：半分お返しします', '・当日：お返しできません']
-    : ['Lessons are paid ahead of time. Mari will email you how to pay from where you are.', '', 'If your plans change:', '• Up to 2 days before: fully refunded', '• The day before: half refunded', '• On the day: no refund']).join('\n');
-  const amount = data.place === 'FuncPhysio' ? Math.round(RATE_PER_30 * data.len / 30) : 0;
-  const d = dateOf_(ch.date); const memo = 'Ballet lesson ' + (d.getMonth() + 1) + '/' + d.getDate();
+  if (!z || !z[2]) return what.concat([ja ? 'レッスン代は前もってお願いしています。お支払いの方法は、別のメールでお知らせします。' : 'Lessons are paid ahead of time. Mari will email you how to pay from where you are.'], travel, rules).join('\n');
+  const d = dateOf_(ch.date); const memo = (pk ? 'Ballet lessons (5-pack) from ' : 'Ballet lesson ') + (d.getMonth() + 1) + '/' + d.getDate();
   const link = VENMO ? 'https://venmo.com/' + VENMO + '?txn=pay' + (amount ? '&amount=' + amount : '') + '&note=' + encodeURIComponent(memo) : '';
-  const lines = ja ? [
+  const lines = what.concat(ja ? [
     'レッスン代は、前もって Venmo' + (ZELLE_QR_B64 ? ' か Zelle' : '') + ' でお願いします（現金は受け取っていません）。',
-    amount ? '金額：$' + amount : '金額は、別のメールでお知らせします。',
+    amount ? '金額：$' + amount + (pk ? '（' + PACK_SIZE + '回分から1回分の半額をお引きしています）' : '') : '金額は、別のメールでお知らせします。',
     link ? 'Venmo：こちらを開くと、金額が入った状態で開きます\n' + link : (VENMO ? '' : '送り先は、別のメールでお知らせします。'),
-    ZELLE_QR_B64 ? 'Zelle：添付の QR コードを、銀行のアプリで読み取ってください' : '',
-    '', 'ご予定が変わったときは：',
-    '・2日前まで：全額お返しします', '・前日：半分お返しします', '・当日：お返しできません'
+    ZELLE_QR_B64 ? 'Zelle：添付の QR コードを、銀行のアプリで読み取ってください' : ''
   ] : [
     'Please pay for the lesson ahead of time by Venmo' + (ZELLE_QR_B64 ? ' or Zelle' : '') + ' (sorry, no cash).',
-    amount ? 'Amount: $' + amount : 'Mari will send you the amount in a separate email.',
+    amount ? 'Amount: $' + amount + (pk ? ' (' + PACK_SIZE + ' lessons, less half a lesson)' : '') : 'Mari will send you the amount in a separate email.',
     link ? 'Venmo — this link opens with everything filled in:\n' + link : (VENMO ? '' : 'Mari will send you where to send it.'),
-    ZELLE_QR_B64 ? 'Zelle — scan the attached QR code in your banking app' : '',
-    '', 'If your plans change:',
-    '• Up to 2 days before: fully refunded', '• The day before: half refunded', '• On the day: no refund'
-  ];
+    ZELLE_QR_B64 ? 'Zelle — scan the attached QR code in your banking app' : ''
+  ], travel, rules);
   return lines.filter((x, i) => x !== '' || lines[i - 1] !== '').join('\n');
+}
+function packSheet_() {
+  const ss = book_(); let sh = ss.getSheetByName(PK);
+  if (!sh) {
+    sh = ss.insertSheet(PK);
+    sh.getRange(1, 1, 1, PACK_HEAD.length).setValues([PACK_HEAD]).setFontWeight('bold').setBackground('#ecdfc6');
+    sh.setFrozenRows(1); sh.getRange('A2:A').setNumberFormat('yyyy/mm/dd'); sh.getRange('G2:G').setNumberFormat('yyyy/mm/dd');
+    sh.getRange('J1').setValue('予約が確定すると自動で記録されます。キャンセルで1回分戻すときは「使った回数」を1つ減らしてください。');
+  }
+  return sh;
+}
+// on a confirmed lesson: use one from this person's pack, or start a new pack if they asked for one
+function usePack_(data, ch, len) {
+  const sh = packSheet_(), v = sh.getDataRange().getValues(), day = dateOf_(ch.date), email = String(data.email || '').trim().toLowerCase();
+  const md = x => Utilities.formatDate(new Date(x), TZ, 'M/d');
+  for (let i = 1; i < v.length; i++) {
+    const em = String(v[i][2]).trim().toLowerCase(), l = +v[i][3], n = +v[i][4], used = +v[i][5], until = v[i][6];
+    if (em && em === email && l === +len && used < n && (!until || new Date(until).getTime() + 86400000 > day.getTime())) {
+      sh.getRange(i + 1, 6).setValue(used + 1);
+      return { left: n - used - 1, until: until ? md(until) : '', row: i + 1 };
+    }
+  }
+  if (data.pack !== '5') return null;
+  const until = new Date(day); until.setMonth(until.getMonth() + PACK_MONTHS);
+  sh.appendRow([new Date(), data.name, data.email, len, PACK_SIZE, 1, until, '']);
+  return { bought: true, left: PACK_SIZE - 1, until: md(until), row: sh.getLastRow() };
+}
+function packLine_(pk) {
+  if (!pk) return '';
+  return pk.bought ? '\n回数券：新しく5回券を購入（今回が1回目・残り' + pk.left + '回・' + pk.until + 'まで）。「回数券」タブに記録しました。'
+    : '\n回数券：1回使いました（残り' + pk.left + '回・' + pk.until + 'まで）';
 }
 function sendCustomer_(data, kind, ch, note) {
   if (!data.email) return;
