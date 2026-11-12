@@ -133,7 +133,7 @@ function doPost(e) {
       JA.age[d.age] || d.age || '', JA.level[d.level] || d.level || ''];
     for (let i = 0; i < 3; i++) row.push(c[i] ? choiceJa_(c[i], len) : '');
     for (let i = 0; i < 3; i++) row.push(c[i] ? WD_JA[dateOf_(c[i].date).getDay()] : '', c[i] ? partOf_(c[i]) : '');
-    row.push(clip(d.note, 700), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '' }));
+    row.push(clip(d.note, 700), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '' }));
     book_().getSheetByName(REQ).appendRow(row);
     notifyMari_(d, c, len, id, key);
     return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
@@ -163,6 +163,7 @@ function notifyMari_(d, c, len, id, key) {
     ['名前', esc_(d.name) + '（' + (JA.visit[d.visit] || '') + '）'], ['メール', esc_(d.email)],
     d.contact ? ['連絡方法', esc_(d.via) + '　' + esc_(d.contact)] : null,
     ['場所', esc_(JA.place[d.place] || d.place || '') + (d.area && d.place !== 'Zoom' ? '（' + esc_(d.area) + '）' : '')], ['長さ', len + '分' + (d.pack === '5' ? '（5回券を希望）' : '')],
+    d.visit === 'First' && d.friend ? ['紹介してくれた人', esc_(clip(d.friend))] : null,
     d.tz !== TZ ? ['お客さんの時間', esc_(zoneName_(d.tz, true)) + '<br>' + c.map((x, i) => '第' + (i + 1) + '希望：' + whenIn_(x, len, d.tz, true)).join('<br>')] : null,
     d.age ? ['対象', esc_(JA.age[d.age] || d.age)] : null, d.level ? ['バレエ経験', esc_(JA.level[d.level] || d.level)] : null,
     d.note ? ['メッセージ', esc_(d.note)] : null
@@ -316,12 +317,13 @@ function bookLesson_(sh, r, data, ch, len, how) {
   CalendarApp.getDefaultCalendar().createEvent('バレエレッスン：' + data.name, s, en, opts);
   data.len = len;
   data.packInfo = usePack_(data, ch, len);
+  const friendLine = data.first && data.friend ? creditFriend_(data) : '';
   sendCustomer_(data, 'confirm', ch);
   sh.getRange(r, C['状況']).setValue('予約確定'); sh.getRange(r, C['確定した日時']).setValue(choiceJa_(ch, len));
   CacheService.getScriptCache().remove('free');
   const me = Session.getEffectiveUser().getEmail();
   if (me) MailApp.sendEmail({ to: me, subject: '予約が確定しました：' + data.name + '（' + choiceJa_(ch, len) + '）',
-    body: data.name + ' さんのレッスンが確定しました' + (how ? '（' + how + '）' : '') + '。\n\n日時：' + choiceJa_(ch, len) + '（' + len + '分・ニューヨーク時間）' + theirs + '\n場所：' + placeText_(data, true) + (data.area && data.place !== 'Zoom' ? '（' + data.area + '）' : '') + '\nメール：' + data.email + packLine_(data.packInfo) + '\n\nお客さんにも確定メールを送りました。Google カレンダーに入れました' + (EXTRA_CALENDAR_EMAIL ? '（Yahoo カレンダーにも招待として送りました）' : '') + '。\n添付のファイルを開くと、ほかのカレンダーにも追加できます。',
+    body: data.name + ' さんのレッスンが確定しました' + (how ? '（' + how + '）' : '') + '。\n\n日時：' + choiceJa_(ch, len) + '（' + len + '分・ニューヨーク時間）' + theirs + '\n場所：' + placeText_(data, true) + (data.area && data.place !== 'Zoom' ? '（' + data.area + '）' : '') + '\nメール：' + data.email + packLine_(data.packInfo) + friendLine + '\n\nお客さんにも確定メールを送りました。Google カレンダーに入れました' + (EXTRA_CALENDAR_EMAIL ? '（Yahoo カレンダーにも招待として送りました）' : '') + '。\n添付のファイルを開くと、ほかのカレンダーにも追加できます。',
     attachments: [ics_(data, ch, len)], name: 'Lesson booking' });
 }
 function ics_(data, ch, len) {
@@ -409,6 +411,22 @@ function usePack_(data, ch, len) {
   const until = new Date(day); until.setMonth(until.getMonth() + PACK_MONTHS);
   sh.appendRow([new Date(), data.name, data.email, len, PACK_SIZE, 1, until, '']);
   return { bought: true, left: PACK_SIZE - 1, until: md(until), row: sh.getLastRow() };
+}
+// "Bring a friend": the first lesson of someone a friend sent adds one lesson to that friend's pack
+function creditFriend_(data) {
+  const who = String(data.friend).trim().toLowerCase(), me = String(data.email || '').trim().toLowerCase();
+  if (!who || who === me) return '';
+  const sh = packSheet_(), v = sh.getDataRange().getValues(), now = Date.now();
+  for (let i = v.length - 1; i >= 1; i--) {
+    const em = String(v[i][2]).trim().toLowerCase(), nm = String(v[i][1]).trim().toLowerCase(), until = v[i][6];
+    if ((em && em === who) || (nm && nm === who)) {
+      if (until && new Date(until).getTime() + 86400000 < now) continue;
+      sh.getRange(i + 1, 5).setValue(+v[i][4] + 1);
+      sh.getRange(i + 1, 8).setValue(String(v[i][7] || '') + (v[i][7] ? '／' : '') + '紹介：' + data.name + '（+1回）');
+      return '\n紹介：' + v[i][1] + ' さんの紹介です。' + v[i][1] + ' さんの5回券に1回分を追加しました。';
+    }
+  }
+  return '\n紹介：' + data.friend + ' さんの紹介です（5回券が見つからなかったので、まだ何も追加していません。お礼をするなら「回数券」タブで足してください）。';
 }
 function packLine_(pk) {
   if (!pk) return '';
