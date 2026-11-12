@@ -371,7 +371,7 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
 @media (max-width: 350px) { header.top .brand small { display: none; } }
 @media (prefers-reduced-motion: reduce) { header.top #site-menu, header.top #site-menu a::after, header.top .menu-sub, header.top .menu-toggle i::before, header.top .menu-toggle i::after { transition: none !important; } }
 </style>
-<link rel="stylesheet" href="site-theme.css?v=28">
+<link rel="stylesheet" href="site-theme.css?v=29">
 <style id="manual-box-styles">@media(min-width:761px){}@media(max-width:760px){}</style><meta name="editor-published-at" content="1794434805000">
 </head>
 <body>
@@ -409,13 +409,14 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
       <p class="credits-lead" data-box-slot="5">Selected performances, tours, and teaching.</p>
 
       <h2 data-box-slot="6">Upcoming</h2>
-      <p class="credits-empty" data-box-slot="7">New performances will be posted here. For the latest news, follow <a href="https://www.instagram.com/maritakayama_ballet/" target="_blank" rel="noopener">@maritakayama_ballet</a> on Instagram.</p>
+      <ul class="upcoming-list" hidden></ul>
+      <p class="credits-empty upcoming-empty" data-box-slot="7">New performances will be posted here. For the latest news, follow <a href="https://www.instagram.com/maritakayama_ballet/" target="_blank" rel="noopener">@maritakayama_ballet</a> on Instagram.</p>
           <a class="ig-button" href="https://www.instagram.com/maritakayama_ballet/" target="_blank" rel="noopener">View Instagram</a>
 
       <h2 data-box-slot="8">Ballet</h2>
-      <ul class="credit-list" data-box-slot="9">
+      <ul class="credit-list ballet-list" data-box-slot="9">
         <li><span class="credit-work">Don Quixote</span><span class="credit-role">Kitri</span><span class="credit-note">Lead role, New York</span></li>
-        <li><span class="credit-work">The Nutcracker</span><span class="credit-role">Sugar Plum Fairy</span><span class="credit-note">Guest artist, four seasons in a row</span></li>
+        <li><span class="credit-work">The Nutcracker</span><span class="credit-role">Sugar Plum Fairy</span><span class="credit-note">Guest artist, five seasons in a row</span></li>
       </ul>
 
       <h2 data-box-slot="10">Theater and tours</h2>
@@ -480,4 +481,5 @@ document.getElementById('copy-mail').addEventListener('click', async (e) => {
 
 
 <script src="site-motion.js?v=9"></script>
+<script src="site-shows.js?v=1"></script>
 </body></html>

@@ -335,3 +335,13 @@ html[lang=ja] #share-title { text-wrap: nowrap !important; }
 /* Japanese: a little smaller overall */
 html[lang=ja] { font-size: 92%; }
 html[lang=ja] main :is(p, li, dd, .lesson-inquiry-copy, .interview-feature-summary) { letter-spacing: 0.06em !important; }
+
+/* Upcoming performances list (filled by site-shows.js) */
+.upcoming-list { list-style: none; margin: 0 0 1.5rem; padding: 0; border-top: 1px solid var(--gold-line); }
+.upcoming-list li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 0.25rem 1rem; padding: 0.9rem 0; border-bottom: 1px solid var(--gold-line); }
+.upcoming-list .up-date { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; color: var(--gold-ink); white-space: nowrap; }
+.upcoming-list .up-work { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; }
+.upcoming-list .up-meta { grid-column: 2; color: var(--ink-soft); }
+.upcoming-list .up-meta a { margin-left: 0.4em; }
+.upcoming-list .up-times { color: var(--ink); }
+@media (max-width: 480px) { .upcoming-list li { grid-template-columns: minmax(0, 1fr); } .upcoming-list .up-meta { grid-column: 1; } }
