@@ -79,6 +79,7 @@
   .picked li button { appearance: none; border: 0; background: none; color: var(--muted); font: .9rem var(--font-body); cursor: pointer; text-decoration: underline; }
   .picked-empty { color: var(--muted); font-size: .95rem; margin: 12px 0 0; }
   .note-flex { margin: 10px 0 0; font-size: .92rem; color: var(--muted); }
+  .away { margin: 0 0 12px; color: var(--ink); }
   .tz-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 12px; font-size: .95rem; color: var(--muted); }
   .tz-row select { appearance: none; max-width: 100%; border: 1px solid var(--champagne-line); border-radius: 0; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237d6845'/%3E%3C/svg%3E") no-repeat right 10px center; padding: 8px 30px 8px 10px; color: var(--ink); font: 1rem var(--font-body); cursor: pointer; }
   .tz-row select:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: 2px; }
@@ -179,12 +180,12 @@
     <section class="step" aria-labelledby="s2">
       <div class="step-head"><span class="step-num">2</span><h2 class="step-title" id="s2">Choose a time</h2></div>
       <p class="q">Pick a day, then a start time</p>
+      <p class="note-flex away" id="away-note" hidden></p>
       <label class="tz-row"><span id="tz-label">Times shown in</span> <select id="tz"></select></label>
       <div class="date-strip" id="dates" role="listbox" aria-label="Days"></div>
       <p class="day-title" id="day-title"></p>
       <div class="times" id="times"></div>
       <p class="note-flex" id="times-empty" hidden>No open times on this day.</p>
-      <p class="note-flex" id="away-note" hidden></p>
       <p class="note-flex" id="loading">Loading open times…</p>
       <p class="note-flex">Choose up to 3 times. Mari will confirm one of them by email.</p>
       <ol class="picked" id="picked"></ol>
@@ -298,7 +299,7 @@
   const mins = hhmm => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
   const hhmm = n => Math.floor(n / 60) + ':' + pad(n % 60);
   const lenMin = () => +(choice.len || 60);
-  const clock = (n) => { if (ja()) return hhmm(n); let h = Math.floor(n / 60); const m = pad(n % 60), ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return h + ':' + m + ' ' + ap; };
+  const clock = (n) => { if (ja()) return hhmm(n).replace(':', '\u2060:\u2060'); let h = Math.floor(n / 60); const m = pad(n % 60), ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return h + ':' + m + ' ' + ap; };
   const fmtDate = k => { const d = dayOf(k); return ja() ? (d.getMonth() + 1) + '月' + d.getDate() + '日（' + T.days.ja[d.getDay()] + '）' : T.days.en[d.getDay()] + ' ' + (d.getMonth() + 1) + '/' + d.getDate(); };
 
   // time zones: Mari's times are New York time; visitors can see them in their own time
@@ -575,7 +576,7 @@
   renderTz(); renderPicks();
 })();
 </script>
-<script src="site-language.js?v=48"></script>
+<script src="site-language.js?v=49"></script>
 <script src="site-motion.js?v=9"></script>
 </body>
 </html>
