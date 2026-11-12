@@ -18,7 +18,7 @@ Two people edit this repo with different AI tools (Claude Code and Codex). These
 
 ## Design (keep it)
 
-- Menu order: Home → About Mari (About, Credits, Gallery, Interview) → Work with Mari (Private Lessons, Book a Performance, Ballet Study in NY) → Community (Radio Taiso) → Contact. Group labels are `li.menu-group`, shown only in the phone menu. Every page shares the same nav and footer; keep them in sync.
+- Menu order: Home → About Mari (About, Credits, Gallery, Interview) → Work with Mari (Private Lessons, Book a Performance, For Ballet Students) → Community (Radio Taiso) → Contact. Group labels are `li.menu-group`, shown only in the phone menu. Every page shares the same nav and footer; keep them in sync.
 - Colors are tokens on `:root` (`--slate`, `--mauve`, `--rose`, `--stage`, …). Change a token rather than adding new literal colors.
 - Fonts: Cormorant Garamond (headings, nav), EB Garamond (body), from Google Fonts.
 - Site copy is in English.
