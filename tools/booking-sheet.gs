@@ -133,7 +133,7 @@ function doPost(e) {
       JA.age[d.age] || d.age || '', JA.level[d.level] || d.level || ''];
     for (let i = 0; i < 3; i++) row.push(c[i] ? choiceJa_(c[i], len) : '');
     for (let i = 0; i < 3; i++) row.push(c[i] ? WD_JA[dateOf_(c[i].date).getDay()] : '', c[i] ? partOf_(c[i]) : '');
-    row.push(clip(d.note, 700), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '' }));
+    row.push(clip(d.note, 700), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '' }));
     book_().getSheetByName(REQ).appendRow(row);
     notifyMari_(d, c, len, id, key);
     return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
@@ -163,6 +163,7 @@ function notifyMari_(d, c, len, id, key) {
     ['名前', esc_(d.name) + '（' + (JA.visit[d.visit] || '') + '）'], ['メール', esc_(d.email)],
     d.contact ? ['連絡方法', esc_(d.via) + '　' + esc_(d.contact)] : null,
     ['場所', esc_(JA.place[d.place] || d.place || '') + (d.area && d.place !== 'Zoom' ? '（' + esc_(d.area) + '）' : '')], ['長さ', len + '分' + (d.pack === '5' ? '（5回券を希望）' : '')],
+    d.free === true ? ['種類', '<b>無料の Zoom 相談（60分）</b>'] : null,
     d.visit === 'First' && d.friend ? ['紹介してくれた人', esc_(clip(d.friend))] : null,
     d.tz !== TZ ? ['お客さんの時間', esc_(zoneName_(d.tz, true)) + '<br>' + c.map((x, i) => '第' + (i + 1) + '希望：' + whenIn_(x, len, d.tz, true)).join('<br>')] : null,
     d.age ? ['対象', esc_(JA.age[d.age] || d.age)] : null, d.level ? ['バレエ経験', esc_(JA.level[d.level] || d.level)] : null,
@@ -314,9 +315,9 @@ function bookLesson_(sh, r, data, ch, len, how) {
   const theirs = data.tz && data.tz !== TZ ? '\nお客さんの時間：' + whenIn_(ch, len, data.tz, true) + '（' + zoneName_(data.tz, true) + '）' : '';
   const opts = { location: place, description: 'メール：' + data.email + (data.area ? '\nエリア：' + data.area : '') + theirs + '\n（予約サイトから' + (how ? '・' + how : '') + '）' };
   if (EXTRA_CALENDAR_EMAIL) { opts.guests = EXTRA_CALENDAR_EMAIL; opts.sendInvites = true; }
-  CalendarApp.getDefaultCalendar().createEvent('バレエレッスン：' + data.name, s, en, opts);
+  CalendarApp.getDefaultCalendar().createEvent((data.free ? '無料 Zoom 相談：' : 'バレエレッスン：') + data.name, s, en, opts);
   data.len = len;
-  data.packInfo = usePack_(data, ch, len);
+  data.packInfo = data.free ? null : usePack_(data, ch, len);
   const friendLine = data.first && data.friend ? creditFriend_(data) : '';
   sendCustomer_(data, 'confirm', ch);
   sh.getRange(r, C['状況']).setValue('予約確定'); sh.getRange(r, C['確定した日時']).setValue(choiceJa_(ch, len));
@@ -356,6 +357,7 @@ function page_(title, body, goHref, goLabel) {
 }
 // the friendly "please pay ahead" part of the confirmation email
 function payNote_(data, ch, ja) {
+  if (data.free) return ja ? 'この相談は無料です（お支払いはいりません）。\nご都合が変わったときは、このメールに返信してお知らせください。' : 'This call is free, so there is nothing to pay.\nIf your plans change, just reply to this email.';
   const pk = data.packInfo;
   const rules = pk
     ? (ja ? ['', 'ご予定が変わったときは：', '・2日前まで：回数券に1回分お戻しします', '・前日・当日：1回使ったことになります']
@@ -445,10 +447,10 @@ function sendCustomer_(data, kind, ch, note) {
       ? (ja ? (ZOOM_LINK ? '' : 'Zoom のリンクは、レッスンの前にお送りします。\n') + '動きやすい服装で、少し動ける広さの場所をご用意ください。全身が映るようにカメラを置き、椅子の背やテーブルなど、つかまれるものがあるとバーの代わりになります。'
           : (ZOOM_LINK ? '' : 'Mari will send you the Zoom link before the lesson.\n') + 'Please wear comfortable clothes and clear a little space to move. Set the camera so your whole body is in view; a chair back or a counter works as a barre.')
       : (ja ? '動きやすい服装でお越しください。バレエシューズがあればお持ちください（靴下でも大丈夫です）。' : 'Please wear comfortable clothes you can move in, and bring ballet slippers if you have them (socks are fine too).');
-    subject = ja ? 'レッスンのご予約が確定しました（' + when + '）' : 'Your ballet lesson is confirmed — ' + when;
+    subject = data.free ? (ja ? '無料の Zoom 相談が確定しました（' + when + '）' : 'Your free Zoom call is confirmed — ' + when) : ja ? 'レッスンのご予約が確定しました（' + when + '）' : 'Your ballet lesson is confirmed — ' + when;
     body = ja
-      ? data.name + ' 様\n\nご予約ありがとうございます。レッスンの日時が確定しました。\n\n日時：' + full + '\n場所：' + place + (data.area && !zoom ? '（' + data.area + '）' : '') + '\nレッスン：' + data.len + '分\n\n' + payNote_(data, ch, true) + '\n\n' + prep + '\n変更やキャンセルは、このメールにご返信ください。\n\nお会いできるのを楽しみにしています。\n髙山まり'
-      : 'Hi ' + data.name + ',\n\nThank you for booking — your lesson is confirmed.\n\nWhen: ' + full + '\nWhere: ' + place + (data.area && !zoom ? ' (' + data.area + ')' : '') + '\nLesson: ' + data.len + ' minutes\n\n' + payNote_(data, ch, false) + '\n\n' + prep + '\nTo change or cancel, just reply to this email.\n\nSee you soon!\nMari Takayama';
+      ? data.name + ' 様\n\nご予約ありがとうございます。' + (data.free ? '無料相談' : 'レッスン') + 'の日時が確定しました。\n\n日時：' + full + '\n場所：' + place + (data.area && !zoom ? '（' + data.area + '）' : '') + '\n' + (data.free ? '相談' : 'レッスン') + '：' + data.len + '分\n\n' + payNote_(data, ch, true) + '\n\n' + (data.free ? (ZOOM_LINK ? '' : 'Zoom のリンクは、当日までにお送りします。\n') + '今どこで踊っているか、目指していることなどを、気軽にお話しください。' : prep) + '\n変更やキャンセルは、このメールにご返信ください。\n\nお会いできるのを楽しみにしています。\n髙山まり'
+      : 'Hi ' + data.name + ',\n\nThank you for booking — your ' + (data.free ? 'free call' : 'lesson') + ' is confirmed.\n\nWhen: ' + full + '\nWhere: ' + place + (data.area && !zoom ? ' (' + data.area + ')' : '') + '\n' + (data.free ? 'Call' : 'Lesson') + ': ' + data.len + ' minutes\n\n' + payNote_(data, ch, false) + '\n\n' + (data.free ? (ZOOM_LINK ? '' : 'Mari will send you the Zoom link before the call.\n') + 'Come ready to talk about where you dance now and what you are working toward.' : prep) + '\nTo change or cancel, just reply to this email.\n\nSee you soon!\nMari Takayama';
   } else if (kind === 'propose') {
     const when = whenIn_(ch, ch.len, data.tz || TZ, ja), full = custWhen_(data, ch, ch.len, ja);
     const link = ScriptApp.getService().getUrl() + '?act=accept&id=' + encodeURIComponent(data.id || '') + '&k=' + data.ckey;
