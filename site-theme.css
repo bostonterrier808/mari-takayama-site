@@ -344,3 +344,5 @@ html[lang=ja] main :is(p, li, dd, .lesson-inquiry-copy, .interview-feature-summa
 .upcoming-list .up-meta { color: var(--ink-soft); }
 .upcoming-list .up-meta a { margin-left: 0.4em; }
 .upcoming-list .up-times { color: var(--ink); }
+.upcoming-list .nb, .credit-list .nb { display: inline-block; max-width: 100%; }
+.upcoming-list .up-meta a { margin-left: 0.2em; }
