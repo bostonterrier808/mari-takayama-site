@@ -432,14 +432,6 @@ body:has(#home) main { background: var(--paper); color: var(--ink); }
 .home-stage h3 { color: var(--gold-ink); font-weight: 600; letter-spacing: 0.06em; }
 .home-upcoming p { background: var(--ivory); border-left-color: var(--gold); }
 .home-upcoming a { color: var(--gold-ink); }
-.upcoming-list { list-style: none; margin: 0 0 1.5rem; padding: 0; border-top: 1px solid var(--gold-line); }
-.upcoming-list li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 0.25rem 1rem; padding: 0.9rem 0; border-bottom: 1px solid var(--gold-line); }
-.upcoming-list .up-date { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; color: var(--gold-ink); white-space: nowrap; }
-.upcoming-list .up-work { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; }
-.upcoming-list .up-meta { grid-column: 2; color: var(--ink-soft); }
-.upcoming-list .up-meta a { margin-left: 0.4em; }
-.upcoming-list .up-times { color: var(--ink); }
-@media (max-width: 480px) { .upcoming-list li { grid-template-columns: minmax(0, 1fr); } .upcoming-list .up-meta { grid-column: 1; } }
 .home-credits, .home-credits li { border-color: var(--gold-line); }
 /* gallery: whole photos, same height */
 .home-gallery { background: var(--ivory); color: var(--ink); }
@@ -719,7 +711,7 @@ main { counter-reset: sec; }
 /* On stage: only the upcoming note */
 .home-stage-grid { grid-template-columns: minmax(0, 46rem); }
 </style>
-<link rel="stylesheet" href="site-theme.css?v=28">
+<link rel="stylesheet" href="site-theme.css?v=29">
 <style id="manual-box-styles">@media(min-width:761px){}@media(max-width:760px){}</style><style id="manual-text-styles">@media(min-width:761px){}@media(max-width:760px){}</style></head>
 <body>
 
@@ -775,7 +767,7 @@ main { counter-reset: sec; }
       <div class="home-intro-body" data-box-slot="25">
         <p class="home-kicker">About Mari</p>
         <h2 id="intro-title" data-box-slot="26">Grace learned in <em>Japan,</em><br>danced in <em>New York.</em></h2>
-        <p data-box-slot="27">Mari Takayama began classical ballet as a child in Japan. Today she performs on New York stages, from Kitri in Don Quixote to the Sugar Plum Fairy, a role she has danced four seasons in a row. In the studio, she gives every student the same discipline and warmth, from a first plié to pointe.</p>
+        <p data-box-slot="27">Mari Takayama began classical ballet as a child in Japan. Today she performs on New York stages, from Kitri in Don Quixote to the Sugar Plum Fairy, a role she has danced five seasons in a row. In the studio, she gives every student the same discipline and warmth, from a first plié to pointe.</p>
         <dl class="home-facts" data-box-slot="28">
           <div data-box-slot="29"><dt>Home stage</dt><dd>New York City</dd></div>
           <div data-box-slot="30"><dt>Roots</dt><dd>Japan</dd></div>
@@ -816,14 +808,8 @@ main { counter-reset: sec; }
       <div class="home-stage-grid" data-box-slot="43">
         <div class="home-upcoming" data-box-slot="44">
           <h3 data-box-slot="45">Upcoming</h3>
-          <!-- Upcoming shows: one <li> each. data-shows lists every show as "YYYY-MM-DD HH:MM" (24h), separated by ";".
-               A show disappears by itself one month after its last show; data-tickets is an optional ticket link. -->
-          <ul class="upcoming-list" hidden>
-            <li data-shows="2026-11-28 14:00; 2026-11-28 19:00" data-place="Biloxi, MS" data-company="Southern Arts Alliance" data-work="A Southern Nutcracker"></li>
-            <li data-shows="2026-12-04 19:30; 2026-12-05 11:00; 2026-12-05 19:00; 2026-12-06 14:00" data-place="Salisbury, MD" data-company="Eastern Shore Ballet Theatre" data-work="The Nutcracker" data-tickets="https://www.etix.com/ticket/v/23565/wicomico-high-school-eastern-shore-ballet-theatre"></li>
-            <li data-shows="2026-12-12 14:00; 2026-12-12 18:00" data-place="Rolesville, NC" data-company="Jill M. Taylor Dance Company" data-work="The Nutcracker" data-tickets="https://www.etix.com/ticket/v/29119/rolesville-high-school-auditorium"></li>
-            <li data-shows="2026-12-19 14:00; 2026-12-20 14:00" data-place="Madison, WI" data-company="Dance Wisconsin" data-work="The Nutcracker"></li>
-          </ul>
+          <!-- Upcoming shows come from site-shows.js -->
+          <ul class="upcoming-list" hidden></ul>
           <p data-box-slot="46" class="upcoming-empty">New performances will be posted here. For the latest news, follow <a href="https://www.instagram.com/maritakayama_ballet/" target="_blank" rel="noopener">@maritakayama_ballet</a> on Instagram.</p>
           <a class="ig-button" href="https://www.instagram.com/maritakayama_ballet/" target="_blank" rel="noopener">View Instagram</a>
         </div>
@@ -987,45 +973,5 @@ document.getElementById('copy-mail').addEventListener('click', async (e) => {
 })();
 </script>
 <script src="site-motion.js?v=9"></script>
-<script>
-// Upcoming: show coming shows, hide each one a month after its last day
-(() => {
-  const list = document.querySelector('.upcoming-list'); if (!list) return;
-  const ja = () => document.documentElement.lang === 'ja';
-  const day = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
-  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const when = (a, b) => {
-    const x = day(a), y = day(b);
-    if (ja()) return (x.getMonth() + 1) + '/' + x.getDate() + (a === b ? '' : (x.getMonth() === y.getMonth() ? '–' + y.getDate() : '–' + (y.getMonth() + 1) + '/' + y.getDate()));
-    return MON[x.getMonth()] + ' ' + x.getDate() + (a === b ? '' : '–' + (x.getMonth() === y.getMonth() ? '' : MON[y.getMonth()] + ' ') + y.getDate());
-  };
-  // show times, grouped by day: "Dec 5, 11am & 7pm" / "12/5 11:00・19:00"
-  const clock = t => { const [h, m] = t.split(':').map(Number); if (ja()) return h + ':' + String(m).padStart(2, '0'); return (h % 12 || 12) + (m ? ':' + String(m).padStart(2, '0') : '') + (h < 12 ? 'am' : 'pm'); };
-  const times = shows => {
-    const byDay = []; shows.forEach(([k, t]) => { const g = byDay.find(x => x.k === k); if (g) g.t.push(t); else byDay.push({ k, t: [t] }); });
-    const one = byDay.length === 1;
-    return byDay.map(g => (one ? '' : when(g.k, g.k) + (ja() ? ' ' : ', ')) + g.t.map(clock).join(ja() ? '・' : ' & ')).join(ja() ? '　' : ' · ');
-  };
-  function render() {
-    const cutoff = new Date(); cutoff.setHours(0, 0, 0, 0); cutoff.setMonth(cutoff.getMonth() - 1);
-    let shown = 0;
-    list.querySelectorAll('li').forEach(li => {
-      const d = li.dataset, shows = d.shows.split(';').map(x => x.trim().split(' ')), first = shows[0][0], last = shows[shows.length - 1][0];
-      const gone = day(last) < cutoff; li.hidden = gone; if (gone) return; shown++;
-      const work = d.work === 'The Nutcracker' && ja() ? '『くるみ割り人形』' : d.work === 'A Southern Nutcracker' && ja() ? '『A Southern Nutcracker』' : d.work;
-      li.innerHTML = '';
-      const add = (cls, text) => { const e = document.createElement('span'); e.className = cls; e.textContent = text; li.append(e); return e; };
-      add('up-date', when(first, last));
-      add('up-work', work + (ja() ? '　金平糖の精（ゲスト出演）' : ' — Sugar Plum Fairy (guest artist)'));
-      add('up-meta up-times', times(shows));
-      const meta = add('up-meta', d.company + ' · ' + d.place);
-      if (d.tickets) { const t = document.createElement('a'); t.href = d.tickets; t.target = '_blank'; t.rel = 'noopener'; t.textContent = ja() ? 'チケット' : 'Tickets'; meta.append(t); }
-      li.setAttribute('translate', 'no');
-    });
-    list.hidden = !shown;
-    const empty = document.querySelector('.upcoming-empty'); if (empty) empty.hidden = !!shown;
-  }
-  render(); document.addEventListener('mari-language-change', render);
-})();
-</script>
+<script src="site-shows.js?v=1"></script>
 </body></html>

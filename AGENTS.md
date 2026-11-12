@@ -11,6 +11,7 @@ Two people edit this repo with different AI tools (Claude Code and Codex). These
   - `lessons.html` — private lesson request form
 - `editor.html` — photo/text editor; pick the page to edit at the top. Each page keeps its editor settings in `<script id="photo-editor-settings">`.
 - `site-theme.css` — shared white-and-gold look (page titles, colors, buttons, menu), loaded by every page just before the editor styles. `site-motion.js` — scroll fade-ins, photo motion, soft page changes and the desktop cursor ring (off inside the editor).
+- `site-shows.js` — upcoming performances (dates, times, ticket links). Home and Credits show them under Upcoming; the day after a production's last show it moves to the Credits "Ballet" list by itself. Add new shows there, not in the pages.
 - `tools/booking-sheet.gs` — Google Apps Script for the lesson booking sheet (requests, availability, stats); its web app URL goes in `SHEET_APP` in `lessons.html`.
 - `img/` — photos used by the page.
 - Preview: open `index.html` in a browser.
