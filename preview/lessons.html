@@ -81,6 +81,7 @@
   .picked-empty { color: var(--muted); font-size: .95rem; margin: 12px 0 0; }
   .note-flex { margin: 10px 0 0; font-size: .92rem; color: var(--muted); }
   .away { margin: 0 0 12px; color: var(--ink); }
+  .chip:disabled { opacity: .38; cursor: not-allowed; }
   .tz-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 12px; font-size: .95rem; color: var(--muted); }
   .tz-row select { appearance: none; max-width: 100%; border: 1px solid var(--champagne-line); border-radius: 0; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237d6845'/%3E%3C/svg%3E") no-repeat right 10px center; padding: 8px 30px 8px 10px; color: var(--ink); font: 1rem var(--font-body); cursor: pointer; }
   .tz-row select:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: 2px; }
@@ -161,7 +162,14 @@
         <button type="button" class="chip" data-value="Any">Any is fine</button>
       </div>
       <p class="contact-hint" id="zoom-note" hidden>From anywhere — the U.S., Japan or elsewhere. Times are shown in your own time zone.</p>
+      <p class="contact-hint" id="travel-note" hidden>Lessons at your place are 90 minutes or longer. Outside Manhattan, travel costs are added.</p>
       <label class="field" id="area-field" hidden>Neighborhood or venue <small>(optional)</small><input type="text" name="area" maxlength="120" placeholder="e.g. Upper West Side"></label>
+      <p class="q">How would you like to pay?</p>
+      <div class="chips" data-group="pay" data-single>
+        <button type="button" class="chip" data-value="Single">One lesson at a time</button>
+        <button type="button" class="chip" data-value="Pack">5-lesson pack</button>
+      </div>
+      <p class="contact-hint" id="pack-note">A 5-lesson pack is paid ahead, costs a little less, and is used within 3 months. Already have a pack? It is used automatically.</p>
       <div id="first-only">
       <p class="q">Who is the lesson for?</p>
       <div class="chips" data-group="age" data-single>
@@ -381,7 +389,9 @@
       group.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
       if (on) { b.setAttribute('aria-pressed', 'true'); choice[name] = b.dataset.value; } else delete choice[name];
       if (name === 'place') {
-        document.getElementById('area-field').hidden = choice.place !== 'Travel';
+        document.getElementById('area-field').hidden = document.getElementById('travel-note').hidden = choice.place !== 'Travel';
+        const short = form.querySelector('[data-group=len] [data-value="60"]'); short.disabled = choice.place === 'Travel';
+        if (choice.place === 'Travel' && lenMin() < 90) pick('len', '90');
         document.getElementById('zoom-note').hidden = choice.place !== 'Zoom';
         if (!zoneTouched) setZone(choice.place === 'Zoom' ? here : NY);
       }
@@ -395,6 +405,7 @@
   const pick = (group, value) => { const b = value && form.querySelector('[data-group=' + group + '] [data-value="' + value + '"]'); if (b && b.getAttribute('aria-pressed') !== 'true') b.click(); };
   pick('via', 'Email');
   pick('len', '60');
+  pick('pay', 'Single');
   let saved = null; try { saved = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch {}
   if (saved && saved.name) {
     pick('visit', 'Returning');
@@ -495,7 +506,7 @@
       choice.place && '場所：' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'ダンススタジオ', Travel: '自宅・会場（出張）', Zoom: 'オンライン（Zoom）', Any: 'どこでも' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? '（' + form.area.value.trim() + '）' : ''),
       choice.age && '対象：' + ({ Child: '子ども', Teen: '10代', Adult: '大人' }[choice.age]),
       choice.level && 'バレエ経験：' + ({ 'New to ballet': '初めて', 'Some classes': '少し習ったことがある', 'Trains regularly': '定期的に練習している' }[choice.level]),
-      '', '希望の日時（' + zoneName(zone) + '）：', ...picks.map((p, i) => T.choice.ja[i] + '　' + fmtLong(p) + (zone !== NY ? '（ニューヨーク時間 ' + whenIn(NY, p) + '）' : '')), 'レッスン：' + lenMin() + '分', '',
+      '', '希望の日時（' + zoneName(zone) + '）：', ...picks.map((p, i) => T.choice.ja[i] + '　' + fmtLong(p) + (zone !== NY ? '（ニューヨーク時間 ' + whenIn(NY, p) + '）' : '')), 'レッスン：' + lenMin() + '分' + (choice.pay === 'Pack' ? '（5回券で）' : ''), '',
       'メール：' + form.email.value.trim(),
       choice.via !== 'Email' && '連絡方法：' + choice.via + '　' + form.contact.value.trim(),
       form.note.value.trim() && '\nメッセージ：' + form.note.value.trim()
@@ -505,7 +516,7 @@
       choice.place && 'Place: ' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'A dance studio', Travel: 'At my place', Zoom: 'Online (Zoom)', Any: 'Any is fine' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? ' (' + form.area.value.trim() + ')' : ''),
       choice.age && 'For: ' + choice.age,
       choice.level && 'Experience: ' + choice.level,
-      '', 'Times that suit me (' + zoneName(zone) + '):', ...picks.map((p, i) => T.choice.en[i] + ': ' + fmtLong(p) + (zone !== NY ? ' (New York ' + whenIn(NY, p) + ')' : '')), 'Lesson: ' + lenMin() + ' minutes', '',
+      '', 'Times that suit me (' + zoneName(zone) + '):', ...picks.map((p, i) => T.choice.en[i] + ': ' + fmtLong(p) + (zone !== NY ? ' (New York ' + whenIn(NY, p) + ')' : '')), 'Lesson: ' + lenMin() + ' minutes' + (choice.pay === 'Pack' ? ' (5-lesson pack)' : ''), '',
       'Email: ' + form.email.value.trim(),
       choice.via !== 'Email' && 'Best way to reach me: ' + choice.via + ' ' + form.contact.value.trim(),
       form.note.value.trim() && '\nNote: ' + form.note.value.trim()
@@ -535,7 +546,7 @@
       hp: form.website.value, ms: Date.now() - openedAt,
       visit: choice.visit, name: form.name.value.trim(), email: form.email.value.trim(), via: choice.via, contact: choice.via === 'Email' ? '' : form.contact.value.trim(),
       place: choice.place || '', area: form.area.value.trim(), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
-      length: lenMin(), choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
+      length: lenMin(), pack: choice.pay === 'Pack' ? '5' : '', choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
       note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
     };
     if (SHEET_APP) {
@@ -581,7 +592,7 @@
   renderTz(); renderPicks();
 })();
 </script>
-<script src="site-language.js?v=51"></script>
+<script src="site-language.js?v=52"></script>
 <script src="site-motion.js?v=9"></script>
 </body>
 </html>
