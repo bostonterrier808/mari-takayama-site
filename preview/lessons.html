@@ -216,6 +216,7 @@
       <label class="field" id="contact-field" hidden><span id="contact-label">Your contact</span><input type="text" name="contact" maxlength="120" id="contact-input"></label>
       <p class="contact-hint" id="contact-hint" hidden></p>
       <div class="hp" aria-hidden="true"><label>Leave this empty<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+      <label class="field" id="friend-field">Did a friend send you? <small>(optional)</small><input type="text" name="friend" maxlength="120" placeholder="Their name or email"></label>
       <label class="field">Anything else? <small>(optional)</small><textarea name="note" rows="3" maxlength="700" placeholder="Goals, questions, or other times that work"></textarea></label>
     </section>
 
@@ -396,7 +397,7 @@
         if (!zoneTouched) setZone(choice.place === 'Zoom' ? here : NY);
       }
       if (name === 'via') showContact();
-      if (name === 'visit') document.getElementById('first-only').hidden = choice.visit === 'Returning';
+      if (name === 'visit') document.getElementById('first-only').hidden = document.getElementById('friend-field').hidden = choice.visit === 'Returning';
       if (name === 'len') { buildSlots(); for (let i = picks.length - 1; i >= 0; i--) if (!slots.some(x => x.at === picks[i].at)) picks.splice(i, 1); renderDates(); renderTimes(); renderPicks(); }
     });
     group.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
@@ -418,8 +419,14 @@
   if (askPlace === 'travel') pick('place', 'Travel');
   if (askPlace === 'zoom') pick('place', 'Zoom');
   // from the Ballet Study page: start the message for them
-  const STUDY = { ja: 'バレエ留学に向けたレッスンを希望します。', en: "I'd like lessons to prepare for studying ballet in New York." };
-  const studyNote = () => { if (new URLSearchParams(location.search).get('topic') === 'study' && (!form.note.value || form.note.value === STUDY.ja || form.note.value === STUDY.en)) form.note.value = STUDY[ja() ? 'ja' : 'en']; };
+  const TOPICS = {
+    study: { ja: 'バレエ留学に向けたレッスンを希望します。', en: "I'd like lessons to prepare for studying ballet in New York." },
+    audition: { ja: 'オーディション対策コース（3回）を希望します。', en: "I'd like the audition prep course (three lessons)." },
+    summer: { ja: 'サマーインテンシブ準備クラスの日程が決まったら知りたいです。', en: 'Please let me know the dates for the summer intensive prep classes.' },
+    group: { ja: 'Zoom の毎週のクラスに参加したいです。', en: "I'd like to join the weekly class on Zoom." }
+  };
+  const topic = TOPICS[new URLSearchParams(location.search).get('topic')];
+  const studyNote = () => { if (topic && (!form.note.value || form.note.value === topic.ja || form.note.value === topic.en)) form.note.value = topic[ja() ? 'ja' : 'en']; };
   studyNote(); document.addEventListener('mari-language-change', studyNote);
 
   function showContact() {
@@ -509,6 +516,7 @@
       '', '希望の日時（' + zoneName(zone) + '）：', ...picks.map((p, i) => T.choice.ja[i] + '　' + fmtLong(p) + (zone !== NY ? '（ニューヨーク時間 ' + whenIn(NY, p) + '）' : '')), 'レッスン：' + lenMin() + '分' + (choice.pay === 'Pack' ? '（5回券で）' : ''), '',
       'メール：' + form.email.value.trim(),
       choice.via !== 'Email' && '連絡方法：' + choice.via + '　' + form.contact.value.trim(),
+      choice.visit === 'First' && form.friend.value.trim() && '紹介してくれた人：' + form.friend.value.trim(),
       form.note.value.trim() && '\nメッセージ：' + form.note.value.trim()
     ] : [
       'Hi Mari, I would like to book a private lesson.', '',
@@ -519,6 +527,7 @@
       '', 'Times that suit me (' + zoneName(zone) + '):', ...picks.map((p, i) => T.choice.en[i] + ': ' + fmtLong(p) + (zone !== NY ? ' (New York ' + whenIn(NY, p) + ')' : '')), 'Lesson: ' + lenMin() + ' minutes' + (choice.pay === 'Pack' ? ' (5-lesson pack)' : ''), '',
       'Email: ' + form.email.value.trim(),
       choice.via !== 'Email' && 'Best way to reach me: ' + choice.via + ' ' + form.contact.value.trim(),
+      choice.visit === 'First' && form.friend.value.trim() && 'A friend sent me: ' + form.friend.value.trim(),
       form.note.value.trim() && '\nNote: ' + form.note.value.trim()
     ];
     return lines.filter(l => l !== undefined && l !== false && l !== null).join('\n');
@@ -547,7 +556,7 @@
       visit: choice.visit, name: form.name.value.trim(), email: form.email.value.trim(), via: choice.via, contact: choice.via === 'Email' ? '' : form.contact.value.trim(),
       place: choice.place || '', area: form.area.value.trim(), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
       length: lenMin(), pack: choice.pay === 'Pack' ? '5' : '', choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
-      note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
+      friend: choice.visit === 'First' ? form.friend.value.trim() : '', note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
     };
     if (SHEET_APP) {
       const btn = document.getElementById('send-btn'); const label = btn.textContent;
@@ -592,7 +601,7 @@
   renderTz(); renderPicks();
 })();
 </script>
-<script src="site-language.js?v=52"></script>
+<script src="site-language.js?v=53"></script>
 <script src="site-motion.js?v=9"></script>
 </body>
 </html>
