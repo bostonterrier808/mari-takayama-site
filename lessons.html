@@ -476,7 +476,7 @@
       li.append(span, rm); ol.append(li);
     });
   }
-  function showFree(data) { free = data; buildSlots(); document.getElementById('loading').hidden = true; renderDates(); renderTimes(); }
+  function showFree(data) { free = Object.fromEntries(Object.entries(data || {}).filter(([k]) => !isAway(k))); buildSlots(); document.getElementById('loading').hidden = true; renderDates(); renderTimes(); }
   if (SHEET_APP) {
     fetch(SHEET_APP + '?slots=1').then(r => r.ok ? r.json() : null).then(j => showFree(j && j.days ? j.days : usualFree())).catch(() => showFree(usualFree()));
   } else showFree(usualFree());
