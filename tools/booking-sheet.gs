@@ -46,6 +46,9 @@ const PLACES = {
 };
 
 const REQ = 'リクエスト', AV = '空き状況', ST = '統計';
+// Whole days with no lessons at all (tours, holidays): [first day, last day], New York dates. Keep in step with AWAY in lessons.html.
+const AWAY = [['2026-11-22', '2027-01-09']];
+const isAway_ = k => AWAY.some(([a, b]) => k >= a && k <= b);
 const HEAD = ['受付日時', '初めて／2回目以降', '名前', '連絡方法', 'メール', '場所', 'エリア', '対象', 'バレエ経験',
   '第1希望', '第2希望', '第3希望', '第1希望の曜日', '第1希望の時間帯', '第2希望の曜日', '第2希望の時間帯', '第3希望の曜日', '第3希望の時間帯',
   'メッセージ', '言語', '状況', 'その他の連絡先', 'レッスンの長さ（分）', '確定した日時', 'id', 'key', 'data'];
@@ -195,6 +198,7 @@ function freeTimes_() {
     const k = Utilities.formatDate(day, TZ, 'yyyy-MM-dd');
     const wd = +Utilities.formatDate(day, TZ, 'u') % 7;
     let ranges = (HOURS[wd] || []).map(([a, b]) => [mins_(a), mins_(b)]);
+    if (isAway_(k)) continue;
     const marks = sheet[k];
     if (marks) PARTS.forEach(([a, b], j) => {
       if (marks[j] === 'o') ranges = add_(ranges, [mins_(a), mins_(b)]);

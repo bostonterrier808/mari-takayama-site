@@ -184,6 +184,7 @@
       <p class="day-title" id="day-title"></p>
       <div class="times" id="times"></div>
       <p class="note-flex" id="times-empty" hidden>No open times on this day.</p>
+      <p class="note-flex" id="away-note" hidden></p>
       <p class="note-flex" id="loading">Loading open times…</p>
       <p class="note-flex">Choose up to 3 times. Mari will confirm one of them by email.</p>
       <ol class="picked" id="picked"></ol>
@@ -243,6 +244,9 @@
   // 3) Lesson hours used when the sheet can't be reached (the sheet's own hours win). 0 = Sunday.
   const HOURS = { 0: [['09:00', '21:00']], 1: [['19:00', '22:00']], 2: [['19:00', '22:00']], 3: [['19:00', '22:00']], 4: [['19:00', '22:00']], 5: [['19:00', '22:00']], 6: [] };
   const DAYS_AHEAD = 28, STEP = 30, MIN_NOTICE_HOURS = 12;
+  // no lessons on these days (New York dates); keep in step with AWAY in tools/booking-sheet.gs
+  const AWAY = [['2026-11-22', '2027-01-09']];
+  const isAway = k => AWAY.some(([a, b]) => k >= a && k <= b);
   const MAIL = 'maritakayama.official@gmail.com';
   // -------------------------------------------------------------------------------
 
@@ -335,6 +339,7 @@
   function usualFree() {
     const out = {}; const earliest = Date.now() + MIN_NOTICE_HOURS * 3600000;
     keysFrom(local(NY, Date.now()).key, DAYS_AHEAD + 1).forEach(k => {
+      if (isAway(k)) return;
       let r = (HOURS[dayOf(k).getDay()] || []).map(([a, b]) => [mins(a), mins(b)]);
       const base = nyAt(k, 0);
       r = r.map(([a, b]) => [Math.max(a, Math.ceil((earliest - base) / 60000)), b]).filter(([a, b]) => b - a >= 60);
@@ -412,7 +417,18 @@
   }
 
   // days and start times
+  // tell visitors when lessons pause, if a break falls inside the dates shown
+  function renderAway() {
+    const el = document.getElementById('away-note'); const today = local(NY, Date.now()).key, last = keysFrom(today, DAYS_AHEAD + 1).pop();
+    const br = AWAY.find(([a, b]) => b >= today && a <= last);
+    el.hidden = !br; if (!br) return;
+    const md = k => { const [, m, d] = k.split('-').map(Number); return ja() ? m + '月' + d + '日' : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1] + ' ' + d; };
+    const back = keysFrom(br[1], 2)[1];
+    el.textContent = ja() ? 'レッスンは' + md(br[0]) + '〜' + md(br[1]) + 'までお休みです。' + md(back) + 'から再開します。'
+      : 'Lessons pause from ' + md(br[0]) + ' to ' + md(br[1]) + ' and start again on ' + md(back) + '.';
+  }
   function renderDates() {
+    renderAway();
     const box = document.getElementById('dates'); box.textContent = '';
     const list = days();
     if (!selectedDay || !startsFor(selectedDay).length) selectedDay = list.find(k => startsFor(k).length) || list[0];
