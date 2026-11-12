@@ -146,6 +146,8 @@
     </section>
     <section class="step" aria-labelledby="s1">
       <div class="step-head"><span class="step-num">1</span><h2 class="step-title" id="s1">Your lesson</h2></div>
+      <p class="contact-hint intro-note" id="intro-note" hidden>Free 60-minute call on Zoom. Nothing to pay.</p>
+      <div id="len-row">
       <p class="q">How long?</p>
       <div class="chips" data-group="len" data-single>
         <button type="button" class="chip" data-value="60">60 minutes</button>
@@ -153,6 +155,8 @@
         <button type="button" class="chip" data-value="120">120 minutes</button>
         <button type="button" class="chip" data-value="150">150 minutes</button>
       </div>
+      </div>
+      <div id="place-row">
       <p class="q">Where?</p>
       <div class="chips" data-group="place" data-single>
         <button type="button" class="chip" data-value="FuncPhysio">FuncPhysio Physical Therapy</button>
@@ -164,12 +168,15 @@
       <p class="contact-hint" id="zoom-note" hidden>From anywhere — the U.S., Japan or elsewhere. Times are shown in your own time zone.</p>
       <p class="contact-hint" id="travel-note" hidden>Lessons at your place are 90 minutes or longer. Outside Manhattan, travel costs are added.</p>
       <label class="field" id="area-field" hidden>Neighborhood or venue <small>(optional)</small><input type="text" name="area" maxlength="120" placeholder="e.g. Upper West Side"></label>
+      </div>
+      <div id="pay-row">
       <p class="q">How would you like to pay?</p>
       <div class="chips" data-group="pay" data-single>
         <button type="button" class="chip" data-value="Single">One lesson at a time</button>
         <button type="button" class="chip" data-value="Pack">5-lesson pack</button>
       </div>
       <p class="contact-hint" id="pack-note">A 5-lesson pack is paid ahead, costs a little less, and is used within 3 months. Already have a pack? It is used automatically.</p>
+      </div>
       <div id="first-only">
       <p class="q">Who is the lesson for?</p>
       <div class="chips" data-group="age" data-single>
@@ -418,12 +425,16 @@
   const askPlace = new URLSearchParams(location.search).get('place');
   if (askPlace === 'travel') pick('place', 'Travel');
   if (askPlace === 'zoom') pick('place', 'Zoom');
+  // the free 60-minute Zoom call: Zoom, 60 minutes, nothing to pay
+  const intro = new URLSearchParams(location.search).get('topic') === 'intro';
+  if (intro) { pick('place', 'Zoom'); pick('len', '60'); pick('pay', 'Single'); ['len-row', 'place-row', 'pay-row'].forEach(id => { document.getElementById(id).hidden = true; }); document.getElementById('intro-note').hidden = false; document.querySelector('h1').textContent = 'Book a free Zoom call'; document.getElementById('s1').textContent = 'About you'; }
   // from the Ballet Study page: start the message for them
   const TOPICS = {
     study: { ja: 'バレエ留学に向けたレッスンを希望します。', en: "I'd like lessons to prepare for studying ballet in New York." },
     audition: { ja: 'オーディション対策コース（3回）を希望します。', en: "I'd like the audition prep course (three lessons)." },
     summer: { ja: 'サマーインテンシブ準備クラスの日程が決まったら知りたいです。', en: 'Please let me know the dates for the summer intensive prep classes.' },
-    group: { ja: 'Zoom の毎週のクラスに参加したいです。', en: "I'd like to join the weekly class on Zoom." }
+    group: { ja: 'Zoom の毎週のクラスに参加したいです。', en: "I'd like to join the weekly class on Zoom." },
+    intro: { ja: 'まずは無料の Zoom 相談（60分）をお願いしたいです。', en: "I'd like the free 60-minute Zoom call first." }
   };
   const topic = TOPICS[new URLSearchParams(location.search).get('topic')];
   const studyNote = () => { if (topic && (!form.note.value || form.note.value === topic.ja || form.note.value === topic.en)) form.note.value = topic[ja() ? 'ja' : 'en']; };
@@ -508,7 +519,7 @@
   // the request message
   function message() {
     const lines = ja() ? [
-      'Mariさん、個人レッスンの予約をお願いしたいです。', '',
+      intro ? 'Mariさん、無料の Zoom 相談（60分）をお願いしたいです。' : 'Mariさん、個人レッスンの予約をお願いしたいです。', '',
       'お名前：' + form.name.value.trim() + (choice.visit === 'Returning' ? '（2回目以降）' : '（初めて）'),
       choice.place && '場所：' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'ダンススタジオ', Travel: '自宅・会場（出張）', Zoom: 'オンライン（Zoom）', Any: 'どこでも' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? '（' + form.area.value.trim() + '）' : ''),
       choice.age && '対象：' + ({ Child: '子ども', Teen: '10代', Adult: '大人' }[choice.age]),
@@ -519,7 +530,7 @@
       choice.visit === 'First' && form.friend.value.trim() && '紹介してくれた人：' + form.friend.value.trim(),
       form.note.value.trim() && '\nメッセージ：' + form.note.value.trim()
     ] : [
-      'Hi Mari, I would like to book a private lesson.', '',
+      intro ? 'Hi Mari, I would like the free 60-minute Zoom call.' : 'Hi Mari, I would like to book a private lesson.', '',
       'Name: ' + form.name.value.trim() + (choice.visit === 'Returning' ? ' (has had lessons before)' : ' (first lesson)'),
       choice.place && 'Place: ' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'A dance studio', Travel: 'At my place', Zoom: 'Online (Zoom)', Any: 'Any is fine' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? ' (' + form.area.value.trim() + ')' : ''),
       choice.age && 'For: ' + choice.age,
@@ -555,7 +566,7 @@
       hp: form.website.value, ms: Date.now() - openedAt,
       visit: choice.visit, name: form.name.value.trim(), email: form.email.value.trim(), via: choice.via, contact: choice.via === 'Email' ? '' : form.contact.value.trim(),
       place: choice.place || '', area: form.area.value.trim(), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
-      length: lenMin(), pack: choice.pay === 'Pack' ? '5' : '', choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
+      length: lenMin(), pack: choice.pay === 'Pack' && !intro ? '5' : '', free: intro, choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
       friend: choice.visit === 'First' ? form.friend.value.trim() : '', note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
     };
     if (SHEET_APP) {
@@ -601,7 +612,7 @@
   renderTz(); renderPicks();
 })();
 </script>
-<script src="site-language.js?v=53"></script>
+<script src="site-language.js?v=54"></script>
 <script src="site-motion.js?v=9"></script>
 </body>
 </html>
