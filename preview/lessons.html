@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson Request — Mari Takayama</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&amp;family=EB+Garamond:ital,wght@0,400;0,500;1,400&amp;display=swap">
+<style>
+  :root {
+    --ink: #2c2a30; --muted: #6a6670; --line: #e6dfd2; --ivory: #faf6ee;
+    --champagne: #ecdfc6; --champagne-deep: #dfcda8; --champagne-line: #c9b48c; --champagne-pale: #f6f0e4;
+    --gold-ink: #7d6845; --soon: #b9a27a;
+    --font-display: "Cormorant Garamond", "EB Garamond", Garamond, serif;
+    --font-body: "EB Garamond", Garamond, Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--ivory); color: var(--ink); font: 17px/1.6 var(--font-body); }
+  a { color: var(--gold-ink); }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; background: #fff; border-bottom: 1px solid var(--line); }
+  .bar .brand { font: 600 1.35rem var(--font-display); letter-spacing: .04em; color: var(--ink); text-decoration: none; }
+  .bar { position: relative; min-height: 58px; }
+  .back { display: inline-block; margin: 0 0 18px; font-size: .95rem; text-decoration: none; }
+  .site-language-switch { position: absolute !important; top: 12px !important; right: 14px !important; transform: none !important; }
+  .picked li button { white-space: nowrap; text-wrap: nowrap; flex: none; }
+  main { max-width: 760px; margin: 0 auto; padding: 34px 18px 70px; }
+  .eyebrow { margin: 0 0 6px; font: 500 .82rem var(--font-body); letter-spacing: .22em; text-transform: uppercase; color: var(--gold-ink); }
+  h1 { margin: 0 0 12px; font: 400 clamp(2.1rem, 7vw, 3.1rem)/1.1 var(--font-display); }
+  .lead { margin: 0 0 30px; color: var(--muted); max-width: 36rem; }
+  section.step { background: #fff; border: 1px solid var(--line); padding: 22px 20px 24px; margin: 0 0 18px; }
+  .step-head { display: flex; align-items: baseline; gap: 12px; margin: 0 0 14px; }
+  .step-num { font: italic 400 1.5rem var(--font-display); color: var(--gold-ink); }
+  .step-title { margin: 0; font: 500 1.45rem/1.2 var(--font-display); }
+  .q { margin: 16px 0 8px; font-weight: 500; }
+  .q small { font-weight: 400; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { appearance: none; border: 1px solid var(--champagne-line); background: #fff; color: var(--ink); font: 1rem var(--font-body); padding: 9px 14px; cursor: pointer; transition: background-color .4s ease, border-color .4s ease; }
+  .chip:hover { background: var(--champagne-pale); }
+  .chip[aria-pressed="true"] { background: var(--champagne); border-color: var(--champagne-deep); }
+  .chip:focus-visible, .slot:focus-visible, .btn:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: 2px; }
+
+  /* week of times */
+  .week-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0 12px; }
+  .week-nav button { appearance: none; border: 1px solid var(--line); background: #fff; width: 42px; height: 38px; font-size: 1.1rem; cursor: pointer; color: var(--ink); }
+  .week-nav button:disabled { opacity: .3; cursor: default; }
+  .week-label { font: 500 1.1rem var(--font-display); }
+  .days { display: grid; gap: 6px; }
+  .day { display: grid; grid-template-columns: 6.4rem 1fr; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid var(--line); }
+  .day:first-child { border-top: 0; }
+  .day-name { font-size: .98rem; line-height: 1.25; }
+  .day-name small { display: block; color: var(--muted); font-size: .85rem; }
+  .slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .slot { position: relative; appearance: none; border: 1px solid var(--champagne-line); background: #fff; color: var(--ink); font: .95rem var(--font-body); padding: 9px 4px; cursor: pointer; transition: background-color .4s ease; }
+  .slot:hover { background: var(--champagne-pale); }
+  .slot.maybe::after { content: ""; position: absolute; top: 5px; right: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--soon); }
+  .slot:disabled { border-color: var(--line); color: #b8b3ba; background: repeating-linear-gradient(135deg, #fff 0 6px, #f5f2ec 6px 7px); cursor: default; }
+  .slot[aria-pressed="true"] { background: var(--champagne); border-color: var(--champagne-deep); }
+  .slot .rank { position: absolute; top: -8px; left: -6px; min-width: 18px; height: 18px; padding: 0 4px; background: var(--ink); color: #fff; font-size: .72rem; line-height: 18px; text-align: center; border-radius: 9px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 12px 0 0; color: var(--muted); font-size: .88rem; }
+  .legend span::before { content: ""; display: inline-block; width: 11px; height: 11px; margin-right: 6px; vertical-align: -1px; border: 1px solid var(--champagne-line); background: #fff; }
+  .legend .l-maybe::before { background: radial-gradient(circle at 70% 30%, var(--soon) 0 2px, #fff 3px); }
+  .legend .l-no::before { border-color: var(--line); background: repeating-linear-gradient(135deg, #fff 0 3px, #ece7de 3px 4px); }
+  .date-strip { display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 8px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+  .date-strip button { flex: 0 0 auto; scroll-snap-align: start; appearance: none; width: 62px; padding: 8px 0 7px; border: 1px solid var(--champagne-line); background: #fff; color: var(--ink); font: .95rem/1.25 var(--font-body); cursor: pointer; transition: background-color .4s ease; }
+  .date-strip button small { display: block; font-size: .8rem; color: var(--muted); }
+  .date-strip button:hover { background: var(--champagne-pale); }
+  .date-strip button[aria-selected="true"] { background: var(--champagne); border-color: var(--champagne-deep); }
+  .date-strip button:disabled { border-color: var(--line); color: #bdb8bf; background: #fbfaf7; cursor: default; }
+  .date-strip button:disabled small { color: #cfcad0; }
+  .date-strip button.has-pick { box-shadow: inset 0 -3px 0 var(--gold-ink); }
+  .day-title { margin: 12px 0 8px; font: 500 1.15rem var(--font-display); }
+  .times { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+  .times button { position: relative; appearance: none; border: 1px solid var(--champagne-line); background: #fff; color: var(--ink); font: 1rem var(--font-body); padding: 10px 4px; cursor: pointer; transition: background-color .4s ease; }
+  .times button:hover { background: var(--champagne-pale); }
+  .times button[aria-pressed="true"] { background: var(--champagne); border-color: var(--champagne-deep); }
+  .times button .rank { position: absolute; top: -8px; left: -6px; min-width: 18px; height: 18px; padding: 0 4px; background: var(--ink); color: #fff; font-size: .72rem; line-height: 18px; text-align: center; border-radius: 9px; }
+  .picked { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+  .picked li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: var(--champagne-pale); }
+  .picked li button { appearance: none; border: 0; background: none; color: var(--muted); font: .9rem var(--font-body); cursor: pointer; text-decoration: underline; }
+  .picked-empty { color: var(--muted); font-size: .95rem; margin: 12px 0 0; }
+  .note-flex { margin: 10px 0 0; font-size: .92rem; color: var(--muted); }
+  .away { margin: 0 0 12px; color: var(--ink); }
+  .tz-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 12px; font-size: .95rem; color: var(--muted); }
+  .tz-row select { appearance: none; max-width: 100%; border: 1px solid var(--champagne-line); border-radius: 0; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237d6845'/%3E%3C/svg%3E") no-repeat right 10px center; padding: 8px 30px 8px 10px; color: var(--ink); font: 1rem var(--font-body); cursor: pointer; }
+  .tz-row select:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: 2px; }
+  .ny { display: block; font-size: .8rem; color: var(--muted); }
+
+  label.field { display: block; margin: 14px 0 0; font-weight: 500; }
+  label.field small { font-weight: 400; color: var(--muted); }
+  input[type=text], input[type=email], input[type=tel], textarea { display: block; width: 100%; margin-top: 6px; padding: 11px 12px; border: 1px solid #cfc7ba; background: #fff; color: var(--ink); font: 1rem var(--font-body); border-radius: 0; }
+  textarea { resize: vertical; }
+  .contact-hint { margin: 6px 0 0; font-size: .88rem; color: var(--muted); }
+  label.field small.req { color: var(--gold-ink); }
+
+  .send { margin: 26px 0 0; text-align: center; }
+  .btn { appearance: none; display: inline-block; border: 1px solid var(--champagne); background: var(--champagne); color: var(--ink); font: 500 1.12rem var(--font-body); letter-spacing: .03em; padding: 14px 34px; cursor: pointer; text-decoration: none; transition: filter .6s ease, background-color .6s ease; }
+  .btn:hover { filter: brightness(.94); }
+  .btn.ghost { background: transparent; border-color: var(--champagne-line); }
+  .btn.ghost:hover { filter: none; background: rgba(44,42,48,.04); }
+  .btn:disabled { opacity: .45; cursor: default; filter: none; }
+  .send-help { margin: 10px 0 0; color: var(--muted); font-size: .9rem; }
+  .hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
+  .remember { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 14px 0 0; font-size: .92rem; color: var(--muted); }
+  .remember input { width: 17px; height: 17px; accent-color: var(--gold-ink); }
+  section.who .step-title { margin: 0 0 14px; font-size: 1.3rem; }
+  .error { margin: 10px 0 0; color: #8b3a3a; font-size: .95rem; }
+  .done { background: #fff; border: 1px solid var(--line); padding: 30px 22px; text-align: center; }
+  .done h2 { margin: 0 0 10px; font: 400 2rem var(--font-display); }
+  .done p { margin: 0 auto 8px; max-width: 30rem; }
+  .fallback { display: grid; gap: 10px; justify-items: center; margin: 18px 0 0; }
+  .fallback textarea { max-width: 34rem; font-size: .92rem; }
+  footer { text-align: center; color: var(--muted); font-size: .9rem; padding: 0 18px 40px; }
+  @media (max-width: 480px) {
+    section.step { padding: 18px 14px 20px; }
+    .day { grid-template-columns: 4.6rem 1fr; }
+    .slot { font-size: .88rem; padding: 9px 2px; }
+  }
+</style>
+<link rel="stylesheet" href="site-theme.css?v=28">
+<style>
+  /* this page keeps its own calm controls over the shared theme */
+  html[lang=ja] .chip, html[lang=ja] .slot, html[lang=ja] .btn { font-family: "Shippori Mincho", serif; letter-spacing: .04em; }
+  html[lang=ja] .eyebrow { letter-spacing: .14em; }
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="index.html">Mari Takayama</a>
+</header>
+<main>
+  <a class="back" href="private-lessons.html">← Private Lessons</a>
+  <p class="eyebrow">Private lessons</p>
+  <h1>Ask for a lesson</h1>
+  <p class="lead">Pick a time that works for you, and Mari will get back to you by email.</p>
+
+  <form id="book" novalidate>
+    <section class="step who" aria-labelledby="s0">
+      <h2 class="step-title" id="s0">Is this your first lesson with Mari?</h2>
+      <div class="chips" data-group="visit" data-single>
+        <button type="button" class="chip" data-value="First">First lesson</button>
+        <button type="button" class="chip" data-value="Returning">I’ve had lessons before</button>
+      </div>
+      <p class="contact-hint" id="saved-note" hidden>Your details from last time are filled in.</p>
+    </section>
+    <section class="step" aria-labelledby="s1">
+      <div class="step-head"><span class="step-num">1</span><h2 class="step-title" id="s1">Your lesson</h2></div>
+      <p class="q">How long?</p>
+      <div class="chips" data-group="len" data-single>
+        <button type="button" class="chip" data-value="60">60 minutes</button>
+        <button type="button" class="chip" data-value="90">90 minutes</button>
+        <button type="button" class="chip" data-value="120">120 minutes</button>
+        <button type="button" class="chip" data-value="150">150 minutes</button>
+      </div>
+      <p class="q">Where?</p>
+      <div class="chips" data-group="place" data-single>
+        <button type="button" class="chip" data-value="FuncPhysio">FuncPhysio Physical Therapy</button>
+        <button type="button" class="chip" data-value="Studio">A dance studio</button>
+        <button type="button" class="chip" data-value="Travel">At my place</button>
+        <button type="button" class="chip" data-value="Zoom">Online (Zoom)</button>
+        <button type="button" class="chip" data-value="Any">Any is fine</button>
+      </div>
+      <p class="contact-hint" id="zoom-note" hidden>From anywhere — the U.S., Japan or elsewhere. Times are shown in your own time zone.</p>
+      <label class="field" id="area-field" hidden>Neighborhood or venue <small>(optional)</small><input type="text" name="area" maxlength="120" placeholder="e.g. Upper West Side"></label>
+      <div id="first-only">
+      <p class="q">Who is the lesson for?</p>
+      <div class="chips" data-group="age" data-single>
+        <button type="button" class="chip" data-value="Child">Child</button>
+        <button type="button" class="chip" data-value="Teen">Teen</button>
+        <button type="button" class="chip" data-value="Adult">Adult</button>
+      </div>
+      <p class="q">Ballet experience</p>
+      <div class="chips" data-group="level" data-single>
+        <button type="button" class="chip" data-value="New to ballet">New to ballet</button>
+        <button type="button" class="chip" data-value="Some classes">Some classes</button>
+        <button type="button" class="chip" data-value="Trains regularly">Trains regularly</button>
+      </div>
+      </div>
+    </section>
+
+    <section class="step" aria-labelledby="s2">
+      <div class="step-head"><span class="step-num">2</span><h2 class="step-title" id="s2">Choose a time</h2></div>
+      <p class="q">Pick a day, then a start time</p>
+      <p class="note-flex away" id="away-note" hidden></p>
+      <label class="tz-row"><span id="tz-label">Times shown in</span> <select id="tz"></select></label>
+      <div class="date-strip" id="dates" role="listbox" aria-label="Days"></div>
+      <p class="day-title" id="day-title"></p>
+      <div class="times" id="times"></div>
+      <p class="note-flex" id="times-empty" hidden>No open times on this day.</p>
+      <p class="note-flex" id="loading">Loading open times…</p>
+      <p class="note-flex">Choose up to 3 times. Mari will confirm one of them by email.</p>
+      <ol class="picked" id="picked"></ol>
+      <p class="picked-empty" id="picked-empty">No times chosen yet.</p>
+      <p class="note-flex">Only times when Mari is free are shown. If none suit you, write the times that work in the message below.</p>
+    </section>
+
+    <section class="step" aria-labelledby="s3">
+      <div class="step-head"><span class="step-num">3</span><h2 class="step-title" id="s3">How can Mari reach you?</h2></div>
+      <label class="field">Your name <small class="req">(required)</small><input type="text" name="name" autocomplete="name" maxlength="100" required></label>
+      <label class="field">Your email <small class="req">(required)</small><input type="email" name="email" autocomplete="email" maxlength="120" required></label>
+      <p class="q">Best way to reach you</p>
+      <div class="chips" data-group="via" data-single>
+        <button type="button" class="chip" data-value="Instagram">Instagram</button>
+        <button type="button" class="chip" data-value="WhatsApp">WhatsApp</button>
+        <button type="button" class="chip" data-value="LINE">LINE</button>
+        <button type="button" class="chip" data-value="Email">Email</button>
+      </div>
+      <label class="field" id="contact-field" hidden><span id="contact-label">Your contact</span><input type="text" name="contact" maxlength="120" id="contact-input"></label>
+      <p class="contact-hint" id="contact-hint" hidden></p>
+      <div class="hp" aria-hidden="true"><label>Leave this empty<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+      <label class="field">Anything else? <small>(optional)</small><textarea name="note" rows="3" maxlength="700" placeholder="Goals, questions, or other times that work"></textarea></label>
+    </section>
+
+    <div class="send">
+      <button type="submit" class="btn" id="send-btn">Send</button>
+      <label class="remember"><input type="checkbox" id="remember" checked> Remember my details on this device for next time</label>
+      <p class="send-help">Nothing is booked until Mari confirms by email.</p>
+      <p class="send-help">Lessons are paid ahead by Venmo or Zelle — no cash, please. If plans change, it’s fully refunded up to 2 days before, half the day before, and not on the day.</p>
+      <p class="error" id="error" role="alert" hidden></p>
+    </div>
+  </form>
+
+  <div class="done" id="done" hidden>
+    <h2 id="done-title">Thank you!</h2>
+    <p id="done-text"></p>
+    <div class="fallback" id="fallback" hidden>
+      <a class="btn" id="fallback-ig" href="https://ig.me/m/maritakayama_ballet" target="_blank" rel="noopener">Copy and open Instagram DM</a>
+      <a class="btn ghost" id="fallback-mail" href="#">Send by email</a>
+      <textarea id="fallback-message" rows="8" readonly aria-label="Your request"></textarea>
+      <p class="contact-hint" id="copied" role="status"></p>
+    </div>
+    <p style="margin-top:18px"><a href="private-lessons.html">Back to Private Lessons</a></p>
+  </div>
+</main>
+<footer>Mari Takayama · Classical Ballet · New York</footer>
+
+<script>
+(() => {
+  // ---- Settings Mari can change -------------------------------------------------
+  // 1) The Google Sheet web address (Apps Script "Web app" URL, https://script.google.com/macros/s/.../exec).
+  //    With it, requests go straight into Mari's sheet (and her email), the sheet counts them,
+  //    and the calendar reads the Availability tab. Empty = visitors send by Instagram DM or email.
+  const SHEET_APP = 'https://script.google.com/macros/s/AKfycbyoBjOrilADknvlRF8Mf6vzOootjaOEG_56OdEDFinrhrzaH4o8Z2fzm8niTlL0c6-9oQ/exec';
+  // 2) Or: a Formspree address (https://formspree.io/f/...) if you prefer it for requests.
+  const FORM_ENDPOINT = '';
+  // 3) Lesson hours used when the sheet can't be reached (the sheet's own hours win). 0 = Sunday.
+  const HOURS = { 0: [['09:00', '21:00']], 1: [['19:00', '22:00']], 2: [['19:00', '22:00']], 3: [['19:00', '22:00']], 4: [['19:00', '22:00']], 5: [['19:00', '22:00']], 6: [] };
+  const DAYS_AHEAD = 28, STEP = 30, MIN_NOTICE_HOURS = 12;
+  // no lessons on these days (New York dates); keep in step with AWAY in tools/booking-sheet.gs
+  const AWAY = [['2026-11-22', '2027-01-09']];
+  const isAway = k => AWAY.some(([a, b]) => k >= a && k <= b);
+  const MAIL = 'maritakayama.official@gmail.com';
+  // -------------------------------------------------------------------------------
+
+  const ja = () => window.mariSiteLanguage === 'ja';
+  const T = {
+    days: { en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], ja: ['日', '月', '火', '水', '木', '金', '土'] },
+    choice: { en: ['1st choice', '2nd choice', '3rd choice'], ja: ['第1希望', '第2希望', '第3希望'] },
+    today: { en: 'Today', ja: '今日' },
+    remove: { en: 'Remove', ja: '外す' },
+    contactLabel: {
+      Instagram: { en: 'Your Instagram name', ja: 'あなたの Instagram の名前' },
+      WhatsApp: { en: 'Your WhatsApp number', ja: 'あなたの WhatsApp の電話番号' },
+      LINE: { en: 'Your LINE ID', ja: 'あなたの LINE ID' },
+      Email: { en: 'Your email', ja: 'あなたのメールアドレス' }
+    },
+    contactHint: {
+      Instagram: { en: 'Mari will message you from @maritakayama_ballet.', ja: '@maritakayama_ballet から Mari が連絡します。' },
+      WhatsApp: { en: 'Include the country code, e.g. +1 212 555 0100.', ja: '国番号から入れてください（例：+1 212 555 0100）。' },
+      LINE: { en: 'Please allow others to find you by ID in LINE settings.', ja: 'LINE の設定で「IDによる友だち追加を許可」をオンにしてください。' },
+      Email: { en: 'Mari will reply from ' + MAIL + '.', ja: MAIL + ' から返信します。' }
+    },
+    errors: {
+      email: { en: 'Please write your email address.', ja: 'メールアドレスを入れてください。' },
+      name: { en: 'Please write your name.', ja: 'お名前を入れてください。' },
+      times: { en: 'Please choose at least one time.', ja: '希望の時間を1つ以上選んでください。' },
+      len: { en: 'Please choose how long the lesson is.', ja: 'レッスンの長さを選んでください。' },
+      via: { en: 'Please choose how Mari can reach you.', ja: '連絡方法を選んでください。' },
+      contact: { en: 'Please write your contact.', ja: '連絡先を入れてください。' },
+      send: { en: 'Sorry, the request could not be sent. Please try again, or use Instagram DM or email.', ja: '送信できませんでした。もう一度お試しいただくか、Instagram の DM かメールでお送りください。' }
+    },
+    doneSent: { en: v => 'Your request was sent. Mari will contact you ' + (v === 'email' ? 'by email' : 'on ' + v) + ' within one or two days.', ja: v => 'リクエストを送りました。1〜2日以内に Mari から ' + v + ' で連絡します。' },
+    doneManual: { en: 'Send your request to Mari with one of these:', ja: '次のどちらかで Mari に送ってください。' },
+    titleSent: { en: 'Thank you!', ja: 'ありがとうございます' },
+    titleManual: { en: 'One more step', ja: 'あと少しです' },
+    copied: { en: 'Copied. Paste it into the Instagram message and send.', ja: 'コピーしました。Instagram のメッセージに貼り付けて送ってください。' },
+    sending: { en: 'Sending…', ja: '送信中…' },
+    visitErr: { en: 'Please choose first lesson or lessons before.', ja: '初めてか、2回目以降かを選んでください。' }
+  };
+  const t = o => o[ja() ? 'ja' : 'en'];
+
+  const form = document.getElementById('book');
+  const picks = [];               // [{date: 'YYYY-MM-DD', start: '19:30'}]
+  const choice = {};              // len, place, age, level, via, visit
+  let free = null;                // {'YYYY-MM-DD': [[fromMin, toMin], ...]}
+  let selectedDay = null;
+
+  const pad = n => String(n).padStart(2, '0');
+  const dayOf = k => new Date(k + 'T12:00:00');
+  const mins = hhmm => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
+  const hhmm = n => Math.floor(n / 60) + ':' + pad(n % 60);
+  const lenMin = () => +(choice.len || 60);
+  const clock = (n) => { if (ja()) return hhmm(n).replace(':', '\u2060:\u2060'); let h = Math.floor(n / 60); const m = pad(n % 60), ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return h + ':' + m + ' ' + ap; };
+  const fmtDate = k => { const d = dayOf(k); return ja() ? (d.getMonth() + 1) + '月' + d.getDate() + '日（' + T.days.ja[d.getDay()] + '）' : T.days.en[d.getDay()] + ' ' + (d.getMonth() + 1) + '/' + d.getDate(); };
+
+  // time zones: Mari's times are New York time; visitors can see them in their own time
+  const NY = 'America/New_York';
+  const ZONES = [
+    ['America/New_York', 'New York (Eastern)', 'ニューヨーク（東部時間）'],
+    ['America/Chicago', 'Chicago (Central)', 'シカゴ（中部時間）'],
+    ['America/Denver', 'Denver (Mountain)', 'デンバー（山岳部時間）'],
+    ['America/Phoenix', 'Arizona', 'アリゾナ'],
+    ['America/Los_Angeles', 'Los Angeles (Pacific)', 'ロサンゼルス（太平洋時間）'],
+    ['America/Anchorage', 'Alaska', 'アラスカ'],
+    ['Pacific/Honolulu', 'Hawaii', 'ハワイ'],
+    ['Asia/Tokyo', 'Japan', '日本時間'],
+    ['Europe/London', 'London', 'ロンドン']
+  ];
+  let here = NY;
+  try { here = Intl.DateTimeFormat().resolvedOptions().timeZone || NY; new Intl.DateTimeFormat('en', { timeZone: here }); } catch { here = NY; }
+  if (!ZONES.some(z => z[0] === here)) { const city = here.split('/').pop().replace(/_/g, ' '); ZONES.push([here, 'Your time (' + city + ')', 'あなたの地域の時間（' + city + '）']); }
+  let zone = NY, zoneTouched = false;
+  const zoneName = z => { const f = ZONES.find(x => x[0] === z); return f ? f[ja() ? 2 : 1] : z; };
+  const fmts = {};
+  function local(z, ms) {
+    const f = fmts[z] || (fmts[z] = new Intl.DateTimeFormat('en-US', { timeZone: z, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }));
+    const o = {}; f.formatToParts(new Date(ms)).forEach(x => { o[x.type] = x.value; });
+    return { key: o.year + '-' + o.month + '-' + o.day, min: (+o.hour % 24) * 60 + +o.minute };
+  }
+  // the moment a New York day + minutes happens
+  function nyAt(k, t) {
+    const [y, m, d] = k.split('-').map(Number); const want = Date.UTC(y, m - 1, d) + t * 60000; let at = want;
+    for (let i = 0; i < 2; i++) { const l = local(NY, at); const [a, b, c] = l.key.split('-').map(Number); at += want - (Date.UTC(a, b - 1, c) + l.min * 60000); }
+    return at;
+  }
+  const keysFrom = (k0, n) => { const [y, m, d] = k0.split('-').map(Number); const out = []; for (let i = 0; i < n; i++) { const x = new Date(Date.UTC(y, m - 1, d + i)); out.push(x.getUTCFullYear() + '-' + pad(x.getUTCMonth() + 1) + '-' + pad(x.getUTCDate())); } return out; };
+  const days = () => keysFrom(local(zone, Date.now()).key, DAYS_AHEAD + 2);
+  const whenIn = (z, p) => { const a = local(z, p.at), b = local(z, p.at + lenMin() * 60000); return fmtDate(a.key) + (ja() ? ' ' : ', ') + clock(a.min) + (ja() ? '〜' : ' – ') + clock(b.min); };
+  const fmtLong = p => whenIn(zone, p);
+  // open hours from the usual week (New York), used until (or if) the sheet answers
+  function usualFree() {
+    const out = {}; const earliest = Date.now() + MIN_NOTICE_HOURS * 3600000;
+    keysFrom(local(NY, Date.now()).key, DAYS_AHEAD + 1).forEach(k => {
+      if (isAway(k)) return;
+      let r = (HOURS[dayOf(k).getDay()] || []).map(([a, b]) => [mins(a), mins(b)]);
+      const base = nyAt(k, 0);
+      r = r.map(([a, b]) => [Math.max(a, Math.ceil((earliest - base) / 60000)), b]).filter(([a, b]) => b - a >= 60);
+      if (r.length) out[k] = r;
+    });
+    return out;
+  }
+  // every bookable start, in the chosen time zone
+  let slots = [];
+  function buildSlots() {
+    slots = [];
+    Object.keys(free || {}).forEach(k => free[k].forEach(([a, b]) => {
+      for (let t = Math.ceil(a / STEP) * STEP; t + lenMin() <= b; t += STEP) { const at = nyAt(k, t), l = local(zone, at); slots.push({ k, t, at, lk: l.key, lm: l.min }); }
+    }));
+    slots.sort((x, y) => x.at - y.at);
+  }
+  const startsFor = lk => slots.filter(x => x.lk === lk);
+  function renderTz() {
+    const sel = document.getElementById('tz'); sel.textContent = '';
+    ZONES.forEach(([v]) => { const o = document.createElement('option'); o.value = v; o.textContent = zoneName(v); sel.append(o); });
+    sel.value = zone;
+  }
+  function setZone(z, byHand) {
+    if (byHand) zoneTouched = true;
+    if (z === zone) return; zone = z; renderTz();
+    if (free) { buildSlots(); selectedDay = picks.length ? local(zone, picks[0].at).key : null; renderDates(); renderTimes(); }
+    renderPicks();
+  }
+  document.getElementById('tz').addEventListener('change', e => setZone(e.target.value, true));
+
+  // chips (single choice)
+  form.querySelectorAll('.chips[data-group]').forEach(group => {
+    group.addEventListener('click', e => {
+      const b = e.target.closest('.chip'); if (!b) return;
+      const name = group.dataset.group; const on = b.getAttribute('aria-pressed') !== 'true';
+      if (!on && ['len', 'visit', 'via'].includes(name)) return; // a needed choice stays chosen
+      group.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
+      if (on) { b.setAttribute('aria-pressed', 'true'); choice[name] = b.dataset.value; } else delete choice[name];
+      if (name === 'place') {
+        document.getElementById('area-field').hidden = choice.place !== 'Travel';
+        document.getElementById('zoom-note').hidden = choice.place !== 'Zoom';
+        if (!zoneTouched) setZone(choice.place === 'Zoom' ? here : NY);
+      }
+      if (name === 'via') showContact();
+      if (name === 'visit') document.getElementById('first-only').hidden = choice.visit === 'Returning';
+      if (name === 'len') { buildSlots(); for (let i = picks.length - 1; i >= 0; i--) if (!slots.some(x => x.at === picks[i].at)) picks.splice(i, 1); renderDates(); renderTimes(); renderPicks(); }
+    });
+    group.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
+  });
+  const STORE = 'mt-booking-me';
+  const pick = (group, value) => { const b = value && form.querySelector('[data-group=' + group + '] [data-value="' + value + '"]'); if (b && b.getAttribute('aria-pressed') !== 'true') b.click(); };
+  pick('via', 'Email');
+  pick('len', '60');
+  let saved = null; try { saved = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch {}
+  if (saved && saved.name) {
+    pick('visit', 'Returning');
+    form.name.value = saved.name || ''; form.email.value = saved.email || ''; pick('via', saved.via || 'Email'); form.contact.value = saved.contact || '';
+    pick('place', saved.place); if (saved.area) form.area.value = saved.area;
+    if (saved.tz && ZONES.some(z => z[0] === saved.tz)) setZone(saved.tz, true);
+    document.getElementById('saved-note').hidden = false;
+  }
+  const askPlace = new URLSearchParams(location.search).get('place');
+  if (askPlace === 'travel') pick('place', 'Travel');
+  if (askPlace === 'zoom') pick('place', 'Zoom');
+
+  function showContact() {
+    const f = document.getElementById('contact-field'), hint = document.getElementById('contact-hint'), input = document.getElementById('contact-input');
+    f.hidden = hint.hidden = !choice.via || choice.via === 'Email';
+    if (!choice.via || choice.via === 'Email') return;
+    document.getElementById('contact-label').textContent = t(T.contactLabel[choice.via]);
+    hint.textContent = t(T.contactHint[choice.via]);
+    input.type = choice.via === 'Email' ? 'email' : choice.via === 'WhatsApp' ? 'tel' : 'text';
+    input.autocomplete = choice.via === 'Email' ? 'email' : choice.via === 'WhatsApp' ? 'tel' : 'off';
+    input.placeholder = choice.via === 'Instagram' ? '@yourname' : '';
+  }
+
+  // days and start times
+  // tell visitors when lessons pause, if a break falls inside the dates shown
+  function renderAway() {
+    const el = document.getElementById('away-note'); const today = local(NY, Date.now()).key, last = keysFrom(today, DAYS_AHEAD + 1).pop();
+    const br = AWAY.find(([a, b]) => b >= today && a <= last);
+    el.hidden = !br; if (!br) return;
+    const md = k => { const [, m, d] = k.split('-').map(Number); return ja() ? m + '月' + d + '日' : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1] + ' ' + d; };
+    const back = keysFrom(br[1], 2)[1];
+    el.textContent = ja() ? 'レッスンは' + md(br[0]) + '〜' + md(br[1]) + 'までお休みです。' + md(back) + 'から再開します。'
+      : 'Lessons pause from ' + md(br[0]) + ' to ' + md(br[1]) + ' and start again on ' + md(back) + '.';
+  }
+  function renderDates() {
+    renderAway();
+    const box = document.getElementById('dates'); box.textContent = '';
+    const list = days();
+    if (!selectedDay || !startsFor(selectedDay).length) selectedDay = list.find(k => startsFor(k).length) || list[0];
+    list.forEach((k, i) => {
+      const d = dayOf(k); const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'option');
+      b.innerHTML = '<span></span><small></small>';
+      b.firstChild.textContent = i === 0 ? t(T.today) : t(T.days)[d.getDay()];
+      b.lastChild.textContent = (d.getMonth() + 1) + '/' + d.getDate();
+      b.disabled = !startsFor(k).length;
+      b.setAttribute('aria-selected', k === selectedDay ? 'true' : 'false');
+      b.setAttribute('aria-label', fmtDate(k));
+      if (picks.some(p => local(zone, p.at).key === k)) b.classList.add('has-pick');
+      b.addEventListener('click', () => { selectedDay = k; renderDates(); renderTimes(); });
+      box.append(b);
+    });
+  }
+  function renderTimes() {
+    const box = document.getElementById('times'); box.textContent = '';
+    const starts = startsFor(selectedDay);
+    document.getElementById('day-title').textContent = selectedDay ? fmtDate(selectedDay) : '';
+    document.getElementById('times-empty').hidden = starts.length > 0 || !free;
+    starts.forEach(sl => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = clock(sl.lm);
+      const at = picks.findIndex(p => p.at === sl.at);
+      b.setAttribute('aria-pressed', at >= 0 ? 'true' : 'false');
+      b.setAttribute('aria-label', fmtLong(sl));
+      if (at >= 0) { const r = document.createElement('span'); r.className = 'rank'; r.textContent = at + 1; b.append(r); }
+      b.addEventListener('click', () => {
+        const i = picks.findIndex(p => p.at === sl.at);
+        if (i >= 0) picks.splice(i, 1); else { if (picks.length >= 3) picks.shift(); picks.push({ date: sl.k, start: hhmm(sl.t), at: sl.at }); }
+        renderDates(); renderTimes(); renderPicks();
+      });
+      box.append(b);
+    });
+  }
+  function renderPicks() {
+    const ol = document.getElementById('picked'); ol.textContent = '';
+    document.getElementById('picked-empty').hidden = picks.length > 0;
+    picks.forEach((p, i) => {
+      const li = document.createElement('li');
+      const span = document.createElement('span'); span.textContent = t(T.choice)[i] + ' · ' + fmtLong(p);
+      if (zone !== NY) { const ny = document.createElement('small'); ny.className = 'ny'; ny.textContent = (ja() ? 'ニューヨーク時間：' : 'New York time: ') + whenIn(NY, p); span.append(ny); }
+      const rm = document.createElement('button'); rm.type = 'button'; rm.textContent = t(T.remove);
+      rm.addEventListener('click', () => { picks.splice(i, 1); renderDates(); renderTimes(); renderPicks(); });
+      li.append(span, rm); ol.append(li);
+    });
+  }
+  function showFree(data) { free = Object.fromEntries(Object.entries(data || {}).filter(([k]) => !isAway(k))); buildSlots(); document.getElementById('loading').hidden = true; renderDates(); renderTimes(); }
+  if (SHEET_APP) {
+    fetch(SHEET_APP + '?slots=1').then(r => r.ok ? r.json() : null).then(j => showFree(j && j.days ? j.days : usualFree())).catch(() => showFree(usualFree()));
+  } else showFree(usualFree());
+
+  // the request message
+  function message() {
+    const lines = ja() ? [
+      'Mariさん、個人レッスンの予約をお願いしたいです。', '',
+      'お名前：' + form.name.value.trim() + (choice.visit === 'Returning' ? '（2回目以降）' : '（初めて）'),
+      choice.place && '場所：' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'ダンススタジオ', Travel: '自宅・会場（出張）', Zoom: 'オンライン（Zoom）', Any: 'どこでも' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? '（' + form.area.value.trim() + '）' : ''),
+      choice.age && '対象：' + ({ Child: '子ども', Teen: '10代', Adult: '大人' }[choice.age]),
+      choice.level && 'バレエ経験：' + ({ 'New to ballet': '初めて', 'Some classes': '少し習ったことがある', 'Trains regularly': '定期的に練習している' }[choice.level]),
+      '', '希望の日時（' + zoneName(zone) + '）：', ...picks.map((p, i) => T.choice.ja[i] + '　' + fmtLong(p) + (zone !== NY ? '（ニューヨーク時間 ' + whenIn(NY, p) + '）' : '')), 'レッスン：' + lenMin() + '分', '',
+      'メール：' + form.email.value.trim(),
+      choice.via !== 'Email' && '連絡方法：' + choice.via + '　' + form.contact.value.trim(),
+      form.note.value.trim() && '\nメッセージ：' + form.note.value.trim()
+    ] : [
+      'Hi Mari, I would like to book a private lesson.', '',
+      'Name: ' + form.name.value.trim() + (choice.visit === 'Returning' ? ' (has had lessons before)' : ' (first lesson)'),
+      choice.place && 'Place: ' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'A dance studio', Travel: 'At my place', Zoom: 'Online (Zoom)', Any: 'Any is fine' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? ' (' + form.area.value.trim() + ')' : ''),
+      choice.age && 'For: ' + choice.age,
+      choice.level && 'Experience: ' + choice.level,
+      '', 'Times that suit me (' + zoneName(zone) + '):', ...picks.map((p, i) => T.choice.en[i] + ': ' + fmtLong(p) + (zone !== NY ? ' (New York ' + whenIn(NY, p) + ')' : '')), 'Lesson: ' + lenMin() + ' minutes', '',
+      'Email: ' + form.email.value.trim(),
+      choice.via !== 'Email' && 'Best way to reach me: ' + choice.via + ' ' + form.contact.value.trim(),
+      form.note.value.trim() && '\nNote: ' + form.note.value.trim()
+    ];
+    return lines.filter(l => l !== undefined && l !== false && l !== null).join('\n');
+  }
+
+  const err = document.getElementById('error');
+  const openedAt = Date.now();
+  form.addEventListener('submit', async e => {
+    e.preventDefault(); err.hidden = true;
+    const fail = (m, el) => { err.textContent = t(m); err.hidden = false; if (el) el.focus(); };
+    if (!choice.visit) return fail(T.visitErr);
+    if (!form.name.value.trim()) return fail(T.errors.name, form.name);
+    if (!choice.len) return fail(T.errors.len);
+    if (!picks.length) return fail(T.errors.times);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.value.trim())) return fail(T.errors.email, form.email);
+    if (!choice.via) pick('via', 'Email');
+    if (choice.via !== 'Email' && !form.contact.value.trim()) return fail(T.errors.contact, form.contact);
+    const text = message();
+    const viaName = { Instagram: 'Instagram', WhatsApp: 'WhatsApp', LINE: 'LINE', Email: ja() ? 'メール' : 'email' }[choice.via];
+    try {
+      if (document.getElementById('remember').checked) localStorage.setItem(STORE, JSON.stringify({ name: form.name.value.trim(), email: form.email.value.trim(), via: choice.via, contact: form.contact.value.trim(), place: choice.place || '', area: form.area.value.trim(), tz: zoneTouched ? zone : '' }));
+      else localStorage.removeItem(STORE);
+    } catch {}
+    const record = {
+      hp: form.website.value, ms: Date.now() - openedAt,
+      visit: choice.visit, name: form.name.value.trim(), email: form.email.value.trim(), via: choice.via, contact: choice.via === 'Email' ? '' : form.contact.value.trim(),
+      place: choice.place || '', area: form.area.value.trim(), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
+      length: lenMin(), choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
+      note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
+    };
+    if (SHEET_APP) {
+      const btn = document.getElementById('send-btn'); const label = btn.textContent;
+      btn.disabled = true; btn.textContent = t(T.sending);
+      try {
+        // plain text body keeps this a simple request that Google accepts from any site
+        await fetch(SHEET_APP, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(record) });
+        finish(t(T.doneSent)(viaName), false, text);
+      } catch { fail(T.errors.send); btn.disabled = false; btn.textContent = label; }
+    } else if (FORM_ENDPOINT) {
+      const btn = document.getElementById('send-btn'); const label = btn.textContent;
+      btn.disabled = true; btn.textContent = t(T.sending);
+      try {
+        const res = await fetch(FORM_ENDPOINT, { method: 'POST', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ _subject: 'Lesson request — ' + form.name.value.trim(), name: form.name.value.trim(), reach_by: choice.via, contact: choice.via === 'Email' ? '' : form.contact.value.trim(), email: form.email.value.trim(), message: text }) });
+        if (!res.ok) throw new Error('send');
+        finish(t(T.doneSent)(viaName), false, text);
+      } catch { fail(T.errors.send); btn.disabled = false; btn.textContent = label; }
+    } else finish(t(T.doneManual), true, text);
+  });
+
+  function finish(msg, manual, text) {
+    form.hidden = true;
+    const done = document.getElementById('done'); done.hidden = false;
+    document.getElementById('done-title').textContent = t(manual ? T.titleManual : T.titleSent);
+    document.getElementById('done-text').textContent = msg;
+    document.getElementById('fallback').hidden = !manual;
+    if (manual) {
+      document.getElementById('fallback-message').value = text;
+      document.getElementById('fallback-mail').href = 'mailto:' + MAIL + '?subject=' + encodeURIComponent(ja() ? '個人レッスンの予約' : 'Private lesson request') + '&body=' + encodeURIComponent(text);
+    }
+    done.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  document.getElementById('fallback-ig').addEventListener('click', async () => {
+    const box = document.getElementById('fallback-message');
+    try { await navigator.clipboard.writeText(box.value); } catch { box.select(); try { document.execCommand('copy'); } catch {} }
+    document.getElementById('copied').textContent = t(T.copied);
+  });
+
+  // redraw dynamic parts when the language changes
+  document.addEventListener('mari-language-change', () => { renderTz(); if (free) { renderDates(); renderTimes(); } renderPicks(); showContact(); });
+  renderTz(); renderPicks();
+})();
+</script>
+<script src="site-language.js?v=49"></script>
+<script src="site-motion.js?v=9"></script>
+</body>
+</html>
