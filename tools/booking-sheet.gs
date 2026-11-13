@@ -137,7 +137,7 @@ function doPost(e) {
     for (let i = 0; i < 3; i++) row.push(c[i] ? choiceJa_(c[i], len) : '');
     for (let i = 0; i < 3; i++) row.push(c[i] ? WD_JA[dateOf_(c[i].date).getDay()] : '', c[i] ? partOf_(c[i]) : '');
     const more = c.slice(3).map((x, i) => '第' + (i + 4) + '希望：' + choiceJa_(x, len)).join('\n');
-    row.push(clip((more ? more + (d.note ? '\n' : '') : '') + (d.note || ''), 900), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '', multi: d.multi === true && c.length > 1 }), d.visit === 'First' ? (JA.heard[d.heard] || '') : '', d.visit === 'First' && d.heard === 'Friend' ? clip(d.friend, 120) : '');
+    row.push(clip((more ? more + (d.note ? '\n' : '') : '') + (d.note || ''), 900), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '', multi: d.multi === true && c.length > 1 }), d.visit === 'First' ? (JA.heard[d.heard] || '') + (d.heard === 'Other' && d.heardNote ? '（' + clip(d.heardNote, 200) + '）' : '') : '', d.visit === 'First' && d.heard === 'Friend' ? clip(d.friend, 120) : '');
     heardStats_();
     book_().getSheetByName(REQ).appendRow(row);
     notifyMari_(d, c, len, id, key);
@@ -173,7 +173,7 @@ function notifyMari_(d, c, len, id, key) {
     ['場所', esc_(JA.place[d.place] || d.place || '') + (d.area && d.place !== 'Zoom' ? '（' + esc_(d.area) + '）' : '')], ['長さ', len + '分' + (d.pack === '5' ? '（5回券を希望）' : '')],
     d.place === 'Studio' ? ['スタジオ', d.studio === 'mari' ? '<b>Mari が代わりに予約</b>（スタジオ代＋手数料 $' + STUDIO_FEE + '）' : 'お客さんが自分で予約'] : null,
     d.free === true ? ['種類', '<b>無料の Zoom 相談（60分）</b>'] : null,
-    d.visit === 'First' && d.heard ? ['知ったきっかけ', esc_(JA.heard[d.heard] || d.heard) + (d.heard === 'Friend' && d.friend ? '（' + esc_(clip(d.friend)) + ' さん）' : '')] : null,
+    d.visit === 'First' && d.heard ? ['知ったきっかけ', esc_(JA.heard[d.heard] || d.heard) + (d.heard === 'Friend' && d.friend ? '（' + esc_(clip(d.friend)) + ' さん）' : '') + (d.heard === 'Other' && d.heardNote ? '（' + esc_(clip(d.heardNote, 200)) + '）' : '')] : null,
     d.tz !== TZ ? ['お客さんの時間', esc_(zoneName_(d.tz, true)) + '<br>' + c.map((x, i) => '第' + (i + 1) + '希望：' + whenIn_(x, len, d.tz, true)).join('<br>')] : null,
     d.age ? ['対象', esc_(JA.age[d.age] || d.age)] : null, d.level ? ['バレエ経験', esc_(JA.level[d.level] || d.level)] : null,
     d.note ? ['メッセージ', esc_(d.note)] : null
