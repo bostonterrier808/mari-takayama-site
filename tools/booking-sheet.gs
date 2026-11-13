@@ -56,12 +56,13 @@ const AWAY = [['2026-11-22', '2027-01-09']];
 const isAway_ = k => AWAY.some(([a, b]) => k >= a && k <= b);
 const HEAD = ['受付日時', '初めて／2回目以降', '名前', '連絡方法', 'メール', '場所', 'エリア', '対象', 'バレエ経験',
   '第1希望', '第2希望', '第3希望', '第1希望の曜日', '第1希望の時間帯', '第2希望の曜日', '第2希望の時間帯', '第3希望の曜日', '第3希望の時間帯',
-  'メッセージ', '言語', '状況', 'その他の連絡先', 'レッスンの長さ（分）', '確定した日時', 'id', 'key', 'data'];
+  'メッセージ', '言語', '状況', 'その他の連絡先', 'レッスンの長さ（分）', '確定した日時', 'id', 'key', 'data', 'きっかけ', '紹介者'];
 const C = Object.fromEntries(HEAD.map((h, i) => [h, i + 1]));
 const JA = {
   visit: { First: '初めて', Returning: '2回目以降' },
   place: { FuncPhysio: 'FuncPhysio', Studio: 'ダンススタジオ', Travel: '出張', Zoom: 'Zoom', Any: 'どこでも' },
   age: { Child: '子ども', Teen: '10代', Adult: '大人' },
+  heard: { Instagram: 'Instagram', Website: 'ウェブサイト・検索', Friend: '友達の紹介', Studio: 'スタジオ・学校', Performance: '公演を見て', Other: 'その他' },
   level: { 'New to ballet': '初めて', 'Some classes': '少し経験あり', 'Trains regularly': '定期的に練習', 'Professional dancer': 'プロのダンサー', 'Ballet student': 'バレエ学生', 'Dance student': 'ダンス学生', 'Musical theater (singer first)': 'ミュージカル（歌がメイン）', 'Musical theater (dancer first)': 'ミュージカル（ダンスがメイン）' },
   day: { Sun: '日', Mon: '月', Tue: '火', Wed: '水', Thu: '木', Fri: '金', Sat: '土' }
 };
@@ -136,7 +137,8 @@ function doPost(e) {
     for (let i = 0; i < 3; i++) row.push(c[i] ? choiceJa_(c[i], len) : '');
     for (let i = 0; i < 3; i++) row.push(c[i] ? WD_JA[dateOf_(c[i].date).getDay()] : '', c[i] ? partOf_(c[i]) : '');
     const more = c.slice(3).map((x, i) => '第' + (i + 4) + '希望：' + choiceJa_(x, len)).join('\n');
-    row.push(clip((more ? more + (d.note ? '\n' : '') : '') + (d.note || ''), 900), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '', multi: d.multi === true && c.length > 1 }));
+    row.push(clip((more ? more + (d.note ? '\n' : '') : '') + (d.note || ''), 900), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '', multi: d.multi === true && c.length > 1 }), d.visit === 'First' ? (JA.heard[d.heard] || '') : '', d.visit === 'First' && d.heard === 'Friend' ? clip(d.friend, 120) : '');
+    heardStats_();
     book_().getSheetByName(REQ).appendRow(row);
     notifyMari_(d, c, len, id, key);
     return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
@@ -171,7 +173,7 @@ function notifyMari_(d, c, len, id, key) {
     ['場所', esc_(JA.place[d.place] || d.place || '') + (d.area && d.place !== 'Zoom' ? '（' + esc_(d.area) + '）' : '')], ['長さ', len + '分' + (d.pack === '5' ? '（5回券を希望）' : '')],
     d.place === 'Studio' ? ['スタジオ', d.studio === 'mari' ? '<b>Mari が代わりに予約</b>（スタジオ代＋手数料 $' + STUDIO_FEE + '）' : 'お客さんが自分で予約'] : null,
     d.free === true ? ['種類', '<b>無料の Zoom 相談（60分）</b>'] : null,
-    d.visit === 'First' && d.friend ? ['紹介してくれた人', esc_(clip(d.friend))] : null,
+    d.visit === 'First' && d.heard ? ['知ったきっかけ', esc_(JA.heard[d.heard] || d.heard) + (d.heard === 'Friend' && d.friend ? '（' + esc_(clip(d.friend)) + ' さん）' : '')] : null,
     d.tz !== TZ ? ['お客さんの時間', esc_(zoneName_(d.tz, true)) + '<br>' + c.map((x, i) => '第' + (i + 1) + '希望：' + whenIn_(x, len, d.tz, true)).join('<br>')] : null,
     d.age ? ['対象', esc_(JA.age[d.age] || d.age)] : null, d.level ? ['バレエ経験', esc_(JA.level[d.level] || d.level)] : null,
     d.note ? ['メッセージ', esc_(d.note)] : null
@@ -334,7 +336,7 @@ function bookLesson_(sh, r, data, ch, len, how) {
   CalendarApp.getDefaultCalendar().createEvent((data.free ? '無料 Zoom 相談：' : 'バレエレッスン：') + data.name, s, en, opts);
   data.len = len;
   data.packInfo = data.free ? null : usePack_(data, ch, len);
-  const friendLine = data.first && data.friend ? creditFriend_(data) : '';
+  const friendLine = data.first && data.friend ? '\n紹介：' + data.friend + ' さんの紹介です。' : '';  // record only, no automatic credit
   sendCustomer_(data, 'confirm', ch);
   sh.getRange(r, C['状況']).setValue('予約確定'); sh.getRange(r, C['確定した日時']).setValue(choiceJa_(ch, len));
   CacheService.getScriptCache().remove('free');
@@ -457,6 +459,15 @@ function packsFor_(email) {
   const now = Date.now();
   return sh.getDataRange().getValues().slice(1).filter(v => String(v[2]).trim().toLowerCase() === email && +v[5] < +v[4] && (!v[6] || new Date(v[6]).getTime() + 86400000 > now))
     .map(v => ({ left: +v[4] - +v[5], len: +v[3], until: v[6] ? Utilities.formatDate(new Date(v[6]), TZ, 'yyyy-MM-dd') : '' }));
+}
+// make sure the request sheet has the two new columns and the stats tab counts them
+function heardStats_() {
+  const ss = book_(), req = ss.getSheetByName(REQ);
+  if (req && req.getRange(1, C['きっかけ']).getValue() !== 'きっかけ') req.getRange(1, C['きっかけ'], 1, 2).setValues([['きっかけ', '紹介者']]).setFontWeight('bold').setBackground('#ecdfc6');
+  const st = ss.getSheetByName(ST); if (!st || st.getRange('A51').getValue()) return;
+  const R = "'" + REQ + "'!", q = (rng, label) => '=IFERROR(QUERY(' + rng + ',"select Col1, count(Col1) where Col1 is not null and Col1 <> \'\' group by Col1 order by count(Col1) desc label Col1 \'' + label + '\', count(Col1) \'人数\'",0),"まだありません")';
+  st.getRange('A51').setValue('どこで知ったか').setFontWeight('bold'); st.getRange('A52').setFormula(q('{' + R + 'AB2:AB}', 'きっかけ'));
+  st.getRange('D51').setValue('紹介してくれた人').setFontWeight('bold'); st.getRange('D52').setFormula(q('{' + R + 'AC2:AC}', '名前'));
 }
 function packLine_(pk) {
   if (!pk) return '';
