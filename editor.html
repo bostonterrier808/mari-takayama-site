@@ -202,7 +202,7 @@
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
-const touchFirst=matchMedia('(pointer: coarse)').matches,handleSize=touchFirst?'28px':'18px',directMouse=!touchFirst;
+var previewSizeStep=null;const touchFirst=matchMedia('(pointer: coarse)').matches,handleSize=touchFirst?'28px':'18px',directMouse=!touchFirst;
 const sitePages=[['index.html','Home'],['about.html','About'],['credits.html','Credits'],['private-lessons.html','Private Lessons'],['booking.html','Book a Performance（出演依頼）'],['radio-taiso.html','Radio Taiso'],['gallery.html','Gallery'],['interview.html','Interview'],['lessons.html','レッスン申込フォーム'],['rates.html','料金（非公開ページ）']];
 const pageFile=(()=>{const q=new URLSearchParams(location.search).get('page');return sitePages.some(x=>x[0]===q)?q:'index.html'})();
 const pageUrl=()=>'./'+pageFile;
@@ -574,6 +574,7 @@ doc.addEventListener('pointerdown',e=>{if(e.button!==0||!freeOn(e))return;if(sec
 doc.addEventListener('pointerdown',e=>{if(e.button!==0)return;const h=sectionEdge(e);if(!h)return;e.preventDefault();e.stopImmediatePropagation();suppressClickUntil=Date.now()+400;showEdge(null);boxSelection=h.el.dataset.boxTarget;doc.querySelectorAll('[data-inline-selected]').forEach(x=>x.removeAttribute('data-inline-selected'));dragBox(e,h.el,h.edge);$('status').textContent=h.edge.y?'枠の高さを変えました（自動保存）':'枠の幅を変えました（自動保存）'},true);
 function positionHandles() {
   const target=doc.querySelector('[data-inline-selected]');
+  {const sb=document.getElementById('size-bar');if(sb){const it=target&&target.tagName==='IMG'?inlineRecord(target):null;sb.hidden=!it||it.kind==='gallery'||inlineAction!=='select'}}
   for(const {button,edge} of handles){
     button.hidden=!target || (inlineAction==='crop' || inlineAction==='text');
     if(button.hidden)continue;
@@ -614,6 +615,7 @@ new MutationObserver(positionHandles).observe(doc.body,{subtree:true,attributes:
 new MutationObserver(positionHandles).observe($('inline-crop'),{attributes:true,attributeFilter:['aria-pressed']});
 win.addEventListener('resize',positionHandles);
 function selectImage(img){const item=inlineRecord(img);if(!item)return null;inlineSelected=item.id;doc.querySelectorAll('[data-inline-selected]').forEach(x=>x.removeAttribute('data-inline-selected'));img.setAttribute('data-inline-selected','');if(item.kind==='gallery'){selected=item.id;renderSelected();openInspector('gallery')}else{$('other').value=item.id;renderOther();openInspector('other')}positionHandles();return item}
+previewSizeStep=f=>{const id=inlineSelected;const img=[...doc.querySelectorAll('main img')].find(i=>identity(i)===id);if(!img)return;const item=inlineRecord(img);if(!item||item.kind==='gallery')return;const p=item.p,before=clone(state);if(p.fit==='source'||p.fit==='natural')p.fit=win.getComputedStyle(img).objectFit==='contain'?'contain':'cover';const box=img.getBoundingClientRect();const sw=img.style.getPropertyValue('width'),sp=img.style.getPropertyPriority('width'),smw=img.style.getPropertyValue('max-width'),smp=img.style.getPropertyPriority('max-width');img.style.setProperty('width','100%','important');img.style.setProperty('max-width','none','important');const full=img.offsetWidth||1;if(sw)img.style.setProperty('width',sw,sp);else img.style.removeProperty('width');if(smw)img.style.setProperty('max-width',smw,smp);else img.style.removeProperty('max-width');const parentW=full*(box.width/(img.offsetWidth||box.width||1));const curW=p.frameWidth||Math.max(1,Math.round(box.width/parentW*100)),curH=p.frameHeight||Math.max(1,Math.round(img.offsetHeight));p.frameWidth=Math.max(10,Math.min(100,Math.round(curW*f)));p.frameHeight=Math.max(60,Math.min(1600,Math.round(curH*p.frameWidth/curW)));img.style.setProperty('width',p.frameWidth+'%','important');img.style.setProperty('height',p.frameHeight+'px','important');positionHandles();history.push(before);if(history.length>40)history.shift();save();renderOther()};
 function alignmentGuides(img) {
   const layer=doc.createElement('div');
   layer.setAttribute('aria-hidden','true');
@@ -951,7 +953,7 @@ addEventListener('resize',()=>fitPhoneLayout());
 
 // Phone: short names for the three main tools and one help line for each.
 if(matchMedia('(max-width: 760px)').matches){$('inline-select').textContent='写真';$('inline-text').textContent='文章';$('inline-box').textContent='位置・大きさ';$('inline-undo').textContent='↶ 戻す';
-const phoneHelp={select:'写真をタップして、四隅で大きさ・ドラッグで位置を変えられます。',text:'文章をタップすると、下で書き直せます。',box:'動かしたいものをタップして選び、もう一度触ってドラッグすると動きます。青い四角を引くと大きさが変わります。'};
+const phoneHelp={select:'写真をタップすると、下に大きさのボタンが出ます。',text:'文章をタップすると、下で書き直せます。',box:'動かしたいものをタップして選び、もう一度触ってドラッグすると動きます。青い四角を引くと大きさが変わります。'};
 for(const [id,k] of [['inline-select','select'],['inline-text','text'],['inline-box','box']]){const b=$(id),prev=b.onclick;b.onclick=ev=>{prev?.call(b,ev);for(const other of ['inline-select','inline-text','inline-box'])$(other).setAttribute('aria-pressed',String(other===id));$('canvas-help').textContent=phoneHelp[k]}}
 $('phone-more').onclick=()=>{const on=document.body.classList.toggle('show-advanced');$('phone-more').setAttribute('aria-pressed',String(on));$('phone-more').textContent=on?'その他 ▾':'その他 ▸';fitPhoneLayout()};
 $('canvas-help').textContent=phoneHelp.select}
@@ -1003,5 +1005,8 @@ $('inline-interview').onclick=()=>{const list=$('interview-article');list.replac
 $('interview-article').onchange=loadInterviewArticle;
 $('interview-save').onclick=()=>{const index=$('interview-article').value;change(()=>{state.interviewEdits=state.interviewEdits||{};state.interviewEdits[index]={topic:$('interview-topic').value,question:$('interview-question').value,answer:$('interview-answer').value}});$('interview-message').textContent='下書きに保存しました。公開するには、上の「公開するには」を押してください。'};
 </script>
+<div id="size-bar" hidden><span>写真の大きさ</span><button type="button" data-step="0.9" aria-label="写真を小さくする">− 小さく</button><button type="button" data-step="1.1" aria-label="写真を大きくする">＋ 大きく</button></div>
+<style>#size-bar{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;display:flex;gap:8px;align-items:center;padding:8px 10px 8px 14px;background:#2c2a30;color:#fff;border-radius:14px;font:13px system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.3);white-space:nowrap}#size-bar[hidden]{display:none}#size-bar button{min-height:40px;padding:6px 14px;font-size:15px;border-radius:10px;border:0;background:#fff;color:#2c2a30;font-weight:600}</style>
+<script>for(const b of document.querySelectorAll('#size-bar [data-step]'))b.onclick=()=>{if(typeof previewSizeStep==='function')previewSizeStep(+b.dataset.step)};</script>
 </body>
 </html>
