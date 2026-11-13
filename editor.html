@@ -169,6 +169,21 @@
 }
 .cloud-status{font-size:12px;color:var(--soft);white-space:nowrap}@media(max-width:760px){.cloud-status{font-size:11px}}
 </style>
+<style id="phone-overlay">
+/* Phone: the panel floats small over the preview, so the preview keeps its full width
+   and photos stay in the same place whether the panel is open or closed. */
+@media (max-width: 760px) {
+  .inspector-open .layout > div:first-child {
+    position: fixed !important; top: auto !important; left: auto !important; right: 8px !important; bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 40 !important; width: min(44vw, 210px) !important; flex: none !important; height: auto !important; max-height: 52dvh !important;
+    margin: 0 !important; overflow-y: auto !important; border-radius: 12px !important; box-shadow: 0 10px 30px rgba(0,0,0,.25) !important;
+    background: var(--wash) !important; padding: 6px 6px 10px !important; font-size: 12px !important;
+  }
+  .inspector-open .layout > div:first-child :is(input, select, textarea, button) { font-size: 13px !important; }
+  .sheet-min .layout > div:first-child { width: 110px !important; max-height: 48px !important; padding: 4px !important; }
+  .sheet-min #inspector-min { min-height: 36px !important; }
+}
+</style>
 </head>
 <body>
 <header><div><div class="eyebrow">MARI TAKAYAMA</div><h1>サイトを直接編集</h1><p class="hint" style="margin:4px 0 0">動かす・大きくする・並べ方を変える</p></div><div class="actions"><a class="button" href="./" target="_blank" rel="noopener">公開サイトを見る ↗</a><span id="cloud-status" class="cloud-status" role="status" aria-live="polite"></span><button id="publish" class="primary" disabled>公開するには</button></div></header><div class="device-bar"><label style="display:flex;align-items:center;gap:6px;font-size:inherit"><strong>ページ：</strong><select id="page-picker"></select></label><strong>編集する表示：</strong><button id="edit-desktop" aria-pressed="true">パソコン用</button><button id="edit-mobile" aria-pressed="false">スマホ用</button><button id="inline-select" class="canvas-action" aria-pressed="true">写真を選ぶ</button><button id="inline-crop" class="canvas-action" aria-pressed="false">写真の中を動かす</button><button id="inline-move" class="canvas-action" aria-pressed="false">枠を動かす</button><button id="inline-box" aria-pressed="false">枠・背景</button><button id="inline-interview" type="button">Interview記事を編集</button><button id="inline-layout">グリッド・形の例</button><button id="inline-text" class="canvas-action" aria-pressed="false">文章・フォント</button><button id="inline-textmove" class="canvas-action" aria-pressed="false">文字を動かす</button><button id="text-move-reset" hidden>選んだ文字を元に戻す</button><button id="restore-positions">先ほどの写真位置に戻す</button><button id="inline-undo">元に戻す</button><button id="phone-more" type="button" aria-pressed="false">その他 ▸</button><span id="device-note" class="hint">パソコン用の配置・サイズ・エフェクトを編集中</span></div>
