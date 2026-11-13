@@ -83,7 +83,9 @@
   .date-strip button:disabled small { color: #cfcad0; }
   .date-strip button.has-pick { box-shadow: inset 0 -3px 0 var(--gold-ink); }
   .day-title { margin: 12px 0 8px; font: 500 1.15rem var(--font-display); }
-  .times { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+  .times { display: grid; grid-template-columns: repeat(auto-fill, minmax(138px, 1fr)); gap: 6px; }
+  .times .times-group { grid-column: 1 / -1; margin: 10px 0 2px; font-size: .85rem; letter-spacing: .08em; color: var(--muted); }
+  .times .times-group:first-child { margin-top: 0; }
   .times button { position: relative; appearance: none; border: 1px solid var(--champagne-line); background: #fff; color: var(--ink); font: 1rem var(--font-body); padding: 10px 4px; cursor: pointer; transition: background-color .4s ease; }
   .times button:hover { background: var(--champagne-pale); }
   .times button[aria-pressed="true"] { background: var(--champagne); border-color: var(--champagne-deep); }
@@ -228,6 +230,7 @@
       <p class="day-title" id="day-title"></p>
       <div class="times" id="times"></div>
       <p class="note-flex" id="times-empty" hidden>No open times on this day.</p>
+      <p class="note-flex" id="len-first" hidden>Choose how long the lesson is first. Times that fit will appear here.</p>
       <p class="note-flex" id="loading">Loading open times…</p>
       <p class="note-flex">Choose up to 3 times. Mari will confirm one of them by email.</p>
       <ol class="picked" id="picked"></ol>
@@ -346,6 +349,8 @@
   const mins = hhmm => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
   const hhmm = n => Math.floor(n / 60) + ':' + pad(n % 60);
   const lenMin = () => +(choice.len || 60);
+  // a start time shown with its end, e.g. 9:00–10:30 am
+  const span = s => { const e = s + lenMin(); if (ja()) return clock(s) + '〜' + clock(e); const a = clock(s), b = clock(e); return a.slice(-2) === b.slice(-2) ? a.slice(0, -3) + '–' + b : a + '–' + b; };
   const clock = (n) => { if (ja()) return hhmm(n).replace(':', '\u2060:\u2060'); let h = Math.floor(n / 60); const m = pad(n % 60), ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return h + ':' + m + ' ' + ap; };
   const fmtDate = k => { const d = dayOf(k); return ja() ? (d.getMonth() + 1) + '月' + d.getDate() + '日（' + T.days.ja[d.getDay()] + '）' : T.days.en[d.getDay()] + ' ' + (d.getMonth() + 1) + '/' + d.getDate(); };
 
@@ -529,9 +534,15 @@
     const box = document.getElementById('times'); box.textContent = '';
     const starts = startsFor(selectedDay);
     document.getElementById('day-title').textContent = selectedDay ? fmtDate(selectedDay) : '';
-    document.getElementById('times-empty').hidden = starts.length > 0 || !free;
+    const noLen = !choice.len && new URLSearchParams(location.search).get('topic') !== 'intro';
+    document.getElementById('len-first').hidden = !noLen;
+    document.getElementById('times-empty').hidden = noLen || starts.length > 0 || !free;
+    if (noLen) return;
+    let group = '';
     starts.forEach(sl => {
-      const b = document.createElement('button'); b.type = 'button'; b.textContent = clock(sl.lm);
+      const g = sl.lm < 720 ? 'am' : sl.lm < 1020 ? 'pm' : 'eve';
+      if (g !== group) { group = g; const h = document.createElement('p'); h.className = 'times-group'; h.textContent = t({ am: { en: 'Morning', ja: '午前' }, pm: { en: 'Afternoon', ja: '午後' }, eve: { en: 'Evening', ja: '夕方・夜' } }[g]); box.append(h); }
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = span(sl.lm);
       const at = picks.findIndex(p => p.at === sl.at);
       b.setAttribute('aria-pressed', at >= 0 ? 'true' : 'false');
       b.setAttribute('aria-label', fmtLong(sl));
