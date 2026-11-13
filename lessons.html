@@ -197,6 +197,10 @@
         <button type="button" class="chip" data-value="New to ballet">New to ballet</button>
         <button type="button" class="chip" data-value="Some classes">Some classes</button>
         <button type="button" class="chip" data-value="Trains regularly">Trains regularly</button>
+        <button type="button" class="chip" data-value="Professional dancer">Professional dancer</button>
+        <button type="button" class="chip" data-value="Ballet student">Ballet student</button>
+        <button type="button" class="chip" data-value="Dance student">Dance student</button>
+        <button type="button" class="chip" data-value="Musical theater">Musical theater</button>
       </div>
       </div>
     </section>
@@ -536,7 +540,7 @@
       'お名前：' + form.name.value.trim() + (choice.visit === 'Returning' ? '（2回目以降）' : '（初めて）'),
       choice.place && '場所：' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'ダンススタジオ', Travel: '自宅・会場（出張）', Zoom: 'オンライン（Zoom）', Any: 'どこでも' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? '（' + form.area.value.trim() + '）' : '') + (choice.place === 'Studio' ? (choice.studio === 'Mari' ? '（スタジオの予約を Mari にお願いしたい）' : '（スタジオは自分で予約します）') : ''),
       choice.age && '対象：' + ({ Child: '子ども', Teen: '10代', Adult: '大人' }[choice.age]),
-      choice.level && 'バレエ経験：' + ({ 'New to ballet': '初めて', 'Some classes': '少し習ったことがある', 'Trains regularly': '定期的に練習している' }[choice.level]),
+      choice.level && 'バレエ経験：' + ({ 'New to ballet': '初めて', 'Some classes': '少し習ったことがある', 'Trains regularly': '定期的に練習している', 'Professional dancer': 'プロのダンサー', 'Ballet student': 'バレエ学生', 'Dance student': 'ダンス学生', 'Musical theater': 'ミュージカル' }[choice.level]),
       '', '希望の日時（' + zoneName(zone) + '）：', ...picks.map((p, i) => T.choice.ja[i] + '　' + fmtLong(p) + (zone !== NY ? '（ニューヨーク時間 ' + whenIn(NY, p) + '）' : '')), 'レッスン：' + lenMin() + '分' + (choice.pay === 'Pack' ? '（5回券で）' : ''), '',
       'メール：' + form.email.value.trim(),
       choice.via !== 'Email' && '連絡方法：' + choice.via + '　' + form.contact.value.trim(),
