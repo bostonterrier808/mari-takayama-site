@@ -38,7 +38,7 @@ const HOURS = { 0: [['09:00', '21:00']], 1: [['19:00', '22:00']], 2: [['19:00', 
 // The 空き状況 tab can open (◯) or close (×) these parts of a day.
 const PARTS = [['09:00', '12:00'], ['12:00', '17:00'], ['19:00', '22:00']];
 const MIN_NOTICE_HOURS = 12;        // earliest bookable time = now + this
-const DAYS_AHEAD = 61;
+const DAYS_AHEAD = 92;
 const PLACES = {
   FuncPhysio: { ja: 'FuncPhysio Physical Therapy（2 W 45th Street, Suite 1600, New York）', en: 'FuncPhysio Physical Therapy, 2 W 45th Street, Suite 1600, New York' },
   Studio: { ja: 'ダンススタジオ（場所は別途ご連絡します）', en: 'A dance studio (Mari will send the address)' },
