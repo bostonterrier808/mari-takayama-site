@@ -262,8 +262,6 @@ footer nav a:hover { color: var(--slate); }
 #interview .qa h3{font-size:22px}
 #interview .qa p{font-size:16px;line-height:1.7}
 @media(max-width:760px){#interview .press-interview-grid .published-interview{padding:14px 16px}#interview .press-interview-grid{gap:14px}}
-  .gallery-reel { max-width: 360px; margin: 0 auto clamp(2rem, 5vw, 3.5rem); }
-  .gallery-reel video { display: block; width: 100%; height: auto; aspect-ratio: 9 / 16; background: #000; }
 </style>
 <style id="photo-layout">.grid { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: clamp(40px, 8vw, 160px); gap: 20px; align-items: stretch; } .grid button { min-height: 0; overflow: hidden; } .grid img { height: 100%; } @media (max-width: 760px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; align-items: start; } .grid button { grid-column: span 1 !important; grid-row: auto !important; } .grid img { height: auto !important; aspect-ratio: 3 / 4 !important; } }
 #grid button, .hero-photo, .about .wrap > img, .row-photo, .banner { overflow: hidden; }
@@ -411,10 +409,6 @@ body #gallery #grid > button[data-photo-slot] img { display: block; width: 100% 
     </div>
     <div class="gallery-body" data-box-slot="2">
       <div class="wrap" data-box-slot="8">
-        <!-- Featured video: img/gallery-reel.mp4 (poster: img/gallery-reel-poster.jpg). -->
-        <div class="gallery-reel">
-          <video src="img/gallery-reel.mp4" poster="img/gallery-reel-poster.jpg" controls playsinline preload="metadata" aria-label="Mari dancing in a New York studio"></video>
-        </div>
         <div class="grid" id="grid" data-box-slot="3">
           
           
