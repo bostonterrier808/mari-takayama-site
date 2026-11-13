@@ -262,7 +262,7 @@ footer nav a:hover { color: var(--slate); }
 #interview .qa h3{font-size:22px}
 #interview .qa p{font-size:16px;line-height:1.7}
 @media(max-width:760px){#interview .press-interview-grid .published-interview{padding:14px 16px}#interview .press-interview-grid{gap:14px}}
-.home-intro-photo video.intro-dance{display:block;object-fit:cover;aspect-ratio:9/16}</style>
+.home-intro-photo video.intro-dance{display:block;object-fit:cover;aspect-ratio:9/16;width:62% !important}.home-intro-photo:has(video.intro-dance){padding-bottom:50% !important}</style>
 <style id="photo-layout">.grid { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: clamp(40px, 8vw, 160px); gap: 20px; align-items: stretch; } .grid button { min-height: 0; overflow: hidden; } .grid img { height: 100%; } @media (max-width: 760px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; align-items: start; } .grid button { grid-column: span 1 !important; grid-row: auto !important; } .grid img { height: auto !important; aspect-ratio: 3 / 4 !important; } }
 #grid button, .hero-photo, .about .wrap > img, .row-photo, .banner { overflow: hidden; }
 @media(min-width:761px){}
@@ -762,7 +762,7 @@ main { counter-reset: sec; }
       <figure class="home-intro-photo" data-box-slot="4">
         <span class="intro-kanji" aria-hidden="true">髙山まり</span>
         <img src="img/about.jpg" alt="Portrait of Mari Takayama" data-photo-id="home/about" loading="lazy" data-box-slot="57" style="filter: brightness(100%) contrast(100%) saturate(100%) hue-rotate(0deg) blur(0px) grayscale(0%) sepia(0%); translate: 0px;">
-        <video class="intro-dance" src="img/gallery-reel.mp4" poster="img/gallery-reel-poster.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Mari dancing in a New York studio"></video>
+        <video class="intro-dance" src="img/home-reel.mp4" poster="img/gallery-reel-poster.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Mari dancing in a New York studio"></video><script>(()=>{const v=document.currentScript.previousElementSibling;v.muted=true;const go=()=>{const p=v.play();if(p)p.catch(()=>{});};go();v.addEventListener("loadeddata",go);document.addEventListener("visibilitychange",()=>{if(!document.hidden)go();});addEventListener("touchstart",go,{once:true,passive:true});})();</script>
       </figure>
       <div class="home-intro-body" data-box-slot="25">
         <p class="home-kicker">About Mari</p>
