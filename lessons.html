@@ -180,7 +180,7 @@
       <div class="chips" data-group="place" data-single>
         <button type="button" class="chip" data-value="FuncPhysio">FuncPhysio Physical Therapy</button>
         <button type="button" class="chip" data-value="Studio">A dance studio</button>
-        <button type="button" class="chip" data-value="Travel">At my place</button>
+        <button type="button" class="chip" data-value="Travel">In-home lesson</button>
         <button type="button" class="chip" data-value="Zoom">Online (Zoom)</button>
         <button type="button" class="chip" data-value="Any">Any is fine</button>
       </div>
@@ -220,7 +220,8 @@
         <button type="button" class="chip" data-value="Professional dancer">Professional dancer</button>
         <button type="button" class="chip" data-value="Ballet student">Ballet student</button>
         <button type="button" class="chip" data-value="Dance student">Dance student</button>
-        <button type="button" class="chip" data-value="Musical theater">Musical theater</button>
+        <button type="button" class="chip" data-value="Musical theater (singer first)">Musical theater (singer first)</button>
+        <button type="button" class="chip" data-value="Musical theater (dancer first)">Musical theater (dancer first)</button>
       </div>
       </div>
     </section>
@@ -597,7 +598,11 @@
   }
   // keep the sheet's open times inside the usual weekly hours (e.g. Sundays from 10:30)
   const withinHours = (k, rs) => { const hs = (HOURS[dayOf(k).getDay()] || []).map(([a, b]) => [mins(a), mins(b)]); return rs.flatMap(([a, b]) => hs.map(([c, d]) => [Math.max(a, c), Math.min(b, d)])).filter(([a, b]) => b - a >= 30); };
-  function showFree(data) { free = Object.fromEntries(Object.entries(data || {}).filter(([k]) => !isAway(k)).map(([k, rs]) => [k, withinHours(k, rs)]).filter(([, rs]) => rs.length)); buildSlots(); document.getElementById('loading').hidden = true; renderDates(); renderTimes(); }
+  function showFree(data) {
+    // days past what the sheet sent (it may look fewer weeks ahead) use the usual weekly hours
+    data = { ...(data || {}) }; const four = keysFrom(local(NY, Date.now()).key, 29).pop(), last = Object.keys(data).sort().pop() || '', sent = last > four ? last : four;
+    if (sent) Object.entries(usualFree()).forEach(([k, rs]) => { if (k > sent && !data[k]) data[k] = rs; });
+    free = Object.fromEntries(Object.entries(data || {}).filter(([k]) => !isAway(k)).map(([k, rs]) => [k, withinHours(k, rs)]).filter(([, rs]) => rs.length)); buildSlots(); document.getElementById('loading').hidden = true; renderDates(); renderTimes(); }
   if (SHEET_APP) {
     fetch(SHEET_APP + '?slots=1').then(r => r.ok ? r.json() : null).then(j => showFree(j && j.days ? j.days : usualFree())).catch(() => showFree(usualFree()));
   } else showFree(usualFree());
@@ -609,7 +614,7 @@
       'お名前：' + form.name.value.trim() + (choice.visit === 'Returning' ? '（2回目以降）' : '（初めて）'),
       choice.place && '場所：' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'ダンススタジオ', Travel: '自宅・会場（出張）', Zoom: 'オンライン（Zoom）', Any: 'どこでも' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? '（' + form.area.value.trim() + '）' : '') + (choice.place === 'Studio' ? (choice.studio === 'Mari' ? '（スタジオの予約を Mari にお願いしたい）' : '（スタジオは自分で予約します）') : ''),
       choice.age && '対象：' + ({ Child: '子ども', Teen: '10代', Adult: '大人' }[choice.age]),
-      choice.level && 'バレエ経験：' + ({ 'New to ballet': '初めて', 'Some classes': '少し習ったことがある', 'Trains regularly': '定期的に練習している', 'Professional dancer': 'プロのダンサー', 'Ballet student': 'バレエ学生', 'Dance student': 'ダンス学生', 'Musical theater': 'ミュージカル' }[choice.level]),
+      choice.level && 'バレエ経験：' + ({ 'New to ballet': '初めて', 'Some classes': '少し習ったことがある', 'Trains regularly': '定期的に練習している', 'Professional dancer': 'プロのダンサー', 'Ballet student': 'バレエ学生', 'Dance student': 'ダンス学生', 'Musical theater (singer first)': 'ミュージカル（歌がメイン）', 'Musical theater (dancer first)': 'ミュージカル（ダンスがメイン）' }[choice.level]),
       '', '希望の日時（' + zoneName(zone) + '）：', ...picks.map((p, i) => (many() ? T.lesson : T.choice).ja[i] + '　' + fmtLong(p) + (zone !== NY ? '（ニューヨーク時間 ' + whenIn(NY, p) + '）' : '')), 'レッスン：' + lenMin() + '分' + (choice.pay === 'Pack' ? '（5回券で）' : ''), '',
       'メール：' + form.email.value.trim(),
       choice.via !== 'Email' && '連絡方法：' + choice.via + '　' + form.contact.value.trim(),
@@ -618,7 +623,7 @@
     ] : [
       intro ? 'Hi Mari, I would like the free 60-minute Zoom call.' : 'Hi Mari, I would like to book a private lesson.', '',
       'Name: ' + form.name.value.trim() + (choice.visit === 'Returning' ? ' (has had lessons before)' : ' (first lesson)'),
-      choice.place && 'Place: ' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'A dance studio', Travel: 'At my place', Zoom: 'Online (Zoom)', Any: 'Any is fine' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? ' (' + form.area.value.trim() + ')' : '') + (choice.place === 'Studio' ? (choice.studio === 'Mari' ? ' (please book the studio for me)' : " (I'll book the studio)") : ''),
+      choice.place && 'Place: ' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'A dance studio', Travel: 'In-home lesson', Zoom: 'Online (Zoom)', Any: 'Any is fine' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? ' (' + form.area.value.trim() + ')' : '') + (choice.place === 'Studio' ? (choice.studio === 'Mari' ? ' (please book the studio for me)' : " (I'll book the studio)") : ''),
       choice.age && 'For: ' + choice.age,
       choice.level && 'Experience: ' + choice.level,
       '', 'Times that suit me (' + zoneName(zone) + '):', ...picks.map((p, i) => (many() ? T.lesson : T.choice).en[i] + ': ' + fmtLong(p) + (zone !== NY ? ' (New York ' + whenIn(NY, p) + ')' : '')), 'Lesson: ' + lenMin() + ' minutes' + (choice.pay === 'Pack' ? ' (5-lesson pack)' : ''), '',

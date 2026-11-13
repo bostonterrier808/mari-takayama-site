@@ -62,7 +62,7 @@ const JA = {
   visit: { First: '初めて', Returning: '2回目以降' },
   place: { FuncPhysio: 'FuncPhysio', Studio: 'ダンススタジオ', Travel: '出張', Zoom: 'Zoom', Any: 'どこでも' },
   age: { Child: '子ども', Teen: '10代', Adult: '大人' },
-  level: { 'New to ballet': '初めて', 'Some classes': '少し経験あり', 'Trains regularly': '定期的に練習', 'Professional dancer': 'プロのダンサー', 'Ballet student': 'バレエ学生', 'Dance student': 'ダンス学生', 'Musical theater': 'ミュージカル' },
+  level: { 'New to ballet': '初めて', 'Some classes': '少し経験あり', 'Trains regularly': '定期的に練習', 'Professional dancer': 'プロのダンサー', 'Ballet student': 'バレエ学生', 'Dance student': 'ダンス学生', 'Musical theater (singer first)': 'ミュージカル（歌がメイン）', 'Musical theater (dancer first)': 'ミュージカル（ダンスがメイン）' },
   day: { Sun: '日', Mon: '月', Tue: '火', Wed: '水', Thu: '木', Fri: '金', Sat: '土' }
 };
 const WD_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], WD_JA = ['日', '月', '火', '水', '木', '金', '土'];
