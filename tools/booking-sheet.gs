@@ -127,7 +127,7 @@ function doPost(e) {
     const d = JSON.parse(e.postData.contents);
     if (!looksReal_(d)) return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
     const len = Math.max(30, Math.min(240, +d.length || 60));
-    const c = (d.choices || []).slice(0, 3).filter(x => /^\d{4}-\d\d-\d\d$/.test(x.date));
+    const c = (d.choices || []).slice(0, 5).filter(x => /^\d{4}-\d\d-\d\d$/.test(x.date));
     const id = Utilities.getUuid().slice(0, 8), key = Utilities.getUuid().replace(/-/g, '');
     const tz = zoneOk_(d.tz); d.tz = tz;
     const area = d.place === 'Zoom' ? zoneName_(tz, true) : clip(d.area);
@@ -135,7 +135,8 @@ function doPost(e) {
       JA.age[d.age] || d.age || '', JA.level[d.level] || d.level || ''];
     for (let i = 0; i < 3; i++) row.push(c[i] ? choiceJa_(c[i], len) : '');
     for (let i = 0; i < 3; i++) row.push(c[i] ? WD_JA[dateOf_(c[i].date).getDay()] : '', c[i] ? partOf_(c[i]) : '');
-    row.push(clip(d.note, 700), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '' }));
+    const more = c.slice(3).map((x, i) => '第' + (i + 4) + '希望：' + choiceJa_(x, len)).join('\n');
+    row.push(clip((more ? more + (d.note ? '\n' : '') : '') + (d.note || ''), 900), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '' }));
     book_().getSheetByName(REQ).appendRow(row);
     notifyMari_(d, c, len, id, key);
     return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
@@ -149,7 +150,7 @@ function looksReal_(d) {
   const email = String(d.email || '').trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) return false;
   if (!String(d.name || '').trim() || String(d.name).length > 100) return false;
-  if (!Array.isArray(d.choices) || !d.choices.length || d.choices.length > 3) return false;
+  if (!Array.isArray(d.choices) || !d.choices.length || d.choices.length > 5) return false;
   const cache = CacheService.getScriptCache();
   const bump = (k, max, secs) => { const n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), secs); return n <= max; };
   if (!bump('m:' + email, 3, 3600)) return false;                  // same email: at most 3 an hour
