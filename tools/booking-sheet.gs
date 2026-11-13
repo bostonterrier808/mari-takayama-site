@@ -29,7 +29,9 @@ const VENMO = 'maritakayama_ballet';
 const ZELLE_QR_B64 = '';
 // Mari's Zoom meeting link for online lessons (put it only in her own copy of the script). Empty = the email says she will send it.
 const ZOOM_LINK = '';
-const RATE_PER_30 = 65;   // dollars per 30 minutes, used for FuncPhysio lessons
+const RATE_PER_30 = 65;
+// when Mari books another studio for the customer: studio cost + this handling fee (only shown in emails)
+const STUDIO_FEE = 10;   // dollars per 30 minutes, used for FuncPhysio lessons
 const BOOKING_PAGE = 'https://bostonterrier808.github.io/mari-takayama-site/lessons.html';
 // Lesson hours by weekday (0 = Sunday), 24-hour clock, New York time. A lesson must fit inside these hours.
 const HOURS = { 0: [['09:00', '21:00']], 1: [['19:00', '22:00']], 2: [['19:00', '22:00']], 3: [['19:00', '22:00']], 4: [['19:00', '22:00']], 5: [['19:00', '22:00']], 6: [] };
@@ -133,7 +135,7 @@ function doPost(e) {
       JA.age[d.age] || d.age || '', JA.level[d.level] || d.level || ''];
     for (let i = 0; i < 3; i++) row.push(c[i] ? choiceJa_(c[i], len) : '');
     for (let i = 0; i < 3; i++) row.push(c[i] ? WD_JA[dateOf_(c[i].date).getDay()] : '', c[i] ? partOf_(c[i]) : '');
-    row.push(clip(d.note, 700), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '' }));
+    row.push(clip(d.note, 700), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '' }));
     book_().getSheetByName(REQ).appendRow(row);
     notifyMari_(d, c, len, id, key);
     return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
@@ -163,6 +165,7 @@ function notifyMari_(d, c, len, id, key) {
     ['名前', esc_(d.name) + '（' + (JA.visit[d.visit] || '') + '）'], ['メール', esc_(d.email)],
     d.contact ? ['連絡方法', esc_(d.via) + '　' + esc_(d.contact)] : null,
     ['場所', esc_(JA.place[d.place] || d.place || '') + (d.area && d.place !== 'Zoom' ? '（' + esc_(d.area) + '）' : '')], ['長さ', len + '分' + (d.pack === '5' ? '（5回券を希望）' : '')],
+    d.place === 'Studio' ? ['スタジオ', d.studio === 'mari' ? '<b>Mari が代わりに予約</b>（スタジオ代＋手数料 $' + STUDIO_FEE + '）' : 'お客さんが自分で予約'] : null,
     d.free === true ? ['種類', '<b>無料の Zoom 相談（60分）</b>'] : null,
     d.visit === 'First' && d.friend ? ['紹介してくれた人', esc_(clip(d.friend))] : null,
     d.tz !== TZ ? ['お客さんの時間', esc_(zoneName_(d.tz, true)) + '<br>' + c.map((x, i) => '第' + (i + 1) + '希望：' + whenIn_(x, len, d.tz, true)).join('<br>')] : null,
@@ -364,7 +367,10 @@ function payNote_(data, ch, ja) {
           : ['', 'If your plans change:', '• Up to 2 days before: the lesson goes back on your pack', '• The day before or on the day: it counts as used'])
     : (ja ? ['', 'ご予定が変わったときは：', '・2日前まで：全額お返しします', '・前日：半分お返しします', '・当日：お返しできません']
           : ['', 'If your plans change:', '• Up to 2 days before: fully refunded', '• The day before: half refunded', '• On the day: no refund']);
-  const travel = data.place === 'Travel' ? [ja ? 'マンハッタンの外への出張は、交通費を別にお願いしています（金額は Mari からお知らせします）。' : 'For lessons outside Manhattan, travel costs are added; Mari will let you know the amount.'] : [];
+  const studio = data.place !== 'Studio' ? [] : data.studio === 'mari'
+    ? [ja ? 'スタジオは Mari が代わりに予約します。スタジオ代と手数料 $' + STUDIO_FEE + ' を、レッスン代と一緒にお願いします（スタジオ代は Mari からお知らせします）。' : 'Mari will book the studio for you. Please add the studio cost plus a $' + STUDIO_FEE + ' booking fee to the lesson fee (Mari will tell you the studio cost).']
+    : [ja ? 'スタジオの予約が取れたら、スタジオの名前・住所・部屋を、このメールに返信してお知らせください。' : 'Once you have booked the studio, please reply to this email with its name, address and room.'];
+  const travel = (data.place === 'Travel' ? [ja ? 'マンハッタンの外への出張は、交通費を別にお願いしています（金額は Mari からお知らせします）。' : 'For lessons outside Manhattan, travel costs are added; Mari will let you know the amount.'] : []).concat(studio);
   // a lesson from a pack already paid for
   if (pk && !pk.bought) return [ja ? '今回のレッスンは回数券を使います（お支払いはいりません）。' : 'This lesson uses your lesson pack, so there is nothing to pay.',
     ja ? '残り：' + pk.left + '回（' + pk.until + 'まで）' : 'Left on your pack: ' + pk.left + ' (use by ' + pk.until + ')'].concat(travel, rules).join('\n');
@@ -496,6 +502,7 @@ function custWhen_(data, c, len, ja) {
 }
 function placeText_(data, ja) {
   if (data.place === 'Zoom') return (ja ? 'オンライン（Zoom）' : 'Online (Zoom)') + (ZOOM_LINK ? ' ' + ZOOM_LINK : '');
+  if (data.place === 'Studio' && data.studio === 'self') return ja ? 'ダンススタジオ（ご自身で予約されたスタジオ）' : 'A dance studio (the one you book)';
   return PLACES[data.place] ? PLACES[data.place][ja ? 'ja' : 'en'] : '';
 }
 function esc_(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch])); }
