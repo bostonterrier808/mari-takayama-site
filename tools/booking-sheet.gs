@@ -38,7 +38,7 @@ const HOURS = { 0: [['09:00', '21:00']], 1: [['19:00', '22:00']], 2: [['19:00', 
 // The 空き状況 tab can open (◯) or close (×) these parts of a day.
 const PARTS = [['09:00', '12:00'], ['12:00', '17:00'], ['19:00', '22:00']];
 const MIN_NOTICE_HOURS = 12;        // earliest bookable time = now + this
-const DAYS_AHEAD = 28;
+const DAYS_AHEAD = 61;
 const PLACES = {
   FuncPhysio: { ja: 'FuncPhysio Physical Therapy（2 W 45th Street, Suite 1600, New York）', en: 'FuncPhysio Physical Therapy, 2 W 45th Street, Suite 1600, New York' },
   Studio: { ja: 'ダンススタジオ（場所は別途ご連絡します）', en: 'A dance studio (Mari will send the address)' },
@@ -363,10 +363,10 @@ function payNote_(data, ch, ja) {
   if (data.free) return ja ? 'この相談は無料です（お支払いはいりません）。\nご都合が変わったときは、このメールに返信してお知らせください。' : 'This call is free, so there is nothing to pay.\nIf your plans change, just reply to this email.';
   const pk = data.packInfo;
   const rules = pk
-    ? (ja ? ['', 'ご予定が変わったときは：', '・2日前まで：回数券に1回分お戻しします', '・前日・当日：1回使ったことになります']
-          : ['', 'If your plans change:', '• Up to 2 days before: the lesson goes back on your pack', '• The day before or on the day: it counts as used'])
-    : (ja ? ['', 'ご予定が変わったときは：', '・2日前まで：全額お返しします', '・前日：半分お返しします', '・当日：お返しできません']
-          : ['', 'If your plans change:', '• Up to 2 days before: fully refunded', '• The day before: half refunded', '• On the day: no refund']);
+    ? (ja ? ['', 'ご予定が変わったときは：', '・2日前まで：回数券に1回分お戻しします', '・前日・当日：1回使ったことになります', '・Mari の急な予定変更でキャンセルになった場合：回数券に1回分お戻しします']
+          : ['', 'If your plans change:', '• Up to 2 days before: the lesson goes back on your pack', '• The day before or on the day: it counts as used', '• If Mari has to cancel because of a sudden schedule change: the lesson goes back on your pack'])
+    : (ja ? ['', 'ご予定が変わったときは：', '・2日前まで：全額お返しします', '・前日：半分お返しします', '・当日：お返しできません', '・Mari の急な予定変更でキャンセルになった場合：全額お返しします']
+          : ['', 'If your plans change:', '• Up to 2 days before: fully refunded', '• The day before: half refunded', '• On the day: no refund', '• If Mari has to cancel because of a sudden schedule change: fully refunded']);
   const studio = data.place !== 'Studio' ? [] : data.studio === 'mari'
     ? [ja ? 'スタジオは Mari が代わりに予約します。スタジオ代と手数料 $' + STUDIO_FEE + ' を、レッスン代と一緒にお願いします（スタジオ代は Mari からお知らせします）。' : 'Mari will book the studio for you. Please add the studio cost plus a $' + STUDIO_FEE + ' booking fee to the lesson fee (Mari will tell you the studio cost).']
     : [ja ? 'スタジオの予約が取れたら、スタジオの名前・住所・部屋を、このメールに返信してお知らせください。' : 'Once you have booked the studio, please reply to this email with its name, address and room.'];
