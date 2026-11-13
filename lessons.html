@@ -163,8 +163,27 @@
       </div>
       <p class="contact-hint" id="saved-note" hidden>Your details from last time are filled in.</p>
     </section>
+    <section class="step" aria-labelledby="s3">
+      <div class="step-head"><span class="step-num">1</span><h2 class="step-title" id="s3">About you</h2></div>
+      <label class="field">Your name <small class="req">(required)</small><input type="text" name="name" autocomplete="name" maxlength="100" required></label>
+      <label class="field">Your email <small class="req">(required)</small><input type="email" name="email" autocomplete="email" maxlength="120" required></label>
+      <p class="contact-hint" id="same-note" hidden>Just your name and email, the same as before.</p>
+      <div id="reach-more">
+      <p class="q">Best way to reach you</p>
+      <div class="chips" data-group="via" data-single>
+        <button type="button" class="chip" data-value="Instagram">Instagram</button>
+        <button type="button" class="chip" data-value="WhatsApp">WhatsApp</button>
+        <button type="button" class="chip" data-value="LINE">LINE</button>
+        <button type="button" class="chip" data-value="Email">Email</button>
+      </div>
+      <label class="field" id="contact-field" hidden><span id="contact-label">Your contact</span><input type="text" name="contact" maxlength="120" id="contact-input"></label>
+      <p class="contact-hint" id="contact-hint" hidden></p>
+      </div>
+      <div class="hp" aria-hidden="true"><label>Leave this empty<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+      <label class="field" id="friend-field">Did a friend send you? <small>(optional)</small><input type="text" name="friend" maxlength="120" placeholder="Their name or email"></label>
+    </section>
     <section class="step" aria-labelledby="s1">
-      <div class="step-head"><span class="step-num">1</span><h2 class="step-title" id="s1">Your lesson</h2></div>
+      <div class="step-head"><span class="step-num">2</span><h2 class="step-title" id="s1">Your lesson</h2></div>
       <p class="contact-hint intro-note" id="intro-note" hidden>Free 60-minute call on Zoom. Nothing to pay.</p>
       <div id="len-row">
       <p class="q">How long?</p>
@@ -227,7 +246,7 @@
     </section>
 
     <section class="step" aria-labelledby="s2">
-      <div class="step-head"><span class="step-num">2</span><h2 class="step-title" id="s2">Choose a time</h2></div>
+      <div class="step-head"><span class="step-num">3</span><h2 class="step-title" id="s2">Choose a time</h2></div>
       <p class="q">Pick a day, then a start time</p>
       <p class="note-flex away" id="away-note" hidden></p>
       <label class="tz-row"><span id="tz-label">Times shown in</span> <select id="tz"></select></label>
@@ -245,23 +264,10 @@
       <p class="note-flex">Only times when Mari is free are shown. If none suit you, write the times that work in the message below.</p>
     </section>
 
-    <section class="step" aria-labelledby="s3">
-      <div class="step-head"><span class="step-num">3</span><h2 class="step-title" id="s3">How can Mari reach you?</h2></div>
-      <label class="field">Your name <small class="req">(required)</small><input type="text" name="name" autocomplete="name" maxlength="100" required></label>
-      <label class="field">Your email <small class="req">(required)</small><input type="email" name="email" autocomplete="email" maxlength="120" required></label>
-      <p class="q">Best way to reach you</p>
-      <div class="chips" data-group="via" data-single>
-        <button type="button" class="chip" data-value="Instagram">Instagram</button>
-        <button type="button" class="chip" data-value="WhatsApp">WhatsApp</button>
-        <button type="button" class="chip" data-value="LINE">LINE</button>
-        <button type="button" class="chip" data-value="Email">Email</button>
-      </div>
-      <label class="field" id="contact-field" hidden><span id="contact-label">Your contact</span><input type="text" name="contact" maxlength="120" id="contact-input"></label>
-      <p class="contact-hint" id="contact-hint" hidden></p>
-      <div class="hp" aria-hidden="true"><label>Leave this empty<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-      <label class="field" id="friend-field">Did a friend send you? <small>(optional)</small><input type="text" name="friend" maxlength="120" placeholder="Their name or email"></label>
+
+    <div class="step note-step">
       <label class="field">Anything else? <small>(optional)</small><textarea name="note" rows="3" maxlength="700" placeholder="Goals, questions, or other times that work"></textarea></label>
-    </section>
+    </div>
 
     <div class="send">
       <button type="submit" class="btn" id="send-btn">Send</button>
@@ -453,6 +459,7 @@
       }
       if (name === 'pay' || name === 'mode') { document.getElementById('mode-row').hidden = choice.pay !== 'Pack'; document.getElementById('pick-note').hidden = many(); document.getElementById('pick-note-many').hidden = !many(); if (typeof renderPicks === 'function' && slots) renderPicks(); }
       if (name === 'via') showContact();
+      if (name === 'visit') { const back = choice.visit === 'Returning'; document.getElementById('reach-more').hidden = back; document.getElementById('same-note').hidden = !back; if (back && !form.contact.value.trim()) pick('via', 'Email'); }
       if (name === 'visit') document.getElementById('first-only').hidden = document.getElementById('friend-field').hidden = choice.visit === 'Returning';
       if (name === 'len') { buildSlots(); for (let i = picks.length - 1; i >= 0; i--) if (!slots.some(x => x.at === picks[i].at)) picks.splice(i, 1); renderDates(); renderTimes(); renderPicks(); }
     });
