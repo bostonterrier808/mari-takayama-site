@@ -94,6 +94,9 @@
   .picked li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: var(--champagne-pale); }
   .picked li button { appearance: none; border: 0; background: none; color: var(--muted); font: .9rem var(--font-body); cursor: pointer; text-decoration: underline; }
   .picked-empty { color: var(--muted); font-size: .95rem; margin: 12px 0 0; }
+  .pack-check-row { display: flex; gap: 8px; align-items: stretch; max-width: 26rem; }
+  .pack-check-row input { margin: 0 !important; flex: 1 1 auto; min-width: 0; }
+  .pack-check-row button { flex: 0 0 auto; appearance: none; border: 1px solid var(--champagne-line); background: #fff; color: var(--ink); font: 1rem var(--font-body); padding: 0 16px; cursor: pointer; }
   .note-flex { margin: 10px 0 0; font-size: .92rem; color: var(--muted); }
   .away { margin: 0 0 12px; color: var(--ink); }
   .chip:disabled { opacity: .38; cursor: not-allowed; }
@@ -199,7 +202,8 @@
         <button type="button" class="chip" data-value="Single">One lesson at a time</button>
         <button type="button" class="chip" data-value="Pack">5-lesson pack</button>
       </div>
-      <p class="contact-hint" id="pack-note"><span class="line">A 5-lesson pack is paid ahead and costs a little less.</span><span class="line">Use it within 3 months.</span><span class="line">Have a pack already? It is used automatically.</span></p>
+      <p class="contact-hint" id="pack-note"><span class="line">A 5-lesson pack is paid ahead and costs a little less.</span><span class="line">Use it within 3 months.</span></p>
+      <div id="pack-check"><p class="q">Already have a pack?</p><div class="pack-check-row"><input type="email" id="pack-email" autocomplete="email" placeholder="Your email" aria-label="Your email"><button type="button" id="pack-btn">Check</button></div><p class="contact-hint" id="pack-result" hidden></p></div>
       </div>
       <div id="first-only">
       <p class="q">Who is the lesson for?</p>
@@ -232,7 +236,9 @@
       <p class="note-flex" id="times-empty" hidden>No open times on this day.</p>
       <p class="note-flex" id="len-first" hidden>Choose how long the lesson is first. Times that fit will appear here.</p>
       <p class="note-flex" id="loading">Loading open times…</p>
-      <p class="note-flex">Choose 3 to 5 times. Mari will confirm one of them by email.</p>
+      <div id="mode-row" hidden><div class="chips" data-group="mode" data-single><button type="button" class="chip" data-value="One">One lesson</button><button type="button" class="chip" data-value="Many">Several lessons at once</button></div></div>
+      <p class="note-flex" id="pick-note">Choose 3 to 5 times. Mari will confirm one of them by email.</p>
+      <p class="note-flex" id="pick-note-many" hidden>Pick a time for each lesson (2 to 5). Each one becomes a lesson.</p>
       <ol class="picked" id="picked"></ol>
       <p class="picked-empty" id="picked-empty">No times chosen yet.</p>
       <p class="note-flex">Only times when Mari is free are shown. If none suit you, write the times that work in the message below.</p>
@@ -303,6 +309,7 @@
   const T = {
     days: { en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], ja: ['日', '月', '火', '水', '木', '金', '土'] },
     choice: { en: ['1st choice', '2nd choice', '3rd choice', '4th choice', '5th choice'], ja: ['第1希望', '第2希望', '第3希望', '第4希望', '第5希望'] },
+    lesson: { en: ['Lesson 1', 'Lesson 2', 'Lesson 3', 'Lesson 4', 'Lesson 5'], ja: ['1回目', '2回目', '3回目', '4回目', '5回目'] },
     today: { en: 'Today', ja: '今日' },
     remove: { en: 'Remove', ja: '外す' },
     contactLabel: {
@@ -321,6 +328,7 @@
       email: { en: 'Please write your email address.', ja: 'メールアドレスを入れてください。' },
       name: { en: 'Please write your name.', ja: 'お名前を入れてください。' },
       times: { en: 'Please choose at least 3 times.', ja: '希望の時間を3つ以上選んでください。' },
+      timesMany: { en: 'Please choose at least 2 lesson times.', ja: 'レッスンの日時を2つ以上選んでください。' },
       len: { en: 'Please choose how long the lesson is.', ja: 'レッスンの長さを選んでください。' },
       via: { en: 'Please choose how Mari can reach you.', ja: '連絡方法を選んでください。' },
       contact: { en: 'Please write your contact.', ja: '連絡先を入れてください。' },
@@ -349,6 +357,7 @@
   const mins = hhmm => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
   const hhmm = n => Math.floor(n / 60) + ':' + pad(n % 60);
   const lenMin = () => +(choice.len || 60);
+  const many = () => choice.pay === 'Pack' && choice.mode === 'Many';
   // a start time shown with its end, e.g. 9:00–10:30 am
   const span = s => { const e = s + lenMin(); if (ja()) return clock(s) + '〜' + clock(e); const a = clock(s), b = clock(e); return a.slice(-2) === b.slice(-2) ? a.slice(0, -3) + '–' + b : a + '–' + b; };
   const clock = (n) => { if (ja()) return hhmm(n).replace(':', '\u2060:\u2060'); let h = Math.floor(n / 60); const m = pad(n % 60), ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return h + ':' + m + ' ' + ap; };
@@ -441,6 +450,7 @@
         if (choice.place === 'Studio' && !choice.studio) pick('studio', 'Self');
         if (!zoneTouched) setZone(choice.place === 'Zoom' ? here : NY);
       }
+      if (name === 'pay' || name === 'mode') { document.getElementById('mode-row').hidden = choice.pay !== 'Pack'; document.getElementById('pick-note').hidden = many(); document.getElementById('pick-note-many').hidden = !many(); if (typeof renderPicks === 'function' && slots) renderPicks(); }
       if (name === 'via') showContact();
       if (name === 'visit') document.getElementById('first-only').hidden = document.getElementById('friend-field').hidden = choice.visit === 'Returning';
       if (name === 'len') { buildSlots(); for (let i = picks.length - 1; i >= 0; i--) if (!slots.some(x => x.at === picks[i].at)) picks.splice(i, 1); renderDates(); renderTimes(); renderPicks(); }
@@ -452,6 +462,7 @@
   pick('via', 'Email');
   pick('len', '60');
   pick('pay', 'Single');
+  pick('mode', 'One');
   let saved = null; try { saved = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch {}
   if (saved && saved.name) {
     pick('visit', 'Returning');
@@ -460,6 +471,23 @@
     if (saved.tz && ZONES.some(z => z[0] === saved.tz)) setZone(saved.tz, true);
     document.getElementById('saved-note').hidden = false;
   }
+  // "Already have a pack?": shows how many lessons are left (numbers only)
+  const packEmail = document.getElementById('pack-email'), packOut = document.getElementById('pack-result');
+  async function checkPack(quiet) {
+    const em = (packEmail.value || form.email.value || '').trim();
+    if (!SHEET_APP || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { if (!quiet) { packOut.textContent = ja() ? 'メールアドレスを入れてください。' : 'Please write your email.'; packOut.hidden = false; } return; }
+    try {
+      const j = await fetch(SHEET_APP + '?pack=' + encodeURIComponent(em)).then(r => r.json());
+      const pk = (j && j.packs || [])[0];
+      if (!pk) { if (!quiet) { packOut.textContent = ja() ? 'このメールでは回数券が見つかりませんでした。' : 'No pack found for this email.'; packOut.hidden = false; } return; }
+      const [, m, d] = (pk.until || '--').split('-').map(Number);
+      packOut.textContent = ja() ? '残り' + pk.left + '回（' + pk.len + '分）' + (m ? '・' + m + '/' + d + 'まで' : '') : pk.left + (pk.left === 1 ? ' lesson' : ' lessons') + ' left (' + pk.len + ' min)' + (m ? ', use by ' + m + '/' + d : '') + '.';
+      packOut.hidden = false;
+      pick('pay', 'Pack'); if ([60, 90, 120, 150].includes(pk.len)) pick('len', String(pk.len));
+    } catch { if (!quiet) { packOut.textContent = ja() ? '今は確認できませんでした。' : 'Could not check right now.'; packOut.hidden = false; } }
+  }
+  document.getElementById('pack-btn').addEventListener('click', () => checkPack(false));
+  if (saved && saved.email) { packEmail.value = saved.email; checkPack(true); }
   const askPlace = new URLSearchParams(location.search).get('place');
   if (askPlace === 'travel') pick('place', 'Travel');
   if (askPlace === 'zoom') pick('place', 'Zoom');
@@ -560,7 +588,7 @@
     document.getElementById('picked-empty').hidden = picks.length > 0;
     picks.forEach((p, i) => {
       const li = document.createElement('li');
-      const span = document.createElement('span'); span.textContent = t(T.choice)[i] + ' · ' + fmtLong(p);
+      const span = document.createElement('span'); span.textContent = t(many() ? T.lesson : T.choice)[i] + ' · ' + fmtLong(p);
       if (zone !== NY) { const ny = document.createElement('small'); ny.className = 'ny'; ny.textContent = (ja() ? 'ニューヨーク時間：' : 'New York time: ') + whenIn(NY, p); span.append(ny); }
       const rm = document.createElement('button'); rm.type = 'button'; rm.textContent = t(T.remove);
       rm.addEventListener('click', () => { picks.splice(i, 1); renderDates(); renderTimes(); renderPicks(); });
@@ -582,7 +610,7 @@
       choice.place && '場所：' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'ダンススタジオ', Travel: '自宅・会場（出張）', Zoom: 'オンライン（Zoom）', Any: 'どこでも' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? '（' + form.area.value.trim() + '）' : '') + (choice.place === 'Studio' ? (choice.studio === 'Mari' ? '（スタジオの予約を Mari にお願いしたい）' : '（スタジオは自分で予約します）') : ''),
       choice.age && '対象：' + ({ Child: '子ども', Teen: '10代', Adult: '大人' }[choice.age]),
       choice.level && 'バレエ経験：' + ({ 'New to ballet': '初めて', 'Some classes': '少し習ったことがある', 'Trains regularly': '定期的に練習している', 'Professional dancer': 'プロのダンサー', 'Ballet student': 'バレエ学生', 'Dance student': 'ダンス学生', 'Musical theater': 'ミュージカル' }[choice.level]),
-      '', '希望の日時（' + zoneName(zone) + '）：', ...picks.map((p, i) => T.choice.ja[i] + '　' + fmtLong(p) + (zone !== NY ? '（ニューヨーク時間 ' + whenIn(NY, p) + '）' : '')), 'レッスン：' + lenMin() + '分' + (choice.pay === 'Pack' ? '（5回券で）' : ''), '',
+      '', '希望の日時（' + zoneName(zone) + '）：', ...picks.map((p, i) => (many() ? T.lesson : T.choice).ja[i] + '　' + fmtLong(p) + (zone !== NY ? '（ニューヨーク時間 ' + whenIn(NY, p) + '）' : '')), 'レッスン：' + lenMin() + '分' + (choice.pay === 'Pack' ? '（5回券で）' : ''), '',
       'メール：' + form.email.value.trim(),
       choice.via !== 'Email' && '連絡方法：' + choice.via + '　' + form.contact.value.trim(),
       choice.visit === 'First' && form.friend.value.trim() && '紹介してくれた人：' + form.friend.value.trim(),
@@ -593,7 +621,7 @@
       choice.place && 'Place: ' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'A dance studio', Travel: 'At my place', Zoom: 'Online (Zoom)', Any: 'Any is fine' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? ' (' + form.area.value.trim() + ')' : '') + (choice.place === 'Studio' ? (choice.studio === 'Mari' ? ' (please book the studio for me)' : " (I'll book the studio)") : ''),
       choice.age && 'For: ' + choice.age,
       choice.level && 'Experience: ' + choice.level,
-      '', 'Times that suit me (' + zoneName(zone) + '):', ...picks.map((p, i) => T.choice.en[i] + ': ' + fmtLong(p) + (zone !== NY ? ' (New York ' + whenIn(NY, p) + ')' : '')), 'Lesson: ' + lenMin() + ' minutes' + (choice.pay === 'Pack' ? ' (5-lesson pack)' : ''), '',
+      '', 'Times that suit me (' + zoneName(zone) + '):', ...picks.map((p, i) => (many() ? T.lesson : T.choice).en[i] + ': ' + fmtLong(p) + (zone !== NY ? ' (New York ' + whenIn(NY, p) + ')' : '')), 'Lesson: ' + lenMin() + ' minutes' + (choice.pay === 'Pack' ? ' (5-lesson pack)' : ''), '',
       'Email: ' + form.email.value.trim(),
       choice.via !== 'Email' && 'Best way to reach me: ' + choice.via + ' ' + form.contact.value.trim(),
       choice.visit === 'First' && form.friend.value.trim() && 'A friend sent me: ' + form.friend.value.trim(),
@@ -610,7 +638,7 @@
     if (!choice.visit) return fail(T.visitErr);
     if (!form.name.value.trim()) return fail(T.errors.name, form.name);
     if (!choice.len) return fail(T.errors.len);
-    if (picks.length < 3) return fail(T.errors.times);
+    if (picks.length < (many() ? 2 : 3)) return fail(many() ? T.errors.timesMany : T.errors.times);
     if (choice.place === 'Travel' && !choice.space) return fail(T.errors.space);
     if (choice.place === 'Travel' && !form.area.value.trim()) return fail(T.errors.area, form.area);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.value.trim())) return fail(T.errors.email, form.email);
@@ -627,7 +655,7 @@
       visit: choice.visit, name: form.name.value.trim(), email: form.email.value.trim(), via: choice.via, contact: choice.via === 'Email' ? '' : form.contact.value.trim(),
       place: choice.place || '', area: [choice.place === 'Travel' && choice.space ? { Small: '広さ：バーのみ（センターは無理）', Medium: '広さ：バー＋あまり動かないセンター', Large: '広さ：センターもしっかりできる', Variation: '広さ：バリエーションも踊れる' }[choice.space] : '', choice.place === 'Travel' && choice.barre ? { Yes: 'バー：あり', Substitute: 'バー：なし（椅子・台などで代用）', None: 'バー：なし' }[choice.barre] : '', form.area.value.trim(), form.arrive.value.trim()].filter(Boolean).join(' / '), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
       studio: choice.place === 'Studio' ? (choice.studio === 'Mari' ? 'mari' : 'self') : '',
-      length: lenMin(), pack: choice.pay === 'Pack' && !intro ? '5' : '', free: intro, choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
+      length: lenMin(), pack: choice.pay === 'Pack' && !intro ? '5' : '', free: intro, multi: many(), choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
       friend: choice.visit === 'First' ? form.friend.value.trim() : '', note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
     };
     if (SHEET_APP) {

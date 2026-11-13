@@ -136,7 +136,7 @@ function doPost(e) {
     for (let i = 0; i < 3; i++) row.push(c[i] ? choiceJa_(c[i], len) : '');
     for (let i = 0; i < 3; i++) row.push(c[i] ? WD_JA[dateOf_(c[i].date).getDay()] : '', c[i] ? partOf_(c[i]) : '');
     const more = c.slice(3).map((x, i) => '第' + (i + 4) + '希望：' + choiceJa_(x, len)).join('\n');
-    row.push(clip((more ? more + (d.note ? '\n' : '') : '') + (d.note || ''), 900), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '' }));
+    row.push(clip((more ? more + (d.note ? '\n' : '') : '') + (d.note || ''), 900), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '', multi: d.multi === true && c.length > 1 }));
     book_().getSheetByName(REQ).appendRow(row);
     notifyMari_(d, c, len, id, key);
     return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
@@ -161,7 +161,10 @@ function notifyMari_(d, c, len, id, key) {
   const me = Session.getEffectiveUser().getEmail(); if (!me) return;
   const url = ScriptApp.getService().getUrl();
   const btn = (href, label, main) => '<a href="' + href + '" style="display:inline-block;margin:4px 0;padding:12px 18px;background:' + (main ? '#ecdfc6' : '#ffffff') + ';border:1px solid #c9b48c;color:#2c2a30;text-decoration:none;font-size:16px">' + label + '</a>';
-  const rows = c.map((x, i) => '<p style="margin:10px 0">' + btn(url + '?act=confirm&id=' + id + '&k=' + key + '&c=' + i, '第' + (i + 1) + '希望で確定：' + choiceJa_(x, len), true) + '</p>').join('');
+  const multi = d.multi === true && c.length > 1;
+  const rows = multi
+    ? '<p style="margin:10px 0"><b>まとめて予約（' + c.length + '回）：</b><br>' + c.map((x, i) => (i + 1) + '回目：' + choiceJa_(x, len)).join('<br>') + '</p><p style="margin:10px 0">' + btn(url + '?act=confirmall&id=' + id + '&k=' + key, 'この' + c.length + '回をまとめて確定', true) + '</p>'
+    : c.map((x, i) => '<p style="margin:10px 0">' + btn(url + '?act=confirm&id=' + id + '&k=' + key + '&c=' + i, '第' + (i + 1) + '希望で確定：' + choiceJa_(x, len), true) + '</p>').join('');
   const info = [
     ['名前', esc_(d.name) + '（' + (JA.visit[d.visit] || '') + '）'], ['メール', esc_(d.email)],
     d.contact ? ['連絡方法', esc_(d.via) + '　' + esc_(d.contact)] : null,
@@ -188,6 +191,7 @@ function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.slots) return json_({ days: freeTimes_() });
   if (p.availability) return json_({ days: {} });
+  if (p.pack) return json_({ packs: packsFor_(p.pack) });
   if (p.act) return actionPage_(p);
   return HtmlService.createHtmlOutput('<p>OK</p>');
 }
@@ -278,6 +282,14 @@ function actionPage_(p) {
     if (!p.go) return page_('この時間で確定しますか？', '<b>' + esc_(data.name) + '</b> さん<br>' + choiceJa_(ch, data.len) + '（ニューヨーク時間）' + (data.tz && data.tz !== TZ ? '<br>お客さんの時間：' + whenIn_(ch, data.len, data.tz, true) + '（' + zoneName_(data.tz, true) + '）' : '') + '<br>' + esc_(PLACES[data.place] ? PLACES[data.place].ja : '') + (clash ? '<p style="color:#8b3a3a">この時間には、Google カレンダーにほかの予定があります。</p>' : '') + '<p>確定すると、お客さんに確定メールが届き、Google カレンダーに入ります。</p>', self + '&go=1', '確定して、お客さんにメールを送る');
     bookLesson_(sh, r, data, ch, data.len, '');
     return page_('確定しました', esc_(data.name) + ' さんと Mari さんに確定メールを送り、Google カレンダーに入れました。<br>' + choiceJa_(ch, data.len));
+  }
+  if (p.act === 'confirmall') {
+    const list = (data.choices || []);
+    if (!list.length) return page_('見つかりません', '希望日時が見つかりませんでした。');
+    if (!p.go) return page_('まとめて確定しますか？', '<b>' + esc_(data.name) + '</b> さん（' + list.length + '回）<br>' + list.map((x, i) => (i + 1) + '回目：' + choiceJa_(x, data.len)).join('<br>') + '<br>（ニューヨーク時間）', self + '&go=1', 'この' + list.length + '回をまとめて確定する');
+    list.forEach(x => bookLesson_(sh, r, data, x, data.len, 'まとめて予約'));
+    sh.getRange(r, C['確定した日時']).setValue(list.map(x => choiceJa_(x, data.len)).join(' ／ '));
+    return page_('確定しました', esc_(data.name) + ' さんの ' + list.length + '回分を確定して、Google カレンダーに入れました。<br>' + list.map(x => choiceJa_(x, data.len)).join('<br>'));
   }
   if (p.act === 'propose') {
     const ch0 = (data.choices || [])[0] || { date: Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'), start: '19:00' };
@@ -436,6 +448,15 @@ function creditFriend_(data) {
     }
   }
   return '\n紹介：' + data.friend + ' さんの紹介です（5回券が見つからなかったので、まだ何も追加していません。お礼をするなら「回数券」タブで足してください）。';
+}
+// remaining lessons on someone's packs (only numbers and dates go back to the page)
+function packsFor_(email) {
+  email = String(email || '').trim().toLowerCase(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return [];
+  const cache = CacheService.getScriptCache(), k = 'pk:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 600); if (n > 10) return [];
+  const sh = book_().getSheetByName(PK); if (!sh || sh.getLastRow() < 2) return [];
+  const now = Date.now();
+  return sh.getDataRange().getValues().slice(1).filter(v => String(v[2]).trim().toLowerCase() === email && +v[5] < +v[4] && (!v[6] || new Date(v[6]).getTime() + 86400000 > now))
+    .map(v => ({ left: +v[4] - +v[5], len: +v[3], until: v[6] ? Utilities.formatDate(new Date(v[6]), TZ, 'yyyy-MM-dd') : '' }));
 }
 function packLine_(pk) {
   if (!pk) return '';
