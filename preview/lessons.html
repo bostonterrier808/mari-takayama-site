@@ -166,6 +166,7 @@
         <button type="button" class="chip" data-value="Zoom">Online (Zoom)</button>
         <button type="button" class="chip" data-value="Any">Any is fine</button>
       </div>
+      <p class="contact-hint" id="func-note" hidden><span class="line">2 W 45th Street, Suite 1600, New York.</span><span class="line">In ballet flats, up to big jumps.</span><span class="line">Space there is limited.</span><span class="line">To dance in a bigger space,</span><span class="line">please book a studio.</span><span class="line">Socks are fine for your first lesson.</span><span class="line">Beginners starting pointe are welcome too.</span><span class="line">Please no pointe shoes at your first lesson.</span><span class="line">After that, we’ll decide together.</span></p>
       <p class="contact-hint" id="zoom-note" hidden>From anywhere — the U.S., Japan or elsewhere. Times are shown in your own time zone.</p>
       <div id="studio-row" hidden>
         <p class="contact-hint"><span class="line">Please book the studio first.</span><span class="line">Or Mari can book it for you (small fee).</span></p>
@@ -175,7 +176,7 @@
         </div>
       </div>
       <p class="contact-hint" id="travel-note" hidden>Lessons at your place are 90 minutes or longer. Outside Manhattan, travel costs are added.</p>
-      <label class="field" id="area-field" hidden>Neighborhood or venue <small>(optional)</small><input type="text" name="area" maxlength="120" placeholder="e.g. Upper West Side"></label>
+      <div id="area-field" hidden><p class="q">How much room is there to dance?</p><div class="chips" data-group="space" data-single><button type="button" class="chip" data-value="Small">Barre only (no room for center)</button><button type="button" class="chip" data-value="Medium">Barre and center in place</button><button type="button" class="chip" data-value="Large">Full center work</button><button type="button" class="chip" data-value="Variation">Room for variations</button></div><p class="q">Is there a barre?</p><div class="chips" data-group="barre" data-single><button type="button" class="chip" data-value="Yes">Yes, a barre</button><button type="button" class="chip" data-value="Substitute">No, but a chair or counter</button><button type="button" class="chip" data-value="None">Nothing to hold</button></div><p class="contact-hint"><span class="line">No barre is okay too.</span></p><p class="contact-hint"><span class="line">What we can do depends on the space.</span><span class="line">Mari will plan the lesson to fit it.</span></p><label class="field">Full address <small>(with apt or room number)</small><input type="text" name="area" maxlength="160" autocomplete="street-address" placeholder="e.g. 200 W 72nd St, Apt 5B"></label><label class="field">How to get in <small>(optional)</small><input type="text" name="arrive" maxlength="160" placeholder="e.g. buzzer 5B, 3rd floor"></label></div>
       </div>
       <div id="pay-row">
       <p class="q">How would you like to pay?</p>
@@ -197,6 +198,10 @@
         <button type="button" class="chip" data-value="New to ballet">New to ballet</button>
         <button type="button" class="chip" data-value="Some classes">Some classes</button>
         <button type="button" class="chip" data-value="Trains regularly">Trains regularly</button>
+        <button type="button" class="chip" data-value="Professional dancer">Professional dancer</button>
+        <button type="button" class="chip" data-value="Ballet student">Ballet student</button>
+        <button type="button" class="chip" data-value="Dance student">Dance student</button>
+        <button type="button" class="chip" data-value="Musical theater">Musical theater</button>
       </div>
       </div>
     </section>
@@ -301,6 +306,8 @@
       len: { en: 'Please choose how long the lesson is.', ja: 'レッスンの長さを選んでください。' },
       via: { en: 'Please choose how Mari can reach you.', ja: '連絡方法を選んでください。' },
       contact: { en: 'Please write your contact.', ja: '連絡先を入れてください。' },
+      area: { en: 'Please write the full address for the lesson.', ja: 'レッスンの住所を入れてください。' },
+      space: { en: 'Please choose how much room there is to dance.', ja: '踊れる広さを選んでください。' },
       send: { en: 'Sorry, the request could not be sent. Please try again, or use Instagram DM or email.', ja: '送信できませんでした。もう一度お試しいただくか、Instagram の DM かメールでお送りください。' }
     },
     doneSent: { en: v => 'Your request was sent. Mari will contact you ' + (v === 'email' ? 'by email' : 'on ' + v) + ' within one or two days.', ja: v => 'リクエストを送りました。1〜2日以内に Mari から ' + v + ' で連絡します。' },
@@ -409,6 +416,7 @@
         const short = form.querySelector('[data-group=len] [data-value="60"]'); short.disabled = choice.place === 'Travel';
         if (choice.place === 'Travel' && lenMin() < 90) pick('len', '90');
         document.getElementById('zoom-note').hidden = choice.place !== 'Zoom';
+        document.getElementById('func-note').hidden = choice.place !== 'FuncPhysio';
         document.getElementById('studio-row').hidden = choice.place !== 'Studio';
         if (choice.place === 'Studio' && !choice.studio) pick('studio', 'Self');
         if (!zoneTouched) setZone(choice.place === 'Zoom' ? here : NY);
@@ -533,7 +541,7 @@
       'お名前：' + form.name.value.trim() + (choice.visit === 'Returning' ? '（2回目以降）' : '（初めて）'),
       choice.place && '場所：' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'ダンススタジオ', Travel: '自宅・会場（出張）', Zoom: 'オンライン（Zoom）', Any: 'どこでも' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? '（' + form.area.value.trim() + '）' : '') + (choice.place === 'Studio' ? (choice.studio === 'Mari' ? '（スタジオの予約を Mari にお願いしたい）' : '（スタジオは自分で予約します）') : ''),
       choice.age && '対象：' + ({ Child: '子ども', Teen: '10代', Adult: '大人' }[choice.age]),
-      choice.level && 'バレエ経験：' + ({ 'New to ballet': '初めて', 'Some classes': '少し習ったことがある', 'Trains regularly': '定期的に練習している' }[choice.level]),
+      choice.level && 'バレエ経験：' + ({ 'New to ballet': '初めて', 'Some classes': '少し習ったことがある', 'Trains regularly': '定期的に練習している', 'Professional dancer': 'プロのダンサー', 'Ballet student': 'バレエ学生', 'Dance student': 'ダンス学生', 'Musical theater': 'ミュージカル' }[choice.level]),
       '', '希望の日時（' + zoneName(zone) + '）：', ...picks.map((p, i) => T.choice.ja[i] + '　' + fmtLong(p) + (zone !== NY ? '（ニューヨーク時間 ' + whenIn(NY, p) + '）' : '')), 'レッスン：' + lenMin() + '分' + (choice.pay === 'Pack' ? '（5回券で）' : ''), '',
       'メール：' + form.email.value.trim(),
       choice.via !== 'Email' && '連絡方法：' + choice.via + '　' + form.contact.value.trim(),
@@ -563,6 +571,8 @@
     if (!form.name.value.trim()) return fail(T.errors.name, form.name);
     if (!choice.len) return fail(T.errors.len);
     if (!picks.length) return fail(T.errors.times);
+    if (choice.place === 'Travel' && !choice.space) return fail(T.errors.space);
+    if (choice.place === 'Travel' && !form.area.value.trim()) return fail(T.errors.area, form.area);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.value.trim())) return fail(T.errors.email, form.email);
     if (!choice.via) pick('via', 'Email');
     if (choice.via !== 'Email' && !form.contact.value.trim()) return fail(T.errors.contact, form.contact);
@@ -575,7 +585,7 @@
     const record = {
       hp: form.website.value, ms: Date.now() - openedAt,
       visit: choice.visit, name: form.name.value.trim(), email: form.email.value.trim(), via: choice.via, contact: choice.via === 'Email' ? '' : form.contact.value.trim(),
-      place: choice.place || '', area: form.area.value.trim(), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
+      place: choice.place || '', area: [choice.place === 'Travel' && choice.space ? { Small: '広さ：バーのみ（センターは無理）', Medium: '広さ：バー＋あまり動かないセンター', Large: '広さ：センターもしっかりできる', Variation: '広さ：バリエーションも踊れる' }[choice.space] : '', choice.place === 'Travel' && choice.barre ? { Yes: 'バー：あり', Substitute: 'バー：なし（椅子・台などで代用）', None: 'バー：なし' }[choice.barre] : '', form.area.value.trim(), form.arrive.value.trim()].filter(Boolean).join(' / '), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
       studio: choice.place === 'Studio' ? (choice.studio === 'Mari' ? 'mari' : 'self') : '',
       length: lenMin(), pack: choice.pay === 'Pack' && !intro ? '5' : '', free: intro, choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
       friend: choice.visit === 'First' ? form.friend.value.trim() : '', note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
