@@ -165,6 +165,7 @@
         <button type="button" class="chip" data-value="Zoom">Online (Zoom)</button>
         <button type="button" class="chip" data-value="Any">Any is fine</button>
       </div>
+      <p class="contact-hint" id="func-note" hidden><span class="line">FuncPhysio is only for beginners starting pointe.</span><span class="line">To dance fully, a dance studio is required.</span></p>
       <p class="contact-hint" id="zoom-note" hidden>From anywhere — the U.S., Japan or elsewhere. Times are shown in your own time zone.</p>
       <div id="studio-row" hidden>
         <p class="contact-hint"><span class="line">Please book the studio first.</span><span class="line">Or Mari can book it for you (small fee).</span></p>
@@ -408,6 +409,7 @@
         const short = form.querySelector('[data-group=len] [data-value="60"]'); short.disabled = choice.place === 'Travel';
         if (choice.place === 'Travel' && lenMin() < 90) pick('len', '90');
         document.getElementById('zoom-note').hidden = choice.place !== 'Zoom';
+        document.getElementById('func-note').hidden = choice.place !== 'FuncPhysio';
         document.getElementById('studio-row').hidden = choice.place !== 'Studio';
         if (choice.place === 'Studio' && !choice.studio) pick('studio', 'Self');
         if (!zoneTouched) setZone(choice.place === 'Zoom' ? here : NY);
