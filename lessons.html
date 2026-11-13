@@ -175,7 +175,7 @@
         </div>
       </div>
       <p class="contact-hint" id="travel-note" hidden>Lessons at your place are 90 minutes or longer. Outside Manhattan, travel costs are added.</p>
-      <div id="area-field" hidden><p class="q">How much room is there to dance?</p><div class="chips" data-group="space" data-single><button type="button" class="chip" data-value="Small">Small (about 6×6 ft)</button><button type="button" class="chip" data-value="Medium">Medium (about 10×10 ft)</button><button type="button" class="chip" data-value="Large">Large (15×15 ft or more)</button></div><p class="contact-hint"><span class="line">What we can do depends on the space.</span><span class="line">Mari will plan the lesson to fit it.</span></p><label class="field">Full address <small>(with apt or room number)</small><input type="text" name="area" maxlength="160" autocomplete="street-address" placeholder="e.g. 200 W 72nd St, Apt 5B"></label><label class="field">How to get in <small>(optional)</small><input type="text" name="arrive" maxlength="160" placeholder="e.g. buzzer 5B, 3rd floor"></label></div>
+      <div id="area-field" hidden><p class="q">How much room is there to dance?</p><div class="chips" data-group="space" data-single><button type="button" class="chip" data-value="Small">Room for barre work only</button><button type="button" class="chip" data-value="Medium">Room to take a few steps</button><button type="button" class="chip" data-value="Large">Room to turn and jump</button></div><p class="contact-hint"><span class="line">What we can do depends on the space.</span><span class="line">Mari will plan the lesson to fit it.</span></p><label class="field">Full address <small>(with apt or room number)</small><input type="text" name="area" maxlength="160" autocomplete="street-address" placeholder="e.g. 200 W 72nd St, Apt 5B"></label><label class="field">How to get in <small>(optional)</small><input type="text" name="arrive" maxlength="160" placeholder="e.g. buzzer 5B, 3rd floor"></label></div>
       </div>
       <div id="pay-row">
       <p class="q">How would you like to pay?</p>
@@ -580,7 +580,7 @@
     const record = {
       hp: form.website.value, ms: Date.now() - openedAt,
       visit: choice.visit, name: form.name.value.trim(), email: form.email.value.trim(), via: choice.via, contact: choice.via === 'Email' ? '' : form.contact.value.trim(),
-      place: choice.place || '', area: [choice.place === 'Travel' && choice.space ? { Small: '広さ：小（約2m四方）', Medium: '広さ：中（約3m四方）', Large: '広さ：大（約5m四方以上）' }[choice.space] : '', form.area.value.trim(), form.arrive.value.trim()].filter(Boolean).join(' / '), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
+      place: choice.place || '', area: [choice.place === 'Travel' && choice.space ? { Small: '広さ：バーだけできる', Medium: '広さ：数歩動ける', Large: '広さ：回ったり跳んだりできる' }[choice.space] : '', form.area.value.trim(), form.arrive.value.trim()].filter(Boolean).join(' / '), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
       studio: choice.place === 'Studio' ? (choice.studio === 'Mari' ? 'mari' : 'self') : '',
       length: lenMin(), pack: choice.pay === 'Pack' && !intro ? '5' : '', free: intro, choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
       friend: choice.visit === 'First' ? form.friend.value.trim() : '', note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
