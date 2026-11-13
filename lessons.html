@@ -180,7 +180,7 @@
       <p class="contact-hint" id="contact-hint" hidden></p>
       </div>
       <div class="hp" aria-hidden="true"><label>Leave this empty<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
-      <div id="heard-row"><p class="q">How did you hear about Mari?</p><div class="chips" data-group="heard" data-single><button type="button" class="chip" data-value="Instagram">Instagram</button><button type="button" class="chip" data-value="Website">Website or search</button><button type="button" class="chip" data-value="Friend">A friend</button><button type="button" class="chip" data-value="Studio">A studio or school</button><button type="button" class="chip" data-value="Performance">A performance</button><button type="button" class="chip" data-value="Other">Other</button></div><label class="field" id="friend-field" hidden>Who told you about Mari?<input type="text" name="friend" maxlength="120" placeholder="Their name"></label></div>
+      <div id="heard-row"><p class="q">How did you hear about Mari?</p><div class="chips" data-group="heard" data-single><button type="button" class="chip" data-value="Instagram">Instagram</button><button type="button" class="chip" data-value="Website">Website or search</button><button type="button" class="chip" data-value="Friend">A friend</button><button type="button" class="chip" data-value="Studio">A studio or school</button><button type="button" class="chip" data-value="Performance">A performance</button><button type="button" class="chip" data-value="Other">Other</button></div><label class="field" id="friend-field" hidden>Who told you about Mari?<input type="text" name="friend" maxlength="120" placeholder="Their name"></label><label class="field" id="heard-other" hidden>Please tell us where<input type="text" name="heardnote" maxlength="200" placeholder="e.g. a flyer, YouTube"></label></div>
     </section>
     <section class="step" aria-labelledby="s1">
       <div class="step-head"><span class="step-num">2</span><h2 class="step-title" id="s1">Your lesson</h2></div>
@@ -458,7 +458,7 @@
         if (!zoneTouched) setZone(choice.place === 'Zoom' ? here : NY);
       }
       if (name === 'pay' || name === 'mode') { document.getElementById('mode-row').hidden = choice.pay !== 'Pack'; document.getElementById('pick-note').hidden = many(); document.getElementById('pick-note-many').hidden = !many(); if (typeof renderPicks === 'function' && slots) renderPicks(); }
-      if (name === 'heard') document.getElementById('friend-field').hidden = choice.heard !== 'Friend';
+      if (name === 'heard') { document.getElementById('friend-field').hidden = choice.heard !== 'Friend'; document.getElementById('heard-other').hidden = choice.heard !== 'Other'; }
       if (name === 'via') showContact();
       if (name === 'visit') { const back = choice.visit === 'Returning'; document.getElementById('reach-more').hidden = back; document.getElementById('same-note').hidden = !back; if (back && !form.contact.value.trim()) pick('via', 'Email'); }
       if (name === 'visit') document.getElementById('first-only').hidden = document.getElementById('heard-row').hidden = choice.visit === 'Returning';
@@ -669,7 +669,7 @@
       place: choice.place || '', area: [choice.place === 'Travel' && choice.space ? { Small: '広さ：バーのみ（センターは無理）', Medium: '広さ：バー＋あまり動かないセンター', Large: '広さ：センターもしっかりできる', Variation: '広さ：バリエーションも踊れる' }[choice.space] : '', choice.place === 'Travel' && choice.barre ? { Yes: 'バー：あり', Substitute: 'バー：なし（椅子・台などで代用）', None: 'バー：なし' }[choice.barre] : '', form.area.value.trim(), form.arrive.value.trim()].filter(Boolean).join(' / '), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
       studio: choice.place === 'Studio' ? (choice.studio === 'Mari' ? 'mari' : 'self') : '',
       length: lenMin(), pack: choice.pay === 'Pack' && !intro ? '5' : '', free: intro, multi: many(), choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
-      heard: choice.visit === 'First' ? (choice.heard || '') : '', friend: choice.visit === 'First' && choice.heard === 'Friend' ? form.friend.value.trim() : '', note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
+      heard: choice.visit === 'First' ? (choice.heard || '') : '', heardNote: choice.visit === 'First' && choice.heard === 'Other' ? form.heardnote.value.trim() : '', friend: choice.visit === 'First' && choice.heard === 'Friend' ? form.friend.value.trim() : '', note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
     };
     if (SHEET_APP) {
       const btn = document.getElementById('send-btn'); const label = btn.textContent;
