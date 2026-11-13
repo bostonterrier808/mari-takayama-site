@@ -289,7 +289,7 @@
   // 2) Or: a Formspree address (https://formspree.io/f/...) if you prefer it for requests.
   const FORM_ENDPOINT = '';
   // 3) Lesson hours used when the sheet can't be reached (the sheet's own hours win). 0 = Sunday.
-  const HOURS = { 0: [['09:00', '21:00']], 1: [['19:00', '22:00']], 2: [['19:00', '22:00']], 3: [['19:00', '22:00']], 4: [['19:00', '22:00']], 5: [['19:00', '22:00']], 6: [] };
+  const HOURS = { 0: [['10:30', '21:00']], 1: [['19:00', '22:00']], 2: [['19:00', '22:00']], 3: [['19:00', '22:00']], 4: [['19:00', '22:00']], 5: [['19:00', '22:00']], 6: [] };
   let calMonth = '';
   const DAYS_AHEAD = 92, STEP = 30, MIN_NOTICE_HOURS = 12;
   // no lessons on these days (New York dates); keep in step with AWAY in tools/booking-sheet.gs
@@ -565,7 +565,9 @@
       li.append(span, rm); ol.append(li);
     });
   }
-  function showFree(data) { free = Object.fromEntries(Object.entries(data || {}).filter(([k]) => !isAway(k))); buildSlots(); document.getElementById('loading').hidden = true; renderDates(); renderTimes(); }
+  // keep the sheet's open times inside the usual weekly hours (e.g. Sundays from 10:30)
+  const withinHours = (k, rs) => { const hs = (HOURS[dayOf(k).getDay()] || []).map(([a, b]) => [mins(a), mins(b)]); return rs.flatMap(([a, b]) => hs.map(([c, d]) => [Math.max(a, c), Math.min(b, d)])).filter(([a, b]) => b - a >= 30); };
+  function showFree(data) { free = Object.fromEntries(Object.entries(data || {}).filter(([k]) => !isAway(k)).map(([k, rs]) => [k, withinHours(k, rs)]).filter(([, rs]) => rs.length)); buildSlots(); document.getElementById('loading').hidden = true; renderDates(); renderTimes(); }
   if (SHEET_APP) {
     fetch(SHEET_APP + '?slots=1').then(r => r.ok ? r.json() : null).then(j => showFree(j && j.days ? j.days : usualFree())).catch(() => showFree(usualFree()));
   } else showFree(usualFree());

@@ -34,7 +34,7 @@ const RATE_PER_30 = 65;
 const STUDIO_FEE = 10;   // dollars per 30 minutes, used for FuncPhysio lessons
 const BOOKING_PAGE = 'https://bostonterrier808.github.io/mari-takayama-site/lessons.html';
 // Lesson hours by weekday (0 = Sunday), 24-hour clock, New York time. A lesson must fit inside these hours.
-const HOURS = { 0: [['09:00', '21:00']], 1: [['19:00', '22:00']], 2: [['19:00', '22:00']], 3: [['19:00', '22:00']], 4: [['19:00', '22:00']], 5: [['19:00', '22:00']], 6: [] };
+const HOURS = { 0: [['10:30', '21:00']], 1: [['19:00', '22:00']], 2: [['19:00', '22:00']], 3: [['19:00', '22:00']], 4: [['19:00', '22:00']], 5: [['19:00', '22:00']], 6: [] };
 // The 空き状況 tab can open (◯) or close (×) these parts of a day.
 const PARTS = [['09:00', '12:00'], ['12:00', '17:00'], ['19:00', '22:00']];
 const MIN_NOTICE_HOURS = 12;        // earliest bookable time = now + this
