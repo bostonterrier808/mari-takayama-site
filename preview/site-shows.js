@@ -19,10 +19,11 @@ const MARI_SHOWS = [
   const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const day = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
   const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], WD_JA = ['日', '月', '火', '水', '木', '金', '土'];
-  // "Nov 28 (Sat)" / "Dec 4–6 (Fri–Sun)" / "11/28（土）" / "12/4（金）–6（日）"
+  // "Nov 28 (Sat)" / "Dec 4–6 (Fri–Sun)" / "11/28（土）" / "12/4（金）〜12/6（日）"
   const when = (a, b) => {
     const x = day(a), y = day(b), same = a === b, sameMonth = x.getMonth() === y.getMonth();
-    if (ja()) return (x.getMonth() + 1) + '/' + x.getDate() + '（' + WD_JA[x.getDay()] + '）' + (same ? '' : '–' + (sameMonth ? '' : (y.getMonth() + 1) + '/') + y.getDate() + '（' + WD_JA[y.getDay()] + '）');
+    const jd = z => (z.getMonth() + 1) + '/' + z.getDate() + '（' + WD_JA[z.getDay()] + '）';
+    if (ja()) return jd(x) + (same ? '' : '〜' + jd(y));
     return MON[x.getMonth()] + ' ' + x.getDate() + (same ? '' : '–' + (sameMonth ? '' : MON[y.getMonth()] + ' ') + y.getDate()) + ' (' + WD[x.getDay()] + (same ? '' : '–' + WD[y.getDay()]) + ')';
   };
   const clock = t => { const [h, m] = t.split(':').map(Number); return (h % 12 || 12) + (m ? ':' + String(m).padStart(2, '0') : '') + (h < 12 ? 'am' : 'pm'); };
