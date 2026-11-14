@@ -415,23 +415,23 @@ function payNote_(data, ch, ja) {
   const dl = payBy_(ch);
   const lines = what.concat(ja ? [
     'お支払いについて：',
-    'ご予約を確実にするため、このメールを受け取ったら、すぐにお支払いをお願いします。',
+    'ご予約を確実にするため、今すぐお支払いをお願いします。',
     '',
     '金額：' + (amount ? '$' + amount + (pk ? '（' + PACK_SIZE + '回分から1回分の半額をお引きしています）' : '') : '別のメールでお知らせします'),
     '期限：' + dl.ja + 'まで',
     '方法：Venmo' + (ZELLE_QR_B64 ? ' か Zelle' : '') + '（現金不可）',
     '',
-    link ? 'このボタンを押すと、金額が入った状態で Venmo が開きます。\n' + link : (VENMO ? '' : '送り先は、別のメールでお知らせします。'),
+    link ? link : (VENMO ? '' : '送り先は、別のメールでお知らせします。'),
     ZELLE_QR_B64 ? 'Zelle の場合は、添付の QR コードを銀行のアプリで読み取ってください。' : ''
   ] : [
     'Payment:',
-    'To secure your booking, please pay as soon as you get this email.',
+    'To secure your booking, please pay now.',
     '',
     'Amount: ' + (amount ? '$' + amount + (pk ? ' (' + PACK_SIZE + ' lessons, less half a lesson)' : '') : 'Mari will send it in a separate email'),
     'Pay by: ' + dl.en,
     'How: Venmo' + (ZELLE_QR_B64 ? ' or Zelle' : '') + ' (sorry, no cash)',
     '',
-    link ? 'Tap this button to open Venmo with everything filled in.\n' + link : (VENMO ? '' : 'Mari will send you where to send it.'),
+    link ? link : (VENMO ? '' : 'Mari will send you where to send it.'),
     ZELLE_QR_B64 ? 'For Zelle, scan the attached QR code in your banking app.' : ''
   ], travel, rules);
   return lines.filter((x, i) => x !== '' || lines[i - 1] !== '').join('\n');
@@ -610,8 +610,9 @@ function sendPayReminder_(data, ch, tag) {
 function goalsJa_(d) { return d.visit === 'First' && Array.isArray(d.goals) ? d.goals.slice(0, 8).map(g => JA.goals[g] || '').filter(Boolean).join('、') : ''; }
 function sendPretty_(m) { m.htmlBody = pretty_(m.body); m.body += '\n\n' + SITE; MailApp.sendEmail(m); }
 function pretty_(text, isHtml) {
+  const jaMail = /[\u3040-\u30ff]/.test(text);
   const link = u => /venmo\.com/.test(u)
-    ? '<a href="' + u + '" style="display:inline-block;margin:8px 0 4px;padding:12px 26px;background:#ecdfc6;border:1px solid #c9b48c;color:#222222;text-decoration:none;font-size:17px;letter-spacing:.04em">Venmo &rarr;</a>'
+    ? '<a href="' + u + '" style="display:block;margin:4px 0;padding:16px 12px;background:#2c2a30;color:#ffffff;text-align:center;text-decoration:none;font-size:18px;font-weight:600;letter-spacing:.06em">' + (jaMail ? 'Venmo で今すぐ支払う &rarr;' : 'Pay now with Venmo &rarr;') + '</a>'
     : '<a href="' + u + '" style="color:#7a6233;word-break:break-all">' + u + '</a>';
   const fmt = s => esc_(s).replace(/(https?:\/\/[^\s<]+)/g, link);
   const isInfo = l => /^[^：:\s][^：:]{0,9}[：:]\s?\S/.test(l) && !/^https?:/.test(l);
