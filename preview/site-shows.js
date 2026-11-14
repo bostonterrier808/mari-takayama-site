@@ -3,7 +3,8 @@
 // A production shows under "Upcoming" until its last show day; from the next day it moves to Credits.
 const MARI_SHOWS = [
   { work: 'The Nutcracker', role: 'Sugar Plum Fairy', company: 'Southern Arts Alliance', place: 'Biloxi, MS',
-    shows: ['2026-11-28 14:00', '2026-11-28 19:00'] },
+    shows: ['2026-11-28 14:00', '2026-11-28 19:00'],
+    tickets: 'https://www.southernartsalliance.org/' },
   { work: 'The Nutcracker', role: 'Sugar Plum Fairy', company: 'Eastern Shore Ballet Theatre', place: 'Salisbury, MD',
     shows: ['2026-12-04 19:30', '2026-12-05 11:00', '2026-12-05 19:00', '2026-12-06 14:00'],
     tickets: 'https://www.etix.com/ticket/v/23565/wicomico-high-school-eastern-shore-ballet-theatre' },
