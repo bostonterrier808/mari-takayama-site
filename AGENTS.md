@@ -16,10 +16,11 @@ Two people edit this repo with different AI tools (Claude Code and Codex). These
 - `img/` — photos used by the page.
 - Preview: open `index.html` in a browser.
 - Published with GitHub Pages from the `main` branch.
+- Google Analytics (G-5XCKST502L) is in each public page's `<head>`; it skips the editor, `/preview/` and local copies. Add the same snippet to any new page.
 
 ## Design (keep it)
 
-- Menu order: Home → About Mari (About, Credits, Gallery, Press & Interviews) → Work with Mari (Private Lessons, Book a Performance, For Ballet Students) → Community (Radio Taiso) → Contact. Group labels are `li.menu-group`, shown only in the phone menu. Every page shares the same nav and footer; keep them in sync.
+- Menu order: Home → About Mari (About, Career [credits.html], Gallery, Press [interview.html]; all shown directly, no dropdown — on wide screens the menu is a second row under the name) → Work with Mari (Private Lessons, Book a Performance, For Ballet Students) → Community (Radio Taiso) → Contact. Group labels are `li.menu-group`, shown only in the phone menu. Every page shares the same nav and footer; keep them in sync.
 - Colors are tokens on `:root` (`--slate`, `--mauve`, `--rose`, `--stage`, …). Change a token rather than adding new literal colors.
 - Fonts: Cormorant Garamond (headings, nav), EB Garamond (body), from Google Fonts.
 - Site copy is in English (the 日本語 button translates it via `site-language.js`). Exception: `ballet-ryugaku.html` is written in Japanese so Japanese searches find it; it is the Japanese twin of `study-in-ny.html`, so keep the two in step.
