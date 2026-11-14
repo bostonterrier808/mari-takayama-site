@@ -530,8 +530,8 @@ function sendCustomer_(data, kind, ch, note) {
       : (ja ? '動きやすい服装でお越しください。バレエシューズがあればお持ちください（靴下でも大丈夫です）。' : 'Please wear comfortable clothes you can move in, and bring ballet slippers if you have them (socks are fine too).');
     subject = data.free ? (ja ? '無料の Zoom 相談が確定しました（' + when + '）' : 'Your free Zoom call is confirmed — ' + when) : ja ? 'レッスンのご予約が確定しました（' + when + '）' : 'Your ballet lesson is confirmed — ' + when;
     body = ja
-      ? data.name + ' 様\n\nご予約ありがとうございます。' + (data.free ? '無料相談' : 'レッスン') + 'の日時が確定しました。\n\n日時：' + full + '\n場所：' + place + (data.area && !zoom ? '（' + data.area + '）' : '') + '\n' + (data.free ? '相談' : 'レッスン') + '：' + data.len + '分\n\n' + payNote_(data, ch, true) + '\n\n' + (data.free ? (ZOOM_LINK ? '' : 'Zoom のリンクは、当日までにお送りします。\n') + '今どこで踊っているか、目指していることなどを、気軽にお話しください。' : prep) + manageLine_(data, true) + '\n\nお会いできるのを楽しみにしています。\n髙山まり'
-      : 'Hi ' + data.name + ',\n\nThank you for booking — your ' + (data.free ? 'free call' : 'lesson') + ' is confirmed.\n\nWhen: ' + full + '\nWhere: ' + place + (data.area && !zoom ? ' (' + data.area + ')' : '') + '\n' + (data.free ? 'Call' : 'Lesson') + ': ' + data.len + ' minutes\n\n' + payNote_(data, ch, false) + '\n\n' + (data.free ? (ZOOM_LINK ? '' : 'Mari will send you the Zoom link before the call.\n') + 'Come ready to talk about where you dance now and what you are working toward.' : prep) + manageLine_(data, false) + '\n\nSee you soon!\nMari Takayama';
+      ? '# ' + (data.free ? '無料相談' : 'ご予約') + '確定のお知らせ\n\n' + data.name + ' 様\n\nご予約ありがとうございます。' + (data.free ? '無料相談' : 'レッスン') + 'の日時が確定しました。\n\n日時：' + full + '\n場所：' + place + (data.area && !zoom ? '（' + data.area + '）' : '') + '\n' + (data.free ? '相談' : 'レッスン') + '：' + data.len + '分\n\n' + payNote_(data, ch, true) + '\n\n' + (data.free ? (ZOOM_LINK ? '' : 'Zoom のリンクは、当日までにお送りします。\n') + '今どこで踊っているか、目指していることなどを、気軽にお話しください。' : prep) + manageLine_(data, true) + '\n\nお会いできるのを楽しみにしています。\n髙山まり'
+      : '# ' + (data.free ? 'Your free call is confirmed' : 'Your lesson is confirmed') + '\n\nHi ' + data.name + ',\n\nThank you for booking — your ' + (data.free ? 'free call' : 'lesson') + ' is confirmed.\n\nWhen: ' + full + '\nWhere: ' + place + (data.area && !zoom ? ' (' + data.area + ')' : '') + '\n' + (data.free ? 'Call' : 'Lesson') + ': ' + data.len + ' minutes\n\n' + payNote_(data, ch, false) + '\n\n' + (data.free ? (ZOOM_LINK ? '' : 'Mari will send you the Zoom link before the call.\n') + 'Come ready to talk about where you dance now and what you are working toward.' : prep) + manageLine_(data, false) + '\n\nSee you soon!\nMari Takayama';
   } else if (kind === 'propose') {
     const when = whenIn_(ch, ch.len, data.tz || TZ, ja), full = custWhen_(data, ch, ch.len, ja);
     const link = ScriptApp.getService().getUrl() + '?act=accept&id=' + encodeURIComponent(data.id || '') + '&k=' + data.ckey;
@@ -547,7 +547,7 @@ function sendCustomer_(data, kind, ch, note) {
   }
   const mail = { to: data.email, subject: subject, body: body, name: SENDER_NAME, replyTo: REPLY_TO };
   if (kind === 'confirm') { mail.attachments = [ics_(data, ch, data.len)].concat(ZELLE_QR_B64 ? [Utilities.newBlob(Utilities.base64Decode(ZELLE_QR_B64), 'image/png', 'zelle-qr.png')] : []); mail.body += ja ? '\n\n添付のファイルを開くと、お使いのカレンダーに追加できます。' : '\n\nOpen the attached file to add the lesson to your calendar.'; }
-  mail.htmlBody = pretty_(mail.body);
+  mail.htmlBody = pretty_(mail.body); mail.body = plain_(mail.body);
   MailApp.sendEmail(mail);
 }
 
@@ -662,12 +662,12 @@ function cancelLesson_(sh, r, data, b, rf, byMari, msg) {
   const paid = sh.getRange(r, C['支払い']).getValue();
   const when = custWhen_(data, bk, bk.len, ja);
   const body = byMari ? (ja
-    ? data.name + ' 様\n\nご迷惑をおかけして、申し訳ございません。こちらの都合で、次のレッスンをキャンセルさせてください。\n\n日時：' + when + '\nレッスン：' + bk.len + '分\n' + (msg ? '\n' + msg + '\n' : '') + '\n' + rf.ja + (paid === true && rf.kind === 'full' ? '\nVenmo でお返しします。' : '') + '\n\nご都合のよい日時で、また予約していただけたらうれしいです。\n' + BOOKING_PAGE + '\n\n本当に申し訳ございません。\n髙山まり'
-    : 'Hi ' + data.name + ',\n\nI’m very sorry for the inconvenience — I have to cancel this lesson.\n\nWhen: ' + when + '\nLesson: ' + bk.len + ' minutes\n' + (msg ? '\n' + msg + '\n' : '') + '\n' + rf.en + (paid === true && rf.kind === 'full' ? '\nI will send it back by Venmo.' : '') + '\n\nI would love to see you at another time:\n' + BOOKING_PAGE + '\n\nMari Takayama')
+    ? '# レッスンキャンセルのお知らせ\n\n' + data.name + ' 様\n\nご迷惑をおかけして、申し訳ございません。こちらの都合で、次のレッスンをキャンセルさせてください。\n\n日時：' + when + '\nレッスン：' + bk.len + '分\n' + (msg ? '\n' + msg + '\n' : '') + '\n' + rf.ja + (paid === true && rf.kind === 'full' ? '\nVenmo でお返しします。' : '') + '\n\nご都合のよい日時で、また予約していただけたらうれしいです。\n' + BOOKING_PAGE + '\n\n本当に申し訳ございません。\n髙山まり'
+    : '# Your lesson is cancelled\n\nHi ' + data.name + ',\n\nI’m very sorry for the inconvenience — I have to cancel this lesson.\n\nWhen: ' + when + '\nLesson: ' + bk.len + ' minutes\n' + (msg ? '\n' + msg + '\n' : '') + '\n' + rf.en + (paid === true && rf.kind === 'full' ? '\nI will send it back by Venmo.' : '') + '\n\nI would love to see you at another time:\n' + BOOKING_PAGE + '\n\nMari Takayama')
     : ja
-    ? data.name + ' 様\n\nレッスンのキャンセルを承りました。\n\n日時：' + when + '\nレッスン：' + bk.len + '分\n\n' + rf.ja + (rf.kind === 'full' || rf.kind === 'half' ? (paid === true ? '\nVenmo でお返しします。' : '') : '') + '\n\nまたのご予約をお待ちしています。\n' + BOOKING_PAGE + '\n\n髙山まり'
-    : 'Hi ' + data.name + ',\n\nYour lesson is cancelled.\n\nWhen: ' + when + '\nLesson: ' + bk.len + ' minutes\n\n' + rf.en + (rf.kind === 'full' || rf.kind === 'half' ? (paid === true ? '\nMari will send it back by Venmo.' : '') : '') + '\n\nHope to see you another time:\n' + BOOKING_PAGE + '\n\nMari Takayama';
-  if (data.email) MailApp.sendEmail({ to: data.email, subject: byMari ? (ja ? 'レッスンのキャンセルのお知らせ（' + whenIn_(bk, bk.len, data.tz || TZ, true) + '）' : 'Your lesson is cancelled — ' + whenIn_(bk, bk.len, data.tz || TZ, false)) : ja ? 'キャンセルを承りました（' + whenIn_(bk, bk.len, data.tz || TZ, true) + '）' : 'Your lesson is cancelled — ' + whenIn_(bk, bk.len, data.tz || TZ, false), body, htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+    ? '# キャンセル受付のお知らせ\n\n' + data.name + ' 様\n\nレッスンのキャンセルを承りました。\n\n日時：' + when + '\nレッスン：' + bk.len + '分\n\n' + rf.ja + (rf.kind === 'full' || rf.kind === 'half' ? (paid === true ? '\nVenmo でお返しします。' : '') : '') + '\n\nまたのご予約をお待ちしています。\n' + BOOKING_PAGE + '\n\n髙山まり'
+    : '# Cancellation confirmed\n\nHi ' + data.name + ',\n\nYour lesson is cancelled.\n\nWhen: ' + when + '\nLesson: ' + bk.len + ' minutes\n\n' + rf.en + (rf.kind === 'full' || rf.kind === 'half' ? (paid === true ? '\nMari will send it back by Venmo.' : '') : '') + '\n\nHope to see you another time:\n' + BOOKING_PAGE + '\n\nMari Takayama';
+  if (data.email) MailApp.sendEmail({ to: data.email, subject: byMari ? (ja ? 'レッスンのキャンセルのお知らせ（' + whenIn_(bk, bk.len, data.tz || TZ, true) + '）' : 'Your lesson is cancelled — ' + whenIn_(bk, bk.len, data.tz || TZ, false)) : ja ? 'キャンセルを承りました（' + whenIn_(bk, bk.len, data.tz || TZ, true) + '）' : 'Your lesson is cancelled — ' + whenIn_(bk, bk.len, data.tz || TZ, false), body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
   const me = Session.getEffectiveUser().getEmail();
   const todo = rf.kind === 'full' || rf.kind === 'half' ? (paid === true ? '支払い済みなので、Venmo で ' + rf.mari + ' をお願いします。' : 'まだ支払いのチェックがないので、返金はいりません（受け取っていたら ' + rf.mari + '）。') : rf.mari + '。';
   if (byMari) return todo;
@@ -737,9 +737,9 @@ function mariChange_(p, sh, r, data) {
   const ja = data.language === 'ja', ck = ScriptApp.getService().getUrl() + '?id=' + encodeURIComponent(data.id) + '&k=' + data.ckey + '&b=' + p.b;
   const msg = String(p.msg || '').slice(0, 500);
   const body = ja
-    ? data.name + ' 様\n\nご迷惑をおかけして、申し訳ございません。こちらの都合で、レッスンの日時を変更させていただけないでしょうか。\n\n今のご予約：' + whenIn_(bk, bk.len, data.tz || TZ, true) + '\n新しい日時：' + custWhen_(data, data.offer, bk.len, true) + '\n' + (msg ? '\n' + msg + '\n' : '') + '\nこの日時でよろしければ、「この日時で OK」を押してください。\n' + ck.replace('?', '?act=take&') + '\n\nご都合が合わない場合は、キャンセルにして全額お返しします' + (bk.pack ? '（回数券なら1回分お戻しします）' : '') + '。\n' + ck.replace('?', '?act=decl&') + '\n\nご迷惑をおかけして、本当に申し訳ございません。\n髙山まり'
-    : 'Hi ' + data.name + ',\n\nI’m very sorry for the inconvenience — could we move your lesson?\n\nNow booked: ' + whenIn_(bk, bk.len, data.tz || TZ, false) + '\nNew time: ' + custWhen_(data, data.offer, bk.len, false) + '\n' + (msg ? '\n' + msg + '\n' : '') + '\nIf the new time works, tap “This time works”:\n' + ck.replace('?', '?act=take&') + '\n\nIf it doesn’t, you can cancel and get a full refund' + (bk.pack ? ' (or the lesson back on your pack)' : '') + ':\n' + ck.replace('?', '?act=decl&') + '\n\nI’m truly sorry for the inconvenience.\nMari Takayama';
-  MailApp.sendEmail({ to: data.email, subject: ja ? 'レッスンの日時変更のお願い' : 'Could we move your lesson?', body, htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+    ? '# レッスン日時変更のお願い\n\n' + data.name + ' 様\n\nご迷惑をおかけして、申し訳ございません。こちらの都合で、レッスンの日時を変更させていただけないでしょうか。\n\n今のご予約：' + whenIn_(bk, bk.len, data.tz || TZ, true) + '\n新しい日時：' + custWhen_(data, data.offer, bk.len, true) + '\n' + (msg ? '\n' + msg + '\n' : '') + '\n## 新しい日時でよろしい場合\n「この日時で OK」を押してください。予約が変更されます。\n' + ck.replace('?', '?act=take&') + '\n\n## ご都合が合わない場合（キャンセル）\nキャンセルにして、全額お返しします' + (bk.pack ? '（回数券なら1回分お戻しします）' : '') + '。\n' + ck.replace('?', '?act=decl&') + '\n\nご迷惑をおかけして、本当に申し訳ございません。\n髙山まり'
+    : '# Request to move your lesson\n\nHi ' + data.name + ',\n\nI’m very sorry for the inconvenience — could we move your lesson?\n\nNow booked: ' + whenIn_(bk, bk.len, data.tz || TZ, false) + '\nNew time: ' + custWhen_(data, data.offer, bk.len, false) + '\n' + (msg ? '\n' + msg + '\n' : '') + '\n## If the new time works\nTap “This time works” and your lesson will be moved.\n' + ck.replace('?', '?act=take&') + '\n\n## If it doesn’t work (cancel)\nYou can cancel and get a full refund' + (bk.pack ? ' (or the lesson back on your pack)' : '') + '.\n' + ck.replace('?', '?act=decl&') + '\n\nI’m truly sorry for the inconvenience.\nMari Takayama';
+  MailApp.sendEmail({ to: data.email, subject: ja ? 'レッスンの日時変更のお願い' : 'Could we move your lesson?', body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
   return page_('提案を送りました', head + '<br>→ <b>' + choiceJa_(data.offer, bk.len) + '</b><p>お客さんが OK すると、自動で変更されて Mari さんにもメールが届きます。</p>');
 }
 // the customer answers Mari's new time
@@ -751,9 +751,9 @@ function offerAnswer_(p, sh, r, data) {
   if (p.act === 'take') {
     if (!p.go) return page_(ja ? 'この日時に変更しますか？' : 'Move to this time?', '<b>' + custWhen_(data, of, bk.len, ja).replace(/\n/g, '<br>') + '</b>', self, ja ? 'この日時で OK' : 'Yes, this time works');
     data.offer = null; const old = moveTo_(sh, r, data, of.b, of);
-    const body = ja ? data.name + ' 様\n\nご迷惑をおかけして申し訳ございません。ご協力ありがとうございます。レッスンの日時を変更しました。\n\n日時：' + custWhen_(data, bk, bk.len, true) + '\n場所：' + placeText_(data, true) + '\nレッスン：' + bk.len + '分\n\n（変更前：' + whenIn_(old, bk.len, data.tz || TZ, true) + '）\n\nお支払いは、そのまま新しい日時に引き継がれます。' + manageLine_(data, true) + '\n\n髙山まり'
-      : 'Hi ' + data.name + ',\n\nThank you! Your lesson has been moved.\n\nWhen: ' + custWhen_(data, bk, bk.len, false) + '\nWhere: ' + placeText_(data, false) + '\nLesson: ' + bk.len + ' minutes\n\n(Before: ' + whenIn_(old, bk.len, data.tz || TZ, false) + ')\n\nYour payment carries over to the new time.' + manageLine_(data, false) + '\n\nMari Takayama';
-    MailApp.sendEmail({ to: data.email, subject: ja ? 'レッスンの日時を変更しました（' + whenIn_(bk, bk.len, data.tz || TZ, true) + '）' : 'Your lesson has been moved — ' + whenIn_(bk, bk.len, data.tz || TZ, false), body, htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO, attachments: [ics_(data, bk, bk.len)] });
+    const body = ja ? '# レッスン日時変更のお知らせ\n\n' + data.name + ' 様\n\nご迷惑をおかけして申し訳ございません。ご協力ありがとうございます。レッスンの日時を変更しました。\n\n日時：' + custWhen_(data, bk, bk.len, true) + '\n場所：' + placeText_(data, true) + '\nレッスン：' + bk.len + '分\n\n（変更前：' + whenIn_(old, bk.len, data.tz || TZ, true) + '）\n\nお支払いは、そのまま新しい日時に引き継がれます。' + manageLine_(data, true) + '\n\n髙山まり'
+      : '# Your lesson has been moved\n\nHi ' + data.name + ',\n\nThank you! Your lesson has been moved.\n\nWhen: ' + custWhen_(data, bk, bk.len, false) + '\nWhere: ' + placeText_(data, false) + '\nLesson: ' + bk.len + ' minutes\n\n(Before: ' + whenIn_(old, bk.len, data.tz || TZ, false) + ')\n\nYour payment carries over to the new time.' + manageLine_(data, false) + '\n\nMari Takayama';
+    MailApp.sendEmail({ to: data.email, subject: ja ? 'レッスンの日時を変更しました（' + whenIn_(bk, bk.len, data.tz || TZ, true) + '）' : 'Your lesson has been moved — ' + whenIn_(bk, bk.len, data.tz || TZ, false), body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO, attachments: [ics_(data, bk, bk.len)] });
     if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【変更OK】' + data.name + '（' + choiceJa_(old, bk.len) + ' → ' + choiceJa_(bk, bk.len) + '）', body: data.name + ' さんが新しい日時を OK しました。', htmlBody: pretty_('<p><b>' + esc_(data.name) + '</b> さんが、新しい日時を OK しました。Google カレンダーも移しました。</p>' + infoBox_([['前', choiceJa_(old, bk.len)], ['新しい日時', choiceJa_(bk, bk.len)]]), true) });
     return page_(ja ? '変更しました' : 'Your lesson is moved', (ja ? '確認のメールをお送りしました。<br>日時：' : 'A confirmation email is on its way.<br>When: ') + custWhen_(data, bk, bk.len, ja).replace(/\n/g, '<br>'));
   }
@@ -774,7 +774,7 @@ function moveAnswer_(p, sh, r, data) {
     const body = ja
       ? data.name + ' 様\n\n申し訳ありません、ご希望の日時（' + whenIn_(ch, bk.len, data.tz || TZ, true) + '）は都合がつきませんでした。レッスンは今の日時のままです。\n\n日時：' + custWhen_(data, bk, bk.len, true) + '\n\nほかの日時をご希望でしたら、こちらからもう一度お選びください。\n' + manageUrl_(data, ch.b) + '\n\n髙山まり'
       : 'Hi ' + data.name + ',\n\nI’m sorry — the time you asked for (' + whenIn_(ch, bk.len, data.tz || TZ, false) + ') doesn’t work for me. Your lesson stays at:\n\nWhen: ' + custWhen_(data, bk, bk.len, false) + '\n\nTo choose another time:\n' + manageUrl_(data, ch.b) + '\n\nMari Takayama';
-    MailApp.sendEmail({ to: data.email, subject: ja ? 'レッスンの日時について' : 'About moving your lesson', body, htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+    MailApp.sendEmail({ to: data.email, subject: ja ? 'レッスンの日時について' : 'About moving your lesson', body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
     return page_('送りました', esc_(data.name) + ' さんに、今の日時のままだとお知らせしました。');
   }
   if (!p.go) return page_('この日時に変更しますか？', '<b>' + esc_(data.name) + '</b> さん<br>今：' + choiceJa_(bk, bk.len) + '<br>新しい日時：<b>' + choiceJa_(ch, bk.len) + '</b><p>Google カレンダーの予定を移して、お客さんに変更の確定メールを送ります。</p>', self, '変更して、お客さんにメールを送る');
@@ -783,9 +783,9 @@ function moveAnswer_(p, sh, r, data) {
   const paid = sh.getRange(r, C['支払い']).getValue();
   const payPart = paid === false ? payNote_(data, bk, ja) : (ja ? 'お支払いは、そのまま新しい日時に引き継がれます。' : 'Your payment carries over to the new time.');
   const body = ja
-    ? data.name + ' 様\n\nレッスンの日時の変更が確定しました。\n\n日時：' + custWhen_(data, bk, bk.len, true) + '\n場所：' + placeText_(data, true) + '\nレッスン：' + bk.len + '分\n\n（変更前：' + whenIn_(old, bk.len, data.tz || TZ, true) + '）\n\n' + payPart + manageLine_(data, true) + '\n\nお会いできるのを楽しみにしています。\n髙山まり'
-    : 'Hi ' + data.name + ',\n\nYour lesson has been moved.\n\nWhen: ' + custWhen_(data, bk, bk.len, false) + '\nWhere: ' + placeText_(data, false) + '\nLesson: ' + bk.len + ' minutes\n\n(Before: ' + whenIn_(old, bk.len, data.tz || TZ, false) + ')\n\n' + payPart + manageLine_(data, false) + '\n\nSee you soon!\nMari Takayama';
-  MailApp.sendEmail({ to: data.email, subject: ja ? 'レッスンの日時を変更しました（' + whenIn_(bk, bk.len, data.tz || TZ, true) + '）' : 'Your lesson has been moved — ' + whenIn_(bk, bk.len, data.tz || TZ, false), body, htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO, attachments: [ics_(data, bk, bk.len)] });
+    ? '# レッスン日時変更のお知らせ\n\n' + data.name + ' 様\n\nレッスンの日時の変更が確定しました。\n\n日時：' + custWhen_(data, bk, bk.len, true) + '\n場所：' + placeText_(data, true) + '\nレッスン：' + bk.len + '分\n\n（変更前：' + whenIn_(old, bk.len, data.tz || TZ, true) + '）\n\n' + payPart + manageLine_(data, true) + '\n\nお会いできるのを楽しみにしています。\n髙山まり'
+    : '# Your lesson has been moved\n\nHi ' + data.name + ',\n\nYour lesson has been moved.\n\nWhen: ' + custWhen_(data, bk, bk.len, false) + '\nWhere: ' + placeText_(data, false) + '\nLesson: ' + bk.len + ' minutes\n\n(Before: ' + whenIn_(old, bk.len, data.tz || TZ, false) + ')\n\n' + payPart + manageLine_(data, false) + '\n\nSee you soon!\nMari Takayama';
+  MailApp.sendEmail({ to: data.email, subject: ja ? 'レッスンの日時を変更しました（' + whenIn_(bk, bk.len, data.tz || TZ, true) + '）' : 'Your lesson has been moved — ' + whenIn_(bk, bk.len, data.tz || TZ, false), body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO, attachments: [ics_(data, bk, bk.len)] });
   return page_('変更しました', esc_(data.name) + ' さんのレッスンを ' + choiceJa_(bk, bk.len) + ' に変更しました。Google カレンダーも移しました。');
 }
 
@@ -854,11 +854,12 @@ function sendPayReminder_(data, ch, tag) {
   const body = ja
     ? data.name + ' 様\n\n' + (last ? 'レッスン代のお支払いがまだ確認できていません。ご予約を続けるため、今日中にお支払いをお願いします。' : 'レッスン代のお支払いがまだ確認できていません。' + (dl.late ? '今日中' : dl.ja + 'まで') + 'にお支払いをお願いします（レッスンの' + PAY_DAYS + '日前まで）。') + '\n\n日時：' + when + (per ? '\n金額：$' + per : '') + (link ? '\n\nVenmo：こちらを開くと、金額が入った状態で開きます\n' + link : '') + '\n\nもうお支払い済みでしたら、行き違いですみません。このメールに返信してお知らせください。\n\nMari Takayama'
     : 'Hi ' + data.name + ',\n\n' + (last ? 'I haven’t received the payment for your lesson yet. To keep your booking, please pay today.' : 'I haven’t received the payment for your lesson yet. Please pay by ' + (dl.late ? 'today' : dl.en) + ' (' + PAY_DAYS + ' days before the lesson).') + '\n\nWhen: ' + when + (per ? '\nAmount: $' + per : '') + (link ? '\n\nVenmo — this link opens with everything filled in:\n' + link : '') + '\n\nIf you have already paid, sorry for the mix-up — just reply to let me know.\n\nMari Takayama';
-  MailApp.sendEmail({ to: data.email, subject, body, htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+  MailApp.sendEmail({ to: data.email, subject, body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
 }
 // elegant HTML version of an email (plain text in, or html when isHtml)
 function goalsJa_(d) { return d.visit === 'First' && Array.isArray(d.goals) ? d.goals.slice(0, 8).map(g => JA.goals[g] || '').filter(Boolean).join('、') : ''; }
-function sendPretty_(m) { m.htmlBody = pretty_(m.body); m.body += '\n\n' + SITE; MailApp.sendEmail(m); }
+function plain_(s) { return String(s).replace(/^#{1,2} /gm, ''); }
+function sendPretty_(m) { m.htmlBody = pretty_(m.body); m.body = plain_(m.body); m.body += '\n\n' + SITE; MailApp.sendEmail(m); }
 function pretty_(text, isHtml) {
   const jaMail = /[\u3040-\u30ff]/.test(text);
   const link = u => /[?&]act=(mmove|mcancel|take|decl)&/.test(u)
@@ -873,6 +874,8 @@ function pretty_(text, isHtml) {
   const fmt = s => esc_(s).replace(/(https?:\/\/[^\s<]+)/g, link);
   const isInfo = l => /^[^：:\s][^：:]{0,9}[：:]\s?\S/.test(l) && !/^https?:/.test(l);
   const block = p => {
+    if (/^# /.test(p)) return '<div style="font-size:21px;font-weight:600;letter-spacing:.04em;color:#2c2a30;margin:0 0 22px;padding:0 0 10px;border-bottom:2px solid #c9b48c">' + esc_(p.slice(2)) + '</div>';
+    if (/^## /.test(p)) { const ls = p.split('\n'); return '<div style="font-size:17px;font-weight:600;color:#2c2a30;margin:28px 0 8px;padding-left:10px;border-left:3px solid #c9b48c">' + esc_(ls.shift().slice(3)) + '</div>' + (ls.length ? block(ls.join('\n')) : ''); }
     const lines = p.split('\n');
     // "When: …  Where: …" style lines -> a soft box with labels and values
     if (lines.length > 1 && lines.every(isInfo)) {
