@@ -32,6 +32,7 @@ const ZOOM_LINK = '';
 const RATE_PER_30 = 65;
 // when Mari books another studio for the customer: studio cost + this handling fee (only shown in emails)
 const STUDIO_FEE = 10;   // dollars per 30 minutes, used for FuncPhysio lessons
+const SITE = 'https://bostonterrier808.github.io/mari-takayama-site/';
 const BOOKING_PAGE = 'https://bostonterrier808.github.io/mari-takayama-site/lessons.html';
 // Lesson hours by weekday (0 = Sunday), 24-hour clock, New York time. A lesson must fit inside these hours.
 const HOURS = { 0: [['10:30', '21:00']], 1: [['19:00', '22:00']], 2: [['19:00', '22:00']], 3: [['19:00', '22:00']], 4: [['19:00', '22:00']], 5: [['19:00', '22:00']], 6: [] };
@@ -413,17 +414,25 @@ function payNote_(data, ch, ja) {
   const link = VENMO ? 'https://venmo.com/' + VENMO + '?txn=pay' + (amount ? '&amount=' + amount : '') + '&note=' + encodeURIComponent(memo) : '';
   const dl = payBy_(ch);
   const lines = what.concat(ja ? [
-    'ご予約を確実にするため、このメールを受け取ったら、すぐにお支払いをお願いします（遅くとも ' + dl.ja + 'まで）。',
-    'お支払いは Venmo' + (ZELLE_QR_B64 ? ' か Zelle' : '') + ' でお願いします（現金は受け取っていません）。',
-    amount ? '金額：$' + amount + (pk ? '（' + PACK_SIZE + '回分から1回分の半額をお引きしています）' : '') : '金額は、別のメールでお知らせします。',
-    link ? 'Venmo：こちらを開くと、金額が入った状態で開きます\n' + link : (VENMO ? '' : '送り先は、別のメールでお知らせします。'),
-    ZELLE_QR_B64 ? 'Zelle：添付の QR コードを、銀行のアプリで読み取ってください' : ''
+    'お支払いについて：',
+    'ご予約を確実にするため、今すぐお支払いをお願いします。',
+    '',
+    '金額：' + (amount ? '$' + amount + (pk ? '（' + PACK_SIZE + '回分から1回分の半額をお引きしています）' : '') : '別のメールでお知らせします'),
+    '期限：' + dl.ja + 'まで',
+    '方法：Venmo' + (ZELLE_QR_B64 ? ' か Zelle' : '') + '（現金不可）',
+    '',
+    link ? link : (VENMO ? '' : '送り先は、別のメールでお知らせします。'),
+    ZELLE_QR_B64 ? 'Zelle の場合は、添付の QR コードを銀行のアプリで読み取ってください。' : ''
   ] : [
-    'To secure your booking, please pay as soon as you get this email (at the latest by ' + dl.en + ').',
-    'Payment is by Venmo' + (ZELLE_QR_B64 ? ' or Zelle' : '') + ' (sorry, no cash).',
-    amount ? 'Amount: $' + amount + (pk ? ' (' + PACK_SIZE + ' lessons, less half a lesson)' : '') : 'Mari will send you the amount in a separate email.',
-    link ? 'Venmo — this link opens with everything filled in:\n' + link : (VENMO ? '' : 'Mari will send you where to send it.'),
-    ZELLE_QR_B64 ? 'Zelle — scan the attached QR code in your banking app' : ''
+    'Payment:',
+    'To secure your booking, please pay now.',
+    '',
+    'Amount: ' + (amount ? '$' + amount + (pk ? ' (' + PACK_SIZE + ' lessons, less half a lesson)' : '') : 'Mari will send it in a separate email'),
+    'Pay by: ' + dl.en,
+    'How: Venmo' + (ZELLE_QR_B64 ? ' or Zelle' : '') + ' (sorry, no cash)',
+    '',
+    link ? link : (VENMO ? '' : 'Mari will send you where to send it.'),
+    ZELLE_QR_B64 ? 'For Zelle, scan the attached QR code in your banking app.' : ''
   ], travel, rules);
   return lines.filter((x, i) => x !== '' || lines[i - 1] !== '').join('\n');
 }
@@ -599,15 +608,32 @@ function sendPayReminder_(data, ch, tag) {
 }
 // elegant HTML version of an email (plain text in, or html when isHtml)
 function goalsJa_(d) { return d.visit === 'First' && Array.isArray(d.goals) ? d.goals.slice(0, 8).map(g => JA.goals[g] || '').filter(Boolean).join('、') : ''; }
-function sendPretty_(m) { m.htmlBody = pretty_(m.body); MailApp.sendEmail(m); }
+function sendPretty_(m) { m.htmlBody = pretty_(m.body); m.body += '\n\n' + SITE; MailApp.sendEmail(m); }
 function pretty_(text, isHtml) {
-  const inner = isHtml ? text : esc_(text).replace(/(https?:\/\/[^\s<]+)/g, u => /venmo\.com/.test(u)
-      ? '<a href="' + u + '" style="display:inline-block;margin:6px 0 2px;padding:11px 22px;background:#ecdfc6;border:1px solid #c9b48c;color:#2c2a30;text-decoration:none;letter-spacing:.04em">Venmo &rarr;</a>'
-      : '<a href="' + u + '" style="color:#7a6233;word-break:break-all">' + u + '</a>')
-    .split(/\n\n+/).map(p => '<p style="margin:0 0 16px">' + p.replace(/\n/g, '<br>') + '</p>').join('');
-  return '<div style="background:#faf7f1;padding:28px 12px"><div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e6dac3;padding:32px 30px;font-family:Georgia,\'Times New Roman\',\'Hiragino Mincho ProN\',\'Yu Mincho\',YuMincho,serif;font-size:16px;line-height:1.8;color:#2c2a30">'
-    + '<div style="text-align:center;margin:0 0 22px;padding-bottom:16px;border-bottom:1px solid #e6dac3"><div style="font-size:22px;letter-spacing:.08em;color:#2c2a30">Mari Takayama</div><div style="font-size:11px;letter-spacing:.32em;color:#8a7140;text-transform:uppercase;margin-top:4px">Ballet · New York</div></div>'
-    + inner + '</div></div>';
+  const jaMail = /[\u3040-\u30ff]/.test(text);
+  const link = u => /venmo\.com/.test(u)
+    ? '<a href="' + u + '" style="display:block;margin:4px 0;padding:16px 12px;background:#2c2a30;color:#ffffff;text-align:center;text-decoration:none;font-size:18px;font-weight:600;letter-spacing:.06em">' + (jaMail ? 'Venmo で今すぐ支払う &rarr;' : 'Pay now with Venmo &rarr;') + '</a>'
+    : '<a href="' + u + '" style="color:#7a6233;word-break:break-all">' + u + '</a>';
+  const fmt = s => esc_(s).replace(/(https?:\/\/[^\s<]+)/g, link);
+  const isInfo = l => /^[^：:\s][^：:]{0,9}[：:]\s?\S/.test(l) && !/^https?:/.test(l);
+  const block = p => {
+    const lines = p.split('\n');
+    // "When: …  Where: …" style lines -> a soft box with labels and values
+    if (lines.length > 1 && lines.every(isInfo)) {
+      return '<table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 20px;background:#faf7f1;border:1px solid #eee3cf">' + lines.map(l => {
+        const m = l.match(/^([^：:]+)[：:]\s?(.*)$/);
+        return '<tr><td style="padding:10px 0 10px 14px;color:#8a7140;font-size:14px;white-space:nowrap;vertical-align:top">' + esc_(m[1]) + '</td><td style="padding:10px 14px;font-size:17px;color:#222222;font-weight:600">' + fmt(m[2]) + '</td></tr>';
+      }).join('') + '</table>';
+    }
+    // a heading line ending with ：/: followed by bullet lines
+    const head = /[：:]$/.test(lines[0]) && lines.length > 1 ? '<div style="font-weight:600;margin:0 0 6px">' + fmt(lines.shift()) + '</div>' : '';
+    const body = lines.map(l => /^[・•]/.test(l) ? '<div style="padding-left:1em;text-indent:-1em;margin:2px 0">' + fmt(l) + '</div>' : fmt(l)).join('<br>').replace(/<\/div><br>/g, '</div>');
+    return '<div style="margin:0 0 20px">' + head + body + '</div>';
+  };
+  const inner = isHtml ? text : text.split(/\n\n+/).map(block).join('');
+  return '<div style="background:#faf7f1;padding:24px 10px"><div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e6dac3;padding:30px 24px;font-family:-apple-system,BlinkMacSystemFont,\'Hiragino Sans\',\'Hiragino Kaku Gothic ProN\',\'Yu Gothic\',YuGothic,Meiryo,\'Helvetica Neue\',Arial,sans-serif;font-size:17px;line-height:1.9;letter-spacing:.02em;color:#222222">'
+    + '<div style="text-align:center;margin:0 0 24px;padding-bottom:16px;border-bottom:1px solid #e6dac3"><div style="font-family:Georgia,\'Times New Roman\',serif;font-size:24px;letter-spacing:.08em;color:#2c2a30">Mari Takayama</div><div style="font-size:11px;letter-spacing:.32em;color:#8a7140;text-transform:uppercase;margin-top:4px">Ballet · New York</div></div>'
+    + inner + '<div style="text-align:center;margin-top:28px;padding-top:18px;border-top:1px solid #e6dac3"><a href="' + SITE + '" style="font-family:Georgia,\'Times New Roman\',serif;font-size:15px;letter-spacing:.12em;color:#7a6233;text-decoration:none">Mari Takayama &middot; Website &rarr;</a></div></div></div>';
 }
 
 // ---------- helpers ----------
