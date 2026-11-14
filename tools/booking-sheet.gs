@@ -133,7 +133,7 @@ function doPost(e) {
     if (!looksReal_(d)) return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
     const len = Math.max(30, Math.min(240, +d.length || 60));
     const c = (d.choices || []).slice(0, 5).filter(x => /^\d{4}-\d\d-\d\d$/.test(x.date));
-    const id = Utilities.getUuid().slice(0, 8), key = Utilities.getUuid().replace(/-/g, '');
+    const id = 'r' + Utilities.getUuid().slice(0, 7), key = Utilities.getUuid().replace(/-/g, '');
     const tz = zoneOk_(d.tz); d.tz = tz;
     const area = d.place === 'Zoom' ? zoneName_(tz, true) : clip(d.area);
     const row = [new Date(), JA.visit[d.visit] || d.visit || '', clip(d.name), d.via || '', clip(d.email), JA.place[d.place] || d.place || '', area,
