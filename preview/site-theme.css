@@ -345,3 +345,16 @@ html[lang=ja] main :is(p, li, dd, .lesson-inquiry-copy, .interview-feature-summa
 .upcoming-list .up-tickets a { color: var(--gold-ink); }
 .upcoming-list .up-times { color: var(--ink); }
 .upcoming-list .nb, .credit-list .nb { display: inline-block; max-width: 100%; }
+
+/* Menu on wide screens: name + language on top, every page link on one line below (nothing hidden in a dropdown) */
+@media (min-width: 1181px) {
+  html body header.top nav.wrap { flex-wrap: wrap; row-gap: 0; min-height: 0; padding-top: 10px; }
+  html body header.top #site-menu { order: 5; flex: 1 0 100%; justify-content: center; gap: clamp(20px, 2.4vw, 38px); margin-top: 8px; padding: 2px 0 4px; border-top: 1px solid var(--gold-line); }
+  html body header.top #site-menu > li > a { padding: 10px 0; }
+}
+/* Home: quick links to Career and Press under About Mari */
+.intro-links { display: flex; flex-wrap: wrap; gap: 0.6rem 1.6rem; margin: 1.4rem 0 0; }
+.intro-links a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--gold-line); padding-bottom: 2px; letter-spacing: 0.02em; white-space: nowrap; }
+.intro-links a::after { content: " →"; color: var(--gold-ink); }
+.intro-links a:hover { color: var(--gold-ink); border-color: var(--gold); }
+.home-intro .home-intro-body .intro-links { margin: 1.8rem 0 0 !important; font-size: 1.02rem; }
