@@ -56,12 +56,14 @@ const AWAY = [['2026-11-22', '2027-01-09']];
 const isAway_ = k => AWAY.some(([a, b]) => k >= a && k <= b);
 const HEAD = ['受付日時', '初めて／2回目以降', '名前', '連絡方法', 'メール', '場所', 'エリア', '対象', 'バレエ経験',
   '第1希望', '第2希望', '第3希望', '第1希望の曜日', '第1希望の時間帯', '第2希望の曜日', '第2希望の時間帯', '第3希望の曜日', '第3希望の時間帯',
-  'メッセージ', '言語', '状況', 'その他の連絡先', 'レッスンの長さ（分）', '確定した日時', 'id', 'key', 'data', 'きっかけ', '紹介者'];
+  'メッセージ', '言語', '状況', 'その他の連絡先', 'レッスンの長さ（分）', '確定した日時', 'id', 'key', 'data', 'きっかけ', '紹介者', 'ニックネーム', '性別', 'SNS', 'レッスン日', '支払い', '催促', 'レッスンの言語'];
 const C = Object.fromEntries(HEAD.map((h, i) => [h, i + 1]));
 const JA = {
   visit: { First: '初めて', Returning: '2回目以降' },
   place: { FuncPhysio: 'FuncPhysio', Studio: 'ダンススタジオ', Travel: '出張', Zoom: 'Zoom', Any: 'どこでも' },
   age: { Child: '子ども', Teen: '10代', Adult: '大人' },
+  tongue: { English: '英語', Japanese: '日本語', Either: 'どちらでも' },
+  gender: { Female: '女性', Male: '男性', Nonbinary: 'ノンバイナリー', Other: 'その他', None: '答えない' },
   heard: { Instagram: 'Instagram', Website: 'ウェブサイト・検索', Friend: '友達の紹介', Studio: 'スタジオ・学校', Performance: '公演を見て', Other: 'その他' },
   level: { 'New to ballet': '初めて', 'Some classes': '少し経験あり', 'Trains regularly': '定期的に練習', 'Professional dancer': 'プロのダンサー', 'Ballet student': 'バレエ学生', 'Dance student': 'ダンス学生', 'Musical theater (singer first)': 'ミュージカル（歌がメイン）', 'Musical theater (dancer first)': 'ミュージカル（ダンスがメイン）' },
   day: { Sun: '日', Mon: '月', Tue: '火', Wed: '水', Thu: '木', Fri: '金', Sat: '土' }
@@ -137,7 +139,7 @@ function doPost(e) {
     for (let i = 0; i < 3; i++) row.push(c[i] ? choiceJa_(c[i], len) : '');
     for (let i = 0; i < 3; i++) row.push(c[i] ? WD_JA[dateOf_(c[i].date).getDay()] : '', c[i] ? partOf_(c[i]) : '');
     const more = c.slice(3).map((x, i) => '第' + (i + 4) + '希望：' + choiceJa_(x, len)).join('\n');
-    row.push(clip((more ? more + (d.note ? '\n' : '') : '') + (d.note || ''), 900), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '', multi: d.multi === true && c.length > 1 }), d.visit === 'First' ? (JA.heard[d.heard] || '') + (d.heard === 'Other' && d.heardNote ? '（' + clip(d.heardNote, 200) + '）' : '') : '', d.visit === 'First' && d.heard === 'Friend' ? clip(d.friend, 120) : '');
+    row.push(clip((more ? more + (d.note ? '\n' : '') : '') + (d.note || ''), 900), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '', multi: d.multi === true && c.length > 1 }), d.visit === 'First' ? (JA.heard[d.heard] || '') + (d.heard === 'Other' && d.heardNote ? '（' + clip(d.heardNote, 200) + '）' : '') : '', d.visit === 'First' && d.heard === 'Friend' ? clip(d.friend, 120) : '', clip(d.nickname, 60), d.visit === 'First' ? (JA.gender[d.gender] || '') : '', clip(d.social, 120), '', '', '', d.visit === 'First' ? (JA.tongue[d.tongue] || '') : '');
     heardStats_();
     book_().getSheetByName(REQ).appendRow(row);
     notifyMari_(d, c, len, id, key);
@@ -168,7 +170,10 @@ function notifyMari_(d, c, len, id, key) {
     ? '<p style="margin:10px 0"><b>まとめて予約（' + c.length + '回）：</b><br>' + c.map((x, i) => (i + 1) + '回目：' + choiceJa_(x, len)).join('<br>') + '</p><p style="margin:10px 0">' + btn(url + '?act=confirmall&id=' + id + '&k=' + key, 'この' + c.length + '回をまとめて確定', true) + '</p>'
     : c.map((x, i) => '<p style="margin:10px 0">' + btn(url + '?act=confirm&id=' + id + '&k=' + key + '&c=' + i, '第' + (i + 1) + '希望で確定：' + choiceJa_(x, len), true) + '</p>').join('');
   const info = [
-    ['名前', esc_(d.name) + '（' + (JA.visit[d.visit] || '') + '）'], ['メール', esc_(d.email)],
+    ['名前', esc_(d.name) + '（' + (JA.visit[d.visit] || '') + '）'], d.nickname ? ['ニックネーム', esc_(clip(d.nickname, 60))] : null,
+    d.visit === 'First' && JA.gender[d.gender] ? ['性別', JA.gender[d.gender]] : null, ['メール', esc_(d.email)],
+    d.social ? ['SNS', esc_(clip(d.social, 120))] : null,
+    d.visit === 'First' && JA.tongue[d.tongue] ? ['レッスンの言語', JA.tongue[d.tongue]] : null,
     d.contact ? ['連絡方法', esc_(d.via) + '　' + esc_(d.contact)] : null,
     ['場所', esc_(JA.place[d.place] || d.place || '') + (d.area && d.place !== 'Zoom' ? '（' + esc_(d.area) + '）' : '')], ['長さ', len + '分' + (d.pack === '5' ? '（5回券を希望）' : '')],
     d.place === 'Studio' ? ['スタジオ', d.studio === 'mari' ? '<b>Mari が代わりに予約</b>（スタジオ代＋手数料 $' + STUDIO_FEE + '）' : 'お客さんが自分で予約'] : null,
@@ -178,14 +183,14 @@ function notifyMari_(d, c, len, id, key) {
     d.age ? ['対象', esc_(JA.age[d.age] || d.age)] : null, d.level ? ['バレエ経験', esc_(JA.level[d.level] || d.level)] : null,
     d.note ? ['メッセージ', esc_(d.note)] : null
   ].filter(Boolean).map(([a, b]) => '<tr><td style="padding:3px 12px 3px 0;color:#6a6670">' + a + '</td><td>' + b + '</td></tr>').join('');
-  const html = '<div style="font-family:sans-serif;color:#2c2a30;font-size:15px;line-height:1.6">'
+  const html = '<div style="color:#2c2a30;font-size:15px;line-height:1.6">'
     + '<p><b>レッスンのリクエストが届きました。</b>確定する時間のボタンを押すと、お客さんに確定メールが届き、Google カレンダーにも入ります。' + (d.tz !== TZ ? '<br>ボタンの時間はニューヨーク時間です（お客さんの時間は下にあります）。' : '') + '</p>'
     + rows
     + '<p style="margin:16px 0 6px">' + btn(url + '?act=propose&id=' + id + '&k=' + key, '時間を変えて提案する（例：30分ずらす）', false) + '</p>'
     + '<p style="margin:6px 0 16px">' + btn(url + '?act=decline&id=' + id + '&k=' + key, 'どの時間も無理なので、お断りする（ほかの日を選び直してもらう）', false) + '</p>'
     + '<table style="margin-top:14px;font-size:14px">' + info + '</table>'
     + '<p style="color:#6a6670;font-size:13px;margin-top:18px">ボタンを押すと確認の画面が出ます。そこでもう一度押すと送られます。<br>シート：' + book_().getUrl() + '</p></div>';
-  MailApp.sendEmail({ to: me, subject: 'レッスンのリクエスト：' + String(d.name || '').slice(0, 60) + '（' + (JA.visit[d.visit] || '') + '）', htmlBody: html, body: String(d.message || '').slice(0, 3000), name: 'Lesson booking' });
+  MailApp.sendEmail({ to: me, subject: 'レッスンのリクエスト：' + String(d.name || '').slice(0, 60) + '（' + (JA.visit[d.visit] || '') + '）', htmlBody: pretty_(html, true), body: String(d.message || '').slice(0, 3000), name: 'Lesson booking' });
 }
 
 // ---------- the website asks for free times, or Mari taps a button ----------
@@ -339,9 +344,15 @@ function bookLesson_(sh, r, data, ch, len, how) {
   const friendLine = data.first && data.friend ? '\n紹介：' + data.friend + ' さんの紹介です。' : '';  // record only, no automatic credit
   sendCustomer_(data, 'confirm', ch);
   sh.getRange(r, C['状況']).setValue('予約確定'); sh.getRange(r, C['確定した日時']).setValue(choiceJa_(ch, len));
+  heardStats_();
+  const firstDay = String(sh.getRange(r, C['レッスン日']).getValue() || '');
+  if (!firstDay || firstDay > ch.date + ' ' + ch.start) sh.getRange(r, C['レッスン日']).setNumberFormat('@').setValue(ch.date + ' ' + ch.start);
+  const noPay = data.free || (data.packInfo && !data.packInfo.bought);
+  const pc = sh.getRange(r, C['支払い']);
+  if (noPay) { pc.clearDataValidations(); pc.setValue('不要'); } else { pc.insertCheckboxes(); pc.setValue(false); }
   CacheService.getScriptCache().remove('free');
   const me = Session.getEffectiveUser().getEmail();
-  if (me) MailApp.sendEmail({ to: me, subject: '予約が確定しました：' + data.name + '（' + choiceJa_(ch, len) + '）',
+  if (me) sendPretty_({ to: me, subject: '予約が確定しました：' + data.name + '（' + choiceJa_(ch, len) + '）',
     body: data.name + ' さんのレッスンが確定しました' + (how ? '（' + how + '）' : '') + '。\n\n日時：' + choiceJa_(ch, len) + '（' + len + '分・ニューヨーク時間）' + theirs + '\n場所：' + placeText_(data, true) + (data.area && data.place !== 'Zoom' ? '（' + data.area + '）' : '') + '\nメール：' + data.email + packLine_(data.packInfo) + friendLine + '\n\nお客さんにも確定メールを送りました。Google カレンダーに入れました' + (EXTRA_CALENDAR_EMAIL ? '（Yahoo カレンダーにも招待として送りました）' : '') + '。\n添付のファイルを開くと、ほかのカレンダーにも追加できます。',
     attachments: [ics_(data, ch, len)], name: 'Lesson booking' });
 }
@@ -393,16 +404,19 @@ function payNote_(data, ch, ja) {
   const amount = pk ? (per ? Math.round(per * PACK_SIZE - per / 2) : 0) : per;
   const what = pk ? (ja ? ['5回券（今回が1回目、残り' + pk.left + '回は' + pk.until + 'まで使えます）'] : ['5-lesson pack (this is lesson 1; the other ' + pk.left + ' can be used until ' + pk.until + ')']) : [];
   const z = ZONES[data.tz || TZ];
-  if (!z || !z[2]) return what.concat([ja ? 'レッスン代は前もってお願いしています。お支払いの方法は、別のメールでお知らせします。' : 'Lessons are paid ahead of time. Mari will email you how to pay from where you are.'], travel, rules).join('\n');
+  if (!z || !z[2]) return what.concat([ja ? 'レッスン代は前もって（遅くとも ' + payBy_(ch).ja + 'まで）お願いしています。お支払いの方法は、別のメールでお知らせします。' : 'Lessons are paid ahead of time (at the latest by ' + payBy_(ch).en + '). Mari will email you how to pay from where you are.'], travel, rules).join('\n');
   const d = dateOf_(ch.date); const memo = (pk ? 'Ballet lessons (5-pack) from ' : 'Ballet lesson ') + (d.getMonth() + 1) + '/' + d.getDate();
   const link = VENMO ? 'https://venmo.com/' + VENMO + '?txn=pay' + (amount ? '&amount=' + amount : '') + '&note=' + encodeURIComponent(memo) : '';
+  const dl = payBy_(ch);
   const lines = what.concat(ja ? [
-    'レッスン代は、前もって Venmo' + (ZELLE_QR_B64 ? ' か Zelle' : '') + ' でお願いします（現金は受け取っていません）。',
+    'ご予約を確実にするため、このメールを受け取ったら、すぐにお支払いをお願いします（遅くとも ' + dl.ja + 'まで）。',
+    'お支払いは Venmo' + (ZELLE_QR_B64 ? ' か Zelle' : '') + ' でお願いします（現金は受け取っていません）。',
     amount ? '金額：$' + amount + (pk ? '（' + PACK_SIZE + '回分から1回分の半額をお引きしています）' : '') : '金額は、別のメールでお知らせします。',
     link ? 'Venmo：こちらを開くと、金額が入った状態で開きます\n' + link : (VENMO ? '' : '送り先は、別のメールでお知らせします。'),
     ZELLE_QR_B64 ? 'Zelle：添付の QR コードを、銀行のアプリで読み取ってください' : ''
   ] : [
-    'Please pay for the lesson ahead of time by Venmo' + (ZELLE_QR_B64 ? ' or Zelle' : '') + ' (sorry, no cash).',
+    'To secure your booking, please pay as soon as you get this email (at the latest by ' + dl.en + ').',
+    'Payment is by Venmo' + (ZELLE_QR_B64 ? ' or Zelle' : '') + ' (sorry, no cash).',
     amount ? 'Amount: $' + amount + (pk ? ' (' + PACK_SIZE + ' lessons, less half a lesson)' : '') : 'Mari will send you the amount in a separate email.',
     link ? 'Venmo — this link opens with everything filled in:\n' + link : (VENMO ? '' : 'Mari will send you where to send it.'),
     ZELLE_QR_B64 ? 'Zelle — scan the attached QR code in your banking app' : ''
@@ -464,6 +478,9 @@ function packsFor_(email) {
 function heardStats_() {
   const ss = book_(), req = ss.getSheetByName(REQ);
   if (req && req.getRange(1, C['きっかけ']).getValue() !== 'きっかけ') req.getRange(1, C['きっかけ'], 1, 2).setValues([['きっかけ', '紹介者']]).setFontWeight('bold').setBackground('#ecdfc6');
+  if (req && req.getRange(1, C['ニックネーム']).getValue() !== 'ニックネーム') req.getRange(1, C['ニックネーム'], 1, 3).setValues([['ニックネーム', '性別', 'SNS']]).setFontWeight('bold').setBackground('#ecdfc6');
+  if (req && req.getRange(1, C['レッスンの言語']).getValue() !== 'レッスンの言語') req.getRange(1, C['レッスンの言語'], 1, 1).setValues([['レッスンの言語']]).setFontWeight('bold').setBackground('#ecdfc6');
+  if (req && req.getRange(1, C['支払い']).getValue() !== '支払い') { req.getRange(1, C['レッスン日'], 1, 3).setValues([['レッスン日', '支払い', '催促']]).setFontWeight('bold').setBackground('#ecdfc6'); try { req.hideColumns(C['レッスン日']); } catch (e) {} }
   const st = ss.getSheetByName(ST); if (!st || st.getRange('A51').getValue()) return;
   const R = "'" + REQ + "'!", q = (rng, label) => '=IFERROR(QUERY(' + rng + ',"select Col1, count(Col1) where Col1 is not null and Col1 <> \'\' group by Col1 order by count(Col1) desc label Col1 \'' + label + '\', count(Col1) \'人数\'",0),"まだありません")';
   st.getRange('A51').setValue('どこで知ったか').setFontWeight('bold'); st.getRange('A52').setFormula(q('{' + R + 'AB2:AB}', 'きっかけ'));
@@ -505,7 +522,72 @@ function sendCustomer_(data, kind, ch, note) {
   }
   const mail = { to: data.email, subject: subject, body: body, name: SENDER_NAME, replyTo: REPLY_TO };
   if (kind === 'confirm') { mail.attachments = [ics_(data, ch, data.len)].concat(ZELLE_QR_B64 ? [Utilities.newBlob(Utilities.base64Decode(ZELLE_QR_B64), 'image/png', 'zelle-qr.png')] : []); mail.body += ja ? '\n\n添付のファイルを開くと、お使いのカレンダーに追加できます。' : '\n\nOpen the attached file to add the lesson to your calendar.'; }
+  mail.htmlBody = pretty_(mail.body);
   MailApp.sendEmail(mail);
+}
+
+// ---------- payment deadline and reminders ----------
+const PAY_DAYS = 3;  // lessons must be paid at least this many days before
+function payBy_(ch) {
+  const d = dateOf_(ch.date); d.setDate(d.getDate() - PAY_DAYS);
+  const today = dateOf_(Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'));
+  if (d.getTime() <= today.getTime()) return { ja: '今日中', en: 'today', late: true };
+  return { ja: (d.getMonth() + 1) + '/' + d.getDate() + '（' + WD_JA[d.getDay()] + '）', en: Utilities.formatDate(d, TZ, 'EEE, MMM d'), late: false };
+}
+// run once from the editor: sends payment reminders every morning
+function setupPaymentReminders() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'paymentReminders').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('paymentReminders').timeBased().everyDays(1).atHour(9).inTimezone(TZ).create();
+  heardStats_();
+}
+function paymentReminders() {
+  const sh = book_().getSheetByName(REQ); if (!sh || sh.getLastRow() < 2) return;
+  heardStats_();
+  const v = sh.getRange(2, 1, sh.getLastRow() - 1, HEAD.length).getValues();
+  const today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'), t0 = dateOf_(today).getTime(), me = Session.getEffectiveUser().getEmail();
+  v.forEach((row, i) => {
+    const paid = row[C['支払い'] - 1], when = String(row[C['レッスン日'] - 1] || '');
+    if (row[C['状況'] - 1] !== '予約確定' || paid !== false || !when) return;
+    const [date, start] = when.split(' '); if (date < today) return;
+    let data; try { data = JSON.parse(row[C['data'] - 1]); } catch (e) { return; }
+    const ch = { date, start: start || '19:00' }, days = Math.round((dateOf_(date).getTime() - t0) / 86400000);
+    const log = String(row[C['催促'] - 1] || ''), stamp = Utilities.formatDate(new Date(), TZ, 'M/d');
+    let tag = '';
+    if (days <= PAY_DAYS && !/3日前/.test(log)) tag = '3日前';
+    else if (days === PAY_DAYS + 1 && !/4日前/.test(log)) tag = '4日前';
+    else if (!log && new Date(row[0]).getTime() < Date.now() - 86400000) tag = '翌日';
+    if (!tag) return;
+    data.len = +row[C['レッスンの長さ（分）'] - 1] || data.len || 60;
+    sendPayReminder_(data, ch, tag);
+    if (tag === '3日前' && me) MailApp.sendEmail({ to: me, subject: '【未払い】' + data.name + '（' + choiceJa_(ch, data.len) + '）', name: 'Lesson booking',
+      body: data.name + ' さんのレッスン代が、まだ「支払い」にチェックされていません。\n\n日時：' + choiceJa_(ch, data.len) + '\nメール：' + data.email + '\n\nお客さんにはもう一度お支払いのお願いを送りました。受け取ったらシートの「支払い」にチェックを入れてください。キャンセルにするかどうかは Mari さんが決めてください。',
+      htmlBody: pretty_('<p><b>' + esc_(data.name) + '</b> さんのレッスン代が、まだ「支払い」にチェックされていません。</p><p>日時：' + choiceJa_(ch, data.len) + '<br>メール：' + esc_(data.email) + '</p><p>お客さんにはもう一度お支払いのお願いを送りました。受け取ったらシートの「支払い」にチェックを入れてください。キャンセルにするかどうかは Mari さんが決めてください。</p>', true) });
+    sh.getRange(i + 2, C['催促']).setValue((log ? log + '、' : '') + stamp + ' ' + tag);
+  });
+}
+function sendPayReminder_(data, ch, tag) {
+  if (!data.email) return;
+  const ja = data.language === 'ja', when = custWhen_(data, ch, data.len, ja), dl = payBy_(ch);
+  const per = data.place === 'FuncPhysio' ? Math.round(RATE_PER_30 * data.len / 30) : 0;
+  const d = dateOf_(ch.date), memo = 'Ballet lesson ' + (d.getMonth() + 1) + '/' + d.getDate();
+  const link = VENMO ? 'https://venmo.com/' + VENMO + '?txn=pay' + (per ? '&amount=' + per : '') + '&note=' + encodeURIComponent(memo) : '';
+  const last = tag === '3日前';
+  const subject = ja ? (last ? '【お支払いのお願い】' : 'お支払いのお願い：') + 'バレエレッスン（' + whenIn_(ch, data.len, data.tz || TZ, true) + '）' : (last ? 'Payment needed: ' : 'Payment reminder: ') + 'your ballet lesson on ' + whenIn_(ch, data.len, data.tz || TZ, false);
+  const body = ja
+    ? data.name + ' 様\n\n' + (last ? 'レッスン代のお支払いがまだ確認できていません。ご予約を続けるため、今日中にお支払いをお願いします。' : 'レッスン代のお支払いがまだ確認できていません。' + (dl.late ? '今日中' : dl.ja + 'まで') + 'にお支払いをお願いします（レッスンの' + PAY_DAYS + '日前まで）。') + '\n\n日時：' + when + (per ? '\n金額：$' + per : '') + (link ? '\n\nVenmo：こちらを開くと、金額が入った状態で開きます\n' + link : '') + '\n\nもうお支払い済みでしたら、行き違いですみません。このメールに返信してお知らせください。\n\nMari Takayama'
+    : 'Hi ' + data.name + ',\n\n' + (last ? 'I haven’t received the payment for your lesson yet. To keep your booking, please pay today.' : 'I haven’t received the payment for your lesson yet. Please pay by ' + (dl.late ? 'today' : dl.en) + ' (' + PAY_DAYS + ' days before the lesson).') + '\n\nWhen: ' + when + (per ? '\nAmount: $' + per : '') + (link ? '\n\nVenmo — this link opens with everything filled in:\n' + link : '') + '\n\nIf you have already paid, sorry for the mix-up — just reply to let me know.\n\nMari Takayama';
+  MailApp.sendEmail({ to: data.email, subject, body, htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+}
+// elegant HTML version of an email (plain text in, or html when isHtml)
+function sendPretty_(m) { m.htmlBody = pretty_(m.body); MailApp.sendEmail(m); }
+function pretty_(text, isHtml) {
+  const inner = isHtml ? text : esc_(text).replace(/(https?:\/\/[^\s<]+)/g, u => /venmo\.com/.test(u)
+      ? '<a href="' + u + '" style="display:inline-block;margin:6px 0 2px;padding:11px 22px;background:#ecdfc6;border:1px solid #c9b48c;color:#2c2a30;text-decoration:none;letter-spacing:.04em">Venmo &rarr;</a>'
+      : '<a href="' + u + '" style="color:#7a6233;word-break:break-all">' + u + '</a>')
+    .split(/\n\n+/).map(p => '<p style="margin:0 0 16px">' + p.replace(/\n/g, '<br>') + '</p>').join('');
+  return '<div style="background:#faf7f1;padding:28px 12px"><div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e6dac3;padding:32px 30px;font-family:Georgia,\'Times New Roman\',\'Hiragino Mincho ProN\',\'Yu Mincho\',YuMincho,serif;font-size:16px;line-height:1.8;color:#2c2a30">'
+    + '<div style="text-align:center;margin:0 0 22px;padding-bottom:16px;border-bottom:1px solid #e6dac3"><div style="font-size:22px;letter-spacing:.08em;color:#2c2a30">Mari Takayama</div><div style="font-size:11px;letter-spacing:.32em;color:#8a7140;text-transform:uppercase;margin-top:4px">Ballet · New York</div></div>'
+    + inner + '</div></div>';
 }
 
 // ---------- helpers ----------
