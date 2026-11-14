@@ -139,6 +139,20 @@
     .day { grid-template-columns: 4.6rem 1fr; }
     .slot { font-size: .88rem; padding: 9px 2px; }
   }
+  /* compact form */
+  .q { margin: 12px 0 6px !important; font-size: .97rem; }
+  .chips { gap: 6px !important; }
+  .chip { padding: 7px 12px !important; font-size: .95rem !important; }
+  label.field { margin: 10px 0 0 !important; }
+  input[type=text], input[type=email], input[type=tel], textarea { padding: 9px 11px !important; margin-top: 4px !important; }
+  .pair-row { display: grid; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 700px) { .pair-row { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 0 20px; } }
+  .more-about { margin: 12px 0 0; }
+  .more-about summary { cursor: pointer; list-style: none; color: var(--gold-ink); font-size: .95rem; }
+  .more-about summary::-webkit-details-marker { display: none; }
+  .more-about summary::before { content: "＋ "; }
+  .more-about[open] summary::before { content: "－ "; }
+  .more-about summary small { color: var(--muted); }
 </style>
 <link rel="stylesheet" href="site-theme.css?v=36">
 <style>
@@ -177,10 +191,14 @@
       <label class="field">Your email <small class="req">(required)</small><input type="email" name="email" autocomplete="email" maxlength="120" required></label>
       <p class="contact-hint" id="same-note" hidden>Just your full name and email, the same as before.</p>
       <div id="reach-more">
-      <label class="field">Nickname <small>(optional)</small><input type="text" name="nickname" maxlength="60" placeholder="What should Mari call you?"></label>
+      <div class="pair-row">
       <div id="gender-row"><p class="q">Gender</p><div class="chips" data-group="gender" data-single><button type="button" class="chip" data-value="Female">Female</button><button type="button" class="chip" data-value="Male">Male</button><button type="button" class="chip" data-value="Nonbinary">Non-binary</button><button type="button" class="chip" data-value="Other">Other</button><button type="button" class="chip" data-value="None">Prefer not to say</button></div></div>
       <div id="lang-row"><p class="q">Lesson in</p><div class="chips" data-group="tongue" data-single><button type="button" class="chip" data-value="English">In English</button><button type="button" class="chip" data-value="Japanese">In Japanese</button><button type="button" class="chip" data-value="Either">Either is fine</button></div></div>
-      <label class="field">Social media <small>(optional)</small><input type="text" name="social" maxlength="120" placeholder="e.g. Instagram @yourname"></label>
+      </div>
+      <details class="more-about"><summary>Nickname &amp; social media <small>(optional)</small></summary>
+        <label class="field">Nickname <small>(optional)</small><input type="text" name="nickname" maxlength="60" placeholder="What should Mari call you?"></label>
+        <label class="field">Social media <small>(optional)</small><input type="text" name="social" maxlength="120" placeholder="e.g. Instagram @yourname"></label>
+      </details>
       <p class="q">Best way to reach you</p>
       <div class="chips" data-group="via" data-single>
         <button type="button" class="chip" data-value="Instagram">Instagram</button>
