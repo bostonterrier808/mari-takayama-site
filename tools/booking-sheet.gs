@@ -967,6 +967,8 @@ function pretty_(text, isHtml) {
   const jaMail = /[\u3040-\u30ff]/.test(text);
   const link = u => /[?&]act=(mmove|mcancel|take|decl)&/.test(u)
     ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:14px 12px;text-align:center;text-decoration:none;font-size:16px;letter-spacing:.04em;' + (/act=(mmove|take)&/.test(u) ? 'background:#2c2a30;color:#ffffff;border:1px solid #2c2a30' : 'background:#ffffff;color:#2c2a30;border:1px solid #2c2a30') + '">' + ({ mmove: '日時を変更する（お客さんに提案）', mcancel: 'キャンセルする', take: jaMail ? 'この日時で OK' : 'This time works', decl: jaMail ? 'キャンセルする（全額返金）' : 'Doesn’t work — cancel with a full refund' })[u.match(/act=(\w+)/)[1]] + '</a>'
+    : /zoom\.us\//.test(u)
+    ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:14px 12px;text-align:center;text-decoration:none;font-size:16px;letter-spacing:.04em;background:#ffffff;color:#2c2a30;border:1px solid #2c2a30">' + (jaMail ? 'Zoom に参加する' : 'Join on Zoom') + '</a>'
     : u === BOOKING_PAGE
     ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:14px 12px;text-align:center;text-decoration:none;font-size:16px;letter-spacing:.04em;background:#ffffff;color:#2c2a30;border:1px solid #2c2a30">' + (jaMail ? '予約ページを開く' : 'Open the booking page') + '</a>'
     : /[?&]act=ack&/.test(u)
@@ -985,10 +987,13 @@ function pretty_(text, isHtml) {
     if (/^## /.test(p)) { const ls = p.split('\n'); return '<div style="font-size:17px;font-weight:600;color:#2c2a30;margin:28px 0 8px;padding-left:10px;border-left:3px solid #c9b48c">' + esc_(ls.shift().slice(3)) + '</div>' + (ls.length ? block(ls.join('\n')) : ''); }
     const lines = p.split('\n');
     // "When: …  Where: …" style lines -> a soft box with labels and values
-    if (lines.length > 1 && lines.every(isInfo)) {
-      return '<table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 20px;background:#faf7f1;border:1px solid #eee3cf">' + lines.map(l => {
+    // indented lines (e.g. "  New York time: …") continue the line above
+    const rows = []; lines.forEach(l => { if (/^[\s　]+\S/.test(l) && rows.length) rows[rows.length - 1].more.push(l.trim()); else rows.push({ l, more: [] }); });
+    if (rows.length > 1 && rows.every(x => isInfo(x.l))) {
+      return '<table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 20px;background:#faf7f1;border:1px solid #eee3cf">' + rows.map(x => {
+        const l = x.l, more = x.more.map(s => '<br><span style="font-weight:400;font-size:14px;color:#555">' + fmt(s) + '</span>').join('');
         const m = l.match(/^([^：:]+)[：:]\s?(.*)$/);
-        return '<tr><td style="padding:10px 0 10px 14px;color:#8a7140;font-size:14px;white-space:nowrap;vertical-align:top">' + esc_(m[1]) + '</td><td style="padding:10px 14px;font-size:17px;color:#222222;font-weight:600">' + fmt(m[2]).replace(/(（[^）]*時間）| \([^)]*time\))/g, '<br><span style="font-weight:400;font-size:14px">$1</span>') + '</td></tr>';
+        return '<tr><td style="padding:10px 0 10px 14px;color:#8a7140;font-size:14px;white-space:nowrap;vertical-align:top">' + esc_(m[1]) + '</td><td style="padding:10px 14px;font-size:17px;color:#222222;font-weight:600">' + fmt(m[2]).replace(/(（[^）]*時間）| \([^)]*time\))/g, '<br><span style="font-weight:400;font-size:14px">$1</span>') + more + '</td></tr>';
       }).join('') + '</table>';
     }
     // a heading line ending with ：/: followed by bullet lines
