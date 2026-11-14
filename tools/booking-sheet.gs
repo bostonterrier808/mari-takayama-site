@@ -662,7 +662,7 @@ function cancelLesson_(sh, r, data, b, rf, byMari, msg) {
   const paid = sh.getRange(r, C['支払い']).getValue();
   const when = custWhen_(data, bk, bk.len, ja);
   const body = byMari ? (ja
-    ? '# レッスンキャンセルのお知らせ\n\n' + data.name + ' 様\n\nご迷惑をおかけして、申し訳ございません。こちらの都合で、次のレッスンをキャンセルさせてください。\n\n日時：' + when + '\nレッスン：' + bk.len + '分\n' + (msg ? '\n' + msg + '\n' : '') + '\n' + rf.ja + (paid === true && rf.kind === 'full' ? '\nVenmo でお返しします。' : '') + '\n\nご都合のよい日時で、また予約していただけたらうれしいです。\n' + BOOKING_PAGE + '\n\n本当に申し訳ございません。\n髙山まり'
+    ? '# レッスンキャンセルのお知らせ\n\n' + data.name + ' 様\n\n誠に申し訳ございません。私の都合により、下記のレッスンをキャンセルさせていただくことになりました。\n\n日時：' + when + '\nレッスン：' + bk.len + '分\n' + (msg ? '\n' + msg + '\n' : '') + '\n' + (rf.kind === 'packback' ? '回数券は、1回分をお戻しいたします。' : rf.kind === 'free' ? '' : 'お支払い済みのレッスン代は、全額お返しいたします。' + (paid === true ? '\nVenmo にてご返金いたしますので、少々お待ちください。' : '')) + '\n\nまたご都合のよろしい日時で、ご予約いただけましたら幸いです。\n' + BOOKING_PAGE + '\n\nご迷惑をおかけしましたこと、重ねてお詫び申し上げます。\n髙山まり'
     : '# Your lesson is cancelled\n\nHi ' + data.name + ',\n\nI’m very sorry for the inconvenience — I have to cancel this lesson.\n\nWhen: ' + when + '\nLesson: ' + bk.len + ' minutes\n' + (msg ? '\n' + msg + '\n' : '') + '\n' + rf.en + (paid === true && rf.kind === 'full' ? '\nI will send it back by Venmo.' : '') + '\n\nI would love to see you at another time:\n' + BOOKING_PAGE + '\n\nMari Takayama')
     : ja
     ? '# キャンセル受付のお知らせ\n\n' + data.name + ' 様\n\nレッスンのキャンセルを承りました。\n\n日時：' + when + '\nレッスン：' + bk.len + '分\n\n' + rf.ja + (rf.kind === 'full' || rf.kind === 'half' ? (paid === true ? '\nVenmo でお返しします。' : '') : '') + '\n\nまたのご予約をお待ちしています。\n' + BOOKING_PAGE + '\n\n髙山まり'
@@ -737,7 +737,7 @@ function mariChange_(p, sh, r, data) {
   const ja = data.language === 'ja', ck = ScriptApp.getService().getUrl() + '?id=' + encodeURIComponent(data.id) + '&k=' + data.ckey + '&b=' + p.b;
   const msg = String(p.msg || '').slice(0, 500);
   const body = ja
-    ? '# レッスン日時変更のお願い\n\n' + data.name + ' 様\n\nご迷惑をおかけして、申し訳ございません。こちらの都合で、レッスンの日時を変更させていただけないでしょうか。\n\n今のご予約：' + whenIn_(bk, bk.len, data.tz || TZ, true) + '\n新しい日時：' + custWhen_(data, data.offer, bk.len, true) + '\n' + (msg ? '\n' + msg + '\n' : '') + '\n## 新しい日時でよろしい場合\n「この日時で OK」を押してください。予約が変更されます。\n' + ck.replace('?', '?act=take&') + '\n\n## ご都合が合わない場合（キャンセル）\nキャンセルにして、全額お返しします' + (bk.pack ? '（回数券なら1回分お戻しします）' : '') + '。\n' + ck.replace('?', '?act=decl&') + '\n\nご迷惑をおかけして、本当に申し訳ございません。\n髙山まり'
+    ? '# レッスン日時変更のお願い\n\n' + data.name + ' 様\n\n誠に申し訳ございません。私の都合により、ご予約いただいているレッスンの日時を、下記に変更させていただけないでしょうか。\n\n現在：' + whenIn_(bk, bk.len, data.tz || TZ, true) + '\n変更後：' + custWhen_(data, data.offer, bk.len, true) + '\n' + (msg ? '\n' + msg + '\n' : '') + '\n## 変更後の日時でよろしい場合\n下のボタンを押していただくと、ご予約が新しい日時に変更されます。\n' + ck.replace('?', '?act=take&') + '\n\n## ご都合が合わない場合\nお手数ですが、下のボタンからキャンセルしてください。' + (bk.pack ? '回数券は、1回分をお戻しいたします。' : 'お支払い済みのレッスン代は、全額お返しいたします。') + '\n' + ck.replace('?', '?act=decl&') + '\n\nご迷惑をおかけして大変申し訳ございませんが、何卒よろしくお願いいたします。\n髙山まり'
     : '# Request to move your lesson\n\nHi ' + data.name + ',\n\nI’m very sorry for the inconvenience — could we move your lesson?\n\nNow booked: ' + whenIn_(bk, bk.len, data.tz || TZ, false) + '\nNew time: ' + custWhen_(data, data.offer, bk.len, false) + '\n' + (msg ? '\n' + msg + '\n' : '') + '\n## If the new time works\nTap “This time works” and your lesson will be moved.\n' + ck.replace('?', '?act=take&') + '\n\n## If it doesn’t work (cancel)\nYou can cancel and get a full refund' + (bk.pack ? ' (or the lesson back on your pack)' : '') + '.\n' + ck.replace('?', '?act=decl&') + '\n\nI’m truly sorry for the inconvenience.\nMari Takayama';
   MailApp.sendEmail({ to: data.email, subject: ja ? 'レッスンの日時変更のお願い' : 'Could we move your lesson?', body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
   return page_('提案を送りました', head + '<br>→ <b>' + choiceJa_(data.offer, bk.len) + '</b><p>お客さんが OK すると、自動で変更されて Mari さんにもメールが届きます。</p>');
@@ -881,7 +881,7 @@ function pretty_(text, isHtml) {
     if (lines.length > 1 && lines.every(isInfo)) {
       return '<table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 20px;background:#faf7f1;border:1px solid #eee3cf">' + lines.map(l => {
         const m = l.match(/^([^：:]+)[：:]\s?(.*)$/);
-        return '<tr><td style="padding:10px 0 10px 14px;color:#8a7140;font-size:14px;white-space:nowrap;vertical-align:top">' + esc_(m[1]) + '</td><td style="padding:10px 14px;font-size:17px;color:#222222;font-weight:600">' + fmt(m[2]) + '</td></tr>';
+        return '<tr><td style="padding:10px 0 10px 14px;color:#8a7140;font-size:14px;white-space:nowrap;vertical-align:top">' + esc_(m[1]) + '</td><td style="padding:10px 14px;font-size:17px;color:#222222;font-weight:600">' + fmt(m[2]).replace(/(（[^）]*時間）| \([^)]*time\))/g, '<br><span style="font-weight:400;font-size:14px">$1</span>') + '</td></tr>';
       }).join('') + '</table>';
     }
     // a heading line ending with ：/: followed by bullet lines
