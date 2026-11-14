@@ -75,13 +75,7 @@
     addEventListener('pageshow', ev => { if (ev.persisted) root.classList.remove('mt-page-out'); });
   }
 
-  // 3) header slips away when scrolling down, returns when scrolling up
-  const header = document.querySelector('header.top');
-  let lastY = scrollY;
-  addEventListener('scroll', () => {
-    const y = scrollY; if (!header || header.classList.contains('menu-open')) { lastY = y; return; }
-    header.classList.toggle('mt-hide', y > lastY && y > 240); lastY = y;
-  }, { passive: true });
+  // 3) (the header always stays on screen; Mari asked that it not slip away)
 
   if (!fine || inFrame) return;
   // 5) a small gold ring follows the mouse and opens up over links and photos
