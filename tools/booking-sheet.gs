@@ -62,7 +62,7 @@ const JA = {
   visit: { First: '初めて', Returning: '2回目以降' },
   place: { FuncPhysio: 'FuncPhysio', Studio: 'ダンススタジオ', Travel: '出張', Zoom: 'Zoom', Any: 'どこでも' },
   age: { Child: '子ども', Teen: '10代', Adult: '大人' },
-  goals: { 'Start ballet': 'バレエを始めたい', 'Better technique': 'テクニックを上げたい', 'Pointe work': 'ポアント', 'Learn a variation': 'バリエーション', 'Competition or audition': 'コンクール・オーディション', 'Fitness and posture': '体づくり・姿勢', 'Just for fun': '楽しみとして', 'Something else': 'その他' },
+  goals: { 'Start ballet': 'バレエを始めたい', 'Strong basics': '基礎', 'Better technique': 'テクニックを上げたい', 'Pointe work': 'ポアント', 'Learn a variation': 'バリエーション', 'Competition or audition': 'コンクール・オーディション', 'Fitness and posture': '体づくり・姿勢', 'Just for fun': '楽しみとして', 'Something else': 'その他' },
   tongue: { English: '英語', Japanese: '日本語', Either: 'どちらでも' },
   gender: { Female: '女性', Male: '男性', Nonbinary: 'ノンバイナリー', Other: 'その他', None: '答えない' },
   heard: { Instagram: 'Instagram', Website: 'ウェブサイト・検索', Friend: '友達の紹介', Studio: 'スタジオ・学校', Performance: '公演を見て', Other: 'その他' },
