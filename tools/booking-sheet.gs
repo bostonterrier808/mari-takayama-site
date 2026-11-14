@@ -662,8 +662,8 @@ function cancelLesson_(sh, r, data, b, rf, byMari, msg) {
   const paid = sh.getRange(r, C['支払い']).getValue();
   const when = custWhen_(data, bk, bk.len, ja);
   const body = byMari ? (ja
-    ? data.name + ' 様\n\n申し訳ありません。こちらの都合で、次のレッスンをキャンセルさせてください。\n\n日時：' + when + '\nレッスン：' + bk.len + '分\n' + (msg ? '\n' + msg + '\n' : '') + '\n' + rf.ja + (paid === true && rf.kind === 'full' ? '\nVenmo でお返しします。' : '') + '\n\nご都合のよい日時で、また予約していただけたらうれしいです。\n' + BOOKING_PAGE + '\n\n髙山まり'
-    : 'Hi ' + data.name + ',\n\nI’m so sorry — I have to cancel this lesson.\n\nWhen: ' + when + '\nLesson: ' + bk.len + ' minutes\n' + (msg ? '\n' + msg + '\n' : '') + '\n' + rf.en + (paid === true && rf.kind === 'full' ? '\nI will send it back by Venmo.' : '') + '\n\nI would love to see you at another time:\n' + BOOKING_PAGE + '\n\nMari Takayama')
+    ? data.name + ' 様\n\nご迷惑をおかけして、申し訳ございません。こちらの都合で、次のレッスンをキャンセルさせてください。\n\n日時：' + when + '\nレッスン：' + bk.len + '分\n' + (msg ? '\n' + msg + '\n' : '') + '\n' + rf.ja + (paid === true && rf.kind === 'full' ? '\nVenmo でお返しします。' : '') + '\n\nご都合のよい日時で、また予約していただけたらうれしいです。\n' + BOOKING_PAGE + '\n\n本当に申し訳ございません。\n髙山まり'
+    : 'Hi ' + data.name + ',\n\nI’m very sorry for the inconvenience — I have to cancel this lesson.\n\nWhen: ' + when + '\nLesson: ' + bk.len + ' minutes\n' + (msg ? '\n' + msg + '\n' : '') + '\n' + rf.en + (paid === true && rf.kind === 'full' ? '\nI will send it back by Venmo.' : '') + '\n\nI would love to see you at another time:\n' + BOOKING_PAGE + '\n\nMari Takayama')
     : ja
     ? data.name + ' 様\n\nレッスンのキャンセルを承りました。\n\n日時：' + when + '\nレッスン：' + bk.len + '分\n\n' + rf.ja + (rf.kind === 'full' || rf.kind === 'half' ? (paid === true ? '\nVenmo でお返しします。' : '') : '') + '\n\nまたのご予約をお待ちしています。\n' + BOOKING_PAGE + '\n\n髙山まり'
     : 'Hi ' + data.name + ',\n\nYour lesson is cancelled.\n\nWhen: ' + when + '\nLesson: ' + bk.len + ' minutes\n\n' + rf.en + (rf.kind === 'full' || rf.kind === 'half' ? (paid === true ? '\nMari will send it back by Venmo.' : '') : '') + '\n\nHope to see you another time:\n' + BOOKING_PAGE + '\n\nMari Takayama';
@@ -696,12 +696,12 @@ function fullRefund_(data, bk) {
 }
 // ready-made notes Mari can tap when she moves or cancels a lesson (customers who chose English get the English ones)
 const MEMOS_JA = {
-  move: ['ご迷惑をおかけして、申し訳ございません。', '急にリハーサルが入ってしまいました。', '公演の予定が入ってしまいました。', 'スタジオが使えなくなってしまいました。', '体調を崩してしまい、念のため日にちを変えさせてください。', 'ご都合が合わなければ、遠慮なくキャンセルしてください。'],
-  cancel: ['ご迷惑をおかけして、申し訳ございません。', '急にリハーサルが入ってしまいました。', '公演の予定が入ってしまいました。', 'スタジオが使えなくなってしまいました。', '体調を崩してしまいました。', 'またご都合のよい日に、ぜひお会いできたらうれしいです。']
+  move: ['急にリハーサルが入ってしまいました。', '公演の予定が入ってしまいました。', 'スタジオが使えなくなってしまいました。', '体調を崩してしまい、念のため日にちを変えさせてください。', 'ご都合が合わなければ、遠慮なくキャンセルしてください。'],
+  cancel: ['急にリハーサルが入ってしまいました。', '公演の予定が入ってしまいました。', 'スタジオが使えなくなってしまいました。', '体調を崩してしまいました。', 'またご都合のよい日に、ぜひお会いできたらうれしいです。']
 };
 const MEMOS_EN = {
-  move: ['I’m very sorry for the inconvenience.', 'A rehearsal came up suddenly.', 'I have a performance scheduled at that time.', 'The studio is no longer available at that time.', 'I’m not feeling well, so I’d like to move the lesson to be safe.', 'If the new time doesn’t work for you, please feel free to cancel.'],
-  cancel: ['I’m very sorry for the inconvenience.', 'A rehearsal came up suddenly.', 'I have a performance scheduled at that time.', 'The studio is no longer available at that time.', 'I’m not feeling well.', 'I hope to see you at another time soon.']
+  move: ['A rehearsal came up suddenly.', 'I have a performance scheduled at that time.', 'The studio is no longer available at that time.', 'I’m not feeling well, so I’d like to move the lesson to be safe.', 'If the new time doesn’t work for you, please feel free to cancel.'],
+  cancel: ['A rehearsal came up suddenly.', 'I have a performance scheduled at that time.', 'The studio is no longer available at that time.', 'I’m not feeling well.', 'I hope to see you at another time soon.']
 };
 function mariChange_(p, sh, r, data) {
   const bk = (data.booked || [])[+p.b];
@@ -737,8 +737,8 @@ function mariChange_(p, sh, r, data) {
   const ja = data.language === 'ja', ck = ScriptApp.getService().getUrl() + '?id=' + encodeURIComponent(data.id) + '&k=' + data.ckey + '&b=' + p.b;
   const msg = String(p.msg || '').slice(0, 500);
   const body = ja
-    ? data.name + ' 様\n\n申し訳ありません。こちらの都合で、レッスンの日時を変更させていただけないでしょうか。\n\n今のご予約：' + whenIn_(bk, bk.len, data.tz || TZ, true) + '\n新しい日時：' + custWhen_(data, data.offer, bk.len, true) + '\n' + (msg ? '\n' + msg + '\n' : '') + '\nこの日時でよろしければ、「この日時で OK」を押してください。\n' + ck.replace('?', '?act=take&') + '\n\nご都合が合わない場合は、キャンセルにして全額お返しします' + (bk.pack ? '（回数券なら1回分お戻しします）' : '') + '。\n' + ck.replace('?', '?act=decl&') + '\n\nご迷惑をおかけしてすみません。\n髙山まり'
-    : 'Hi ' + data.name + ',\n\nI’m so sorry — could we move your lesson?\n\nNow booked: ' + whenIn_(bk, bk.len, data.tz || TZ, false) + '\nNew time: ' + custWhen_(data, data.offer, bk.len, false) + '\n' + (msg ? '\n' + msg + '\n' : '') + '\nIf the new time works, tap “This time works”:\n' + ck.replace('?', '?act=take&') + '\n\nIf it doesn’t, you can cancel and get a full refund' + (bk.pack ? ' (or the lesson back on your pack)' : '') + ':\n' + ck.replace('?', '?act=decl&') + '\n\nSorry for the trouble.\nMari Takayama';
+    ? data.name + ' 様\n\nご迷惑をおかけして、申し訳ございません。こちらの都合で、レッスンの日時を変更させていただけないでしょうか。\n\n今のご予約：' + whenIn_(bk, bk.len, data.tz || TZ, true) + '\n新しい日時：' + custWhen_(data, data.offer, bk.len, true) + '\n' + (msg ? '\n' + msg + '\n' : '') + '\nこの日時でよろしければ、「この日時で OK」を押してください。\n' + ck.replace('?', '?act=take&') + '\n\nご都合が合わない場合は、キャンセルにして全額お返しします' + (bk.pack ? '（回数券なら1回分お戻しします）' : '') + '。\n' + ck.replace('?', '?act=decl&') + '\n\nご迷惑をおかけして、本当に申し訳ございません。\n髙山まり'
+    : 'Hi ' + data.name + ',\n\nI’m very sorry for the inconvenience — could we move your lesson?\n\nNow booked: ' + whenIn_(bk, bk.len, data.tz || TZ, false) + '\nNew time: ' + custWhen_(data, data.offer, bk.len, false) + '\n' + (msg ? '\n' + msg + '\n' : '') + '\nIf the new time works, tap “This time works”:\n' + ck.replace('?', '?act=take&') + '\n\nIf it doesn’t, you can cancel and get a full refund' + (bk.pack ? ' (or the lesson back on your pack)' : '') + ':\n' + ck.replace('?', '?act=decl&') + '\n\nI’m truly sorry for the inconvenience.\nMari Takayama';
   MailApp.sendEmail({ to: data.email, subject: ja ? 'レッスンの日時変更のお願い' : 'Could we move your lesson?', body, htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
   return page_('提案を送りました', head + '<br>→ <b>' + choiceJa_(data.offer, bk.len) + '</b><p>お客さんが OK すると、自動で変更されて Mari さんにもメールが届きます。</p>');
 }
@@ -751,7 +751,7 @@ function offerAnswer_(p, sh, r, data) {
   if (p.act === 'take') {
     if (!p.go) return page_(ja ? 'この日時に変更しますか？' : 'Move to this time?', '<b>' + custWhen_(data, of, bk.len, ja).replace(/\n/g, '<br>') + '</b>', self, ja ? 'この日時で OK' : 'Yes, this time works');
     data.offer = null; const old = moveTo_(sh, r, data, of.b, of);
-    const body = ja ? data.name + ' 様\n\nご協力ありがとうございます。レッスンの日時を変更しました。\n\n日時：' + custWhen_(data, bk, bk.len, true) + '\n場所：' + placeText_(data, true) + '\nレッスン：' + bk.len + '分\n\n（変更前：' + whenIn_(old, bk.len, data.tz || TZ, true) + '）\n\nお支払いは、そのまま新しい日時に引き継がれます。' + manageLine_(data, true) + '\n\n髙山まり'
+    const body = ja ? data.name + ' 様\n\nご迷惑をおかけして申し訳ございません。ご協力ありがとうございます。レッスンの日時を変更しました。\n\n日時：' + custWhen_(data, bk, bk.len, true) + '\n場所：' + placeText_(data, true) + '\nレッスン：' + bk.len + '分\n\n（変更前：' + whenIn_(old, bk.len, data.tz || TZ, true) + '）\n\nお支払いは、そのまま新しい日時に引き継がれます。' + manageLine_(data, true) + '\n\n髙山まり'
       : 'Hi ' + data.name + ',\n\nThank you! Your lesson has been moved.\n\nWhen: ' + custWhen_(data, bk, bk.len, false) + '\nWhere: ' + placeText_(data, false) + '\nLesson: ' + bk.len + ' minutes\n\n(Before: ' + whenIn_(old, bk.len, data.tz || TZ, false) + ')\n\nYour payment carries over to the new time.' + manageLine_(data, false) + '\n\nMari Takayama';
     MailApp.sendEmail({ to: data.email, subject: ja ? 'レッスンの日時を変更しました（' + whenIn_(bk, bk.len, data.tz || TZ, true) + '）' : 'Your lesson has been moved — ' + whenIn_(bk, bk.len, data.tz || TZ, false), body, htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO, attachments: [ics_(data, bk, bk.len)] });
     if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【変更OK】' + data.name + '（' + choiceJa_(old, bk.len) + ' → ' + choiceJa_(bk, bk.len) + '）', body: data.name + ' さんが新しい日時を OK しました。', htmlBody: pretty_('<p><b>' + esc_(data.name) + '</b> さんが、新しい日時を OK しました。Google カレンダーも移しました。</p>' + infoBox_([['前', choiceJa_(old, bk.len)], ['新しい日時', choiceJa_(bk, bk.len)]]), true) });
@@ -760,7 +760,7 @@ function offerAnswer_(p, sh, r, data) {
   const rf = fullRefund_(data, bk);
   if (!p.go) return page_(ja ? 'キャンセルしますか？' : 'Cancel this lesson?', whenIn_(bk, bk.len, data.tz || TZ, ja) + '<p><b>' + (ja ? rf.ja : rf.en) + '</b></p>', self, ja ? 'キャンセルする' : 'Yes, cancel');
   data.offer = null; cancelLesson_(sh, r, data, of.b, rf, false);
-  return page_(ja ? 'キャンセルしました' : 'Your lesson is cancelled', '<b>' + (ja ? rf.ja : rf.en) + '</b><p>' + (ja ? 'ご迷惑をおかけしてすみませんでした。' : 'Sorry again for the trouble.') + '</p>' + custBtn_(BOOKING_PAGE, ja ? '別の日に予約する' : 'Book another time', false));
+  return page_(ja ? 'キャンセルしました' : 'Your lesson is cancelled', '<b>' + (ja ? rf.ja : rf.en) + '</b><p>' + (ja ? 'ご迷惑をおかけして、申し訳ございませんでした。' : 'Sorry again for the trouble.') + '</p>' + custBtn_(BOOKING_PAGE, ja ? '別の日に予約する' : 'Book another time', false));
 }
 
 // Mari answers a change request
@@ -863,6 +863,8 @@ function pretty_(text, isHtml) {
   const jaMail = /[\u3040-\u30ff]/.test(text);
   const link = u => /[?&]act=(mmove|mcancel|take|decl)&/.test(u)
     ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:14px 12px;text-align:center;text-decoration:none;font-size:16px;letter-spacing:.04em;' + (/act=(mmove|take)&/.test(u) ? 'background:#2c2a30;color:#ffffff;border:1px solid #2c2a30' : 'background:#ffffff;color:#2c2a30;border:1px solid #2c2a30') + '">' + ({ mmove: '日時を変更する（お客さんに提案）', mcancel: 'キャンセルする', take: jaMail ? 'この日時で OK' : 'This time works', decl: jaMail ? 'キャンセルする（全額返金）' : 'Doesn’t work — cancel with a full refund' })[u.match(/act=(\w+)/)[1]] + '</a>'
+    : u === BOOKING_PAGE
+    ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:14px 12px;text-align:center;text-decoration:none;font-size:16px;letter-spacing:.04em;background:#ffffff;color:#2c2a30;border:1px solid #2c2a30">' + (jaMail ? '予約ページを開く' : 'Open the booking page') + '</a>'
     : /[?&]act=mine/.test(u)
     ? '<a href="' + u + '" style="display:block;margin:4px 0;padding:14px 12px;background:#ffffff;border:1px solid #2c2a30;color:#2c2a30;text-align:center;text-decoration:none;font-size:17px;letter-spacing:.04em">' + (jaMail ? '日時の変更・キャンセル' : 'Change or cancel') + '</a>'
     : /venmo\.com/.test(u)
