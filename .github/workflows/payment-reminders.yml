@@ -1,0 +1,12 @@
+# Every morning, ask the lesson booking script to send payment reminders
+# (to people whose lesson is confirmed but not yet marked paid in the sheet).
+name: Payment reminders
+on:
+  schedule:
+    - cron: '7 14 * * *'   # about 9:07 am New York time (10:07 in summer)
+  workflow_dispatch:
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -fsSL "https://script.google.com/macros/s/AKfycbyoBjOrilADknvlRF8Mf6vzOootjaOEG_56OdEDFinrhrzaH4o8Z2fzm8niTlL0c6-9oQ/exec?reminders=1" | head -c 200
