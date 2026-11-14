@@ -648,7 +648,7 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
 @media (max-width: 350px) { header.top .brand small { display: none; } }
 @media (prefers-reduced-motion: reduce) { header.top #site-menu, header.top #site-menu a::after, header.top .menu-sub, header.top .menu-toggle i::before, header.top .menu-toggle i::after { transition: none !important; } }
 </style>
-<meta name="editor-published-at" content="1794575820000"><style id="home-type">
+<meta name="editor-published-at" content="1794620000000"><style id="home-type">
 /* Home type: light Cormorant titles (option A) */
 .hero h1 { font-weight: 400 !important; }
 .home-intro h2, .home-eyebrow, .home-stage h2, .home-gallery h2, .home-press h2, .home-contact h2, .home-duo .home-path h2 { font-weight: 300 !important; }
@@ -712,7 +712,29 @@ main { counter-reset: sec; }
 .home-stage-grid { grid-template-columns: minmax(0, 46rem); }
 </style>
 <link rel="stylesheet" href="site-theme.css?v=34">
-<style id="manual-box-styles">@media(min-width:761px){}@media(max-width:760px){}</style><style id="manual-text-styles">@media(min-width:761px){}@media(max-width:760px){}</style></head>
+<style id="manual-box-styles">@media(min-width:761px){}@media(max-width:760px){}</style><style id="manual-text-styles">@media(min-width:761px){}@media(max-width:760px){}</style><style id="home-balance">
+/* About Mari: two photos in a gentle diagonal, centered and balanced with the text */
+:root body .home-intro .wrap { align-items: center !important; }
+:root body .home-intro .wrap .home-intro-photo { display: flex !important; align-items: flex-start; justify-content: center; width: 100%; max-width: 28rem !important; padding-bottom: 0 !important; margin: 0 auto !important; }
+:root body .home-intro .wrap .home-intro-photo > img[data-photo-id="home/about"] { position: relative !important; left: auto !important; bottom: auto !important; flex: 0 0 38% !important; width: 38% !important; margin: 4% 0 0 !important; z-index: 2; }
+:root body .home-intro .wrap .home-intro-photo > img.intro-dance { position: relative !important; right: auto !important; bottom: auto !important; flex: 0 0 50% !important; width: 50% !important; margin: 18% 0 0 -3% !important; z-index: 1; }
+@media (min-width: 761px) {
+  :root body .home-intro .wrap .home-intro-photo { margin: 0 0 0 auto !important; }
+}
+@media (max-width: 760px) {
+  :root body .home-intro .wrap .home-intro-photo { max-width: 22rem !important; }
+}
+/* Lessons & Performances: smaller photos, never cropped */
+@media (min-width: 761px) {
+  :root body .home-paths.duo .home-duo { max-width: 54rem !important; gap: clamp(3rem, 5vw, 4rem) !important; }
+  :root body .home-duo .home-path { grid-template-columns: auto minmax(0, 1fr) !important; gap: clamp(2.5rem, 5vw, 4rem) !important; }
+  :root body .home-duo .home-path.events { grid-template-columns: minmax(0, 1fr) auto !important; }
+}
+:root body .home-duo .home-path > img[data-photo-id][data-photo-id] { width: auto !important; max-width: 100% !important; height: clamp(16rem, 24vw, 21rem) !important; object-fit: contain !important; }
+@media (max-width: 760px) {
+  :root body .home-duo .home-path > img[data-photo-id][data-photo-id] { height: auto !important; width: 62% !important; margin-inline: auto !important; }
+}
+</style></head>
 <body>
 
 <header class="top" data-box-slot="0">
