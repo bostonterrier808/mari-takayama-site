@@ -107,7 +107,7 @@
   .ny { display: block; font-size: .8rem; color: var(--muted); }
 
   label.field { display: block; margin: 14px 0 0; font-weight: 500; }
-  .name-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  .name-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; align-items: end; }
   @media (max-width: 380px) { .name-row { grid-template-columns: 1fr; } }
 
   label.field small { font-weight: 400; color: var(--muted); }
@@ -179,6 +179,8 @@
       <div id="reach-more">
       <label class="field">Nickname <small>(optional)</small><input type="text" name="nickname" maxlength="60" placeholder="What should Mari call you?"></label>
       <div id="gender-row"><p class="q">Gender</p><div class="chips" data-group="gender" data-single><button type="button" class="chip" data-value="Female">Female</button><button type="button" class="chip" data-value="Male">Male</button><button type="button" class="chip" data-value="Nonbinary">Non-binary</button><button type="button" class="chip" data-value="Other">Other</button><button type="button" class="chip" data-value="None">Prefer not to say</button></div></div>
+      <div id="lang-row"><p class="q">Lesson in</p><div class="chips" data-group="tongue" data-single><button type="button" class="chip" data-value="English">In English</button><button type="button" class="chip" data-value="Japanese">In Japanese</button><button type="button" class="chip" data-value="Either">Either is fine</button></div></div>
+      <div id="jp-row"><p class="q">Are you Japanese? <small>(optional)</small></p><div class="chips" data-group="japanese" data-single><button type="button" class="chip" data-value="Yes">Yes</button><button type="button" class="chip" data-value="No">No</button><button type="button" class="chip" data-value="None">Prefer not to say</button></div></div>
       <label class="field">Social media <small>(optional)</small><input type="text" name="social" maxlength="120" placeholder="e.g. Instagram @yourname"></label>
       <p class="q">Best way to reach you</p>
       <div class="chips" data-group="via" data-single>
@@ -348,6 +350,7 @@
       first: { en: 'Please write your first name.', ja: '名（下の名前）を入れてください。' },
       last: { en: 'Please write your last name.', ja: '姓（名字）を入れてください。' },
       gender: { en: 'Please choose your gender (or “Prefer not to say”).', ja: '性別を選んでください（「答えない」も選べます）。' },
+      tongue: { en: 'Please choose the language for your lesson.', ja: 'レッスンの言語を選んでください。' },
       times: { en: 'Please choose at least 3 times.', ja: '希望の時間を3つ以上選んでください。' },
       timesMany: { en: 'Please choose at least 2 lesson times.', ja: 'レッスンの日時を2つ以上選んでください。' },
       len: { en: 'Please choose how long the lesson is.', ja: 'レッスンの長さを選んでください。' },
@@ -673,6 +676,7 @@
     if (!form.first.value.trim()) return fail(T.errors.first, form.first);
     if (!form.last.value.trim()) return fail(T.errors.last, form.last);
     if (choice.visit === 'First' && !choice.gender) return fail(T.errors.gender);
+    if (choice.visit === 'First' && !choice.tongue) return fail(T.errors.tongue);
     if (!choice.len) return fail(T.errors.len);
     if (picks.length < (many() ? 2 : 3)) return fail(many() ? T.errors.timesMany : T.errors.times);
     if (choice.place === 'Travel' && !choice.space) return fail(T.errors.space);
@@ -692,7 +696,7 @@
       place: choice.place || '', area: [choice.place === 'Travel' && choice.space ? { Small: '広さ：バーのみ（センターは無理）', Medium: '広さ：バー＋あまり動かないセンター', Large: '広さ：センターもしっかりできる', Variation: '広さ：バリエーションも踊れる' }[choice.space] : '', choice.place === 'Travel' && choice.barre ? { Yes: 'バー：あり', Substitute: 'バー：なし（椅子・台などで代用）', None: 'バー：なし' }[choice.barre] : '', form.area.value.trim(), form.arrive.value.trim()].filter(Boolean).join(' / '), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
       studio: choice.place === 'Studio' ? (choice.studio === 'Mari' ? 'mari' : 'self') : '',
       length: lenMin(), pack: choice.pay === 'Pack' && !intro ? '5' : '', free: intro, multi: many(), choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
-      heard: choice.visit === 'First' ? (choice.heard || '') : '', heardNote: choice.visit === 'First' && choice.heard === 'Other' ? form.heardnote.value.trim() : '', friend: choice.visit === 'First' && choice.heard === 'Friend' ? form.friend.value.trim() : '', nickname: choice.visit === 'First' ? form.nickname.value.trim() : '', gender: choice.visit === 'First' ? (choice.gender || '') : '', social: choice.visit === 'First' ? form.social.value.trim() : '', note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
+      heard: choice.visit === 'First' ? (choice.heard || '') : '', heardNote: choice.visit === 'First' && choice.heard === 'Other' ? form.heardnote.value.trim() : '', friend: choice.visit === 'First' && choice.heard === 'Friend' ? form.friend.value.trim() : '', nickname: choice.visit === 'First' ? form.nickname.value.trim() : '', gender: choice.visit === 'First' ? (choice.gender || '') : '', social: choice.visit === 'First' ? form.social.value.trim() : '', tongue: choice.visit === 'First' ? (choice.tongue || '') : '', japanese: choice.visit === 'First' ? (choice.japanese || '') : '', note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
     };
     if (SHEET_APP) {
       const btn = document.getElementById('send-btn'); const label = btn.textContent;
