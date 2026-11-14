@@ -358,3 +358,11 @@ html[lang=ja] main :is(p, li, dd, .lesson-inquiry-copy, .interview-feature-summa
 .intro-links a::after { content: " →"; color: var(--gold-ink); }
 .intro-links a:hover { color: var(--gold-ink); border-color: var(--gold); }
 .home-intro .home-intro-body .intro-links { margin: 1.8rem 0 0 !important; font-size: 1.02rem; }
+/* Menu button: show the word "Menu" under the lines so everyone knows it opens the menu */
+@media (max-width: 1180px) {
+  html body header.top .menu-toggle { width: 56px !important; height: 50px !important; flex-direction: column !important; gap: 6px !important; }
+  html body header.top .menu-toggle span { position: static !important; width: auto !important; height: auto !important; overflow: visible !important; clip: auto !important; font: 500 10.5px/1 var(--font-body) !important; letter-spacing: 0.12em !important; text-transform: uppercase; }
+  html[lang=ja] body header.top .menu-toggle span { letter-spacing: 0 !important; font-size: 9.5px !important; text-transform: none; }
+}
+/* The top bar always stays on screen while scrolling */
+header.top.mt-hide { transform: none !important; }
