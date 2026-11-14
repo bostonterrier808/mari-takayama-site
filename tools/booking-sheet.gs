@@ -694,6 +694,15 @@ function fullRefund_(data, bk) {
   if (bk.pack) return { kind: 'packback', ja: '回数券に1回分をお戻しします。', en: 'The lesson goes back on your pack.', mari: '回数券に1回分戻しました' };
   return { kind: 'full', amt: per, ja: '全額お返しします。', en: 'You will get a full refund.', mari: '全額返金' + (per ? '（$' + per + '）' : '') };
 }
+// ready-made notes Mari can tap when she moves or cancels a lesson (customers who chose English get the English ones)
+const MEMOS_JA = {
+  move: ['急にリハーサルが入ってしまいました。', '公演の予定が入ってしまいました。', 'スタジオが使えなくなってしまいました。', '体調を崩してしまい、念のため日にちを変えさせてください。', 'ご都合が合わなければ、遠慮なくキャンセルしてください。'],
+  cancel: ['急にリハーサルが入ってしまいました。', '公演の予定が入ってしまいました。', 'スタジオが使えなくなってしまいました。', '体調を崩してしまいました。', 'またご都合のよい日に、ぜひお会いできたらうれしいです。']
+};
+const MEMOS_EN = {
+  move: ['A rehearsal came up suddenly.', 'I have a performance scheduled at that time.', 'The studio is no longer available at that time.', 'I’m not feeling well, so I’d like to move the lesson to be safe.', 'If the new time doesn’t work for you, please feel free to cancel.'],
+  cancel: ['A rehearsal came up suddenly.', 'I have a performance scheduled at that time.', 'The studio is no longer available at that time.', 'I’m not feeling well.', 'I hope to see you at another time soon.']
+};
 function mariChange_(p, sh, r, data) {
   const bk = (data.booked || [])[+p.b];
   if (!bk) return page_('見つかりません', 'このレッスンが見つかりませんでした（ボタンができる前の予約は、お客さんにメールで連絡してください）。');
@@ -701,7 +710,11 @@ function mariChange_(p, sh, r, data) {
   const head = '<b>' + esc_(data.name) + '</b> さん<br>' + choiceJa_(bk, bk.len) + '（ニューヨーク時間）';
   const u = ScriptApp.getService().getUrl();
   const hidden = '<input type="hidden" name="act" value="' + p.act + '"><input type="hidden" name="id" value="' + esc_(p.id) + '"><input type="hidden" name="k" value="' + esc_(p.k) + '"><input type="hidden" name="b" value="' + esc_(p.b) + '"><input type="hidden" name="go" value="1">';
-  const msgBox = '<p>お客さんへのひとこと（なくても大丈夫）<br><textarea name="msg" rows="3" style="font-size:16px;padding:8px;width:100%;box-sizing:border-box" placeholder="例：急な公演のリハーサルが入ってしまいました。"></textarea></p>';
+  const en = data.language !== 'ja';
+  const memos = (en ? MEMOS_EN : MEMOS_JA)[p.act === 'mcancel' ? 'cancel' : 'move'];
+  const chips = memos.map(m => '<button type="button" onclick="var t=document.getElementById(\'msg\');t.value=(t.value?t.value+\'\\n\':\'\')+this.textContent;t.focus()" style="display:block;width:100%;text-align:left;margin:6px 0;padding:10px 12px;background:#faf7f1;border:1px solid #e6dac3;color:#222;font-size:15px;line-height:1.5">' + esc_(m) + '</button>').join('');
+  const msgBox = '<p style="margin:16px 0 4px;font-weight:600">お客さんへのメモ（' + (en ? '英語で送られます' : '日本語') + '）</p><p style="margin:0 0 6px;font-size:14px;color:#555">押すと下に入ります（いくつ選んでも大丈夫・書き直しもできます）。</p>' + chips
+    + '<textarea id="msg" name="msg" rows="4" style="font-size:16px;padding:10px;width:100%;box-sizing:border-box;margin-top:8px;border:1px solid #c9b48c" placeholder="自由に書いても大丈夫です（なくても送れます）"></textarea>';
   const submit = label => '<button type="submit" style="display:block;width:100%;margin:14px 0;padding:15px 12px;background:#2c2a30;color:#fff;border:0;font-size:17px">' + label + '</button>';
   if (p.act === 'mcancel') {
     const rf = fullRefund_(data, bk);
