@@ -696,12 +696,12 @@ function fullRefund_(data, bk) {
 }
 // ready-made notes Mari can tap when she moves or cancels a lesson (customers who chose English get the English ones)
 const MEMOS_JA = {
-  move: ['急にリハーサルが入ってしまいました。', '公演の予定が入ってしまいました。', 'スタジオが使えなくなってしまいました。', '体調を崩してしまい、念のため日にちを変えさせてください。', 'ご都合が合わなければ、遠慮なくキャンセルしてください。'],
-  cancel: ['急にリハーサルが入ってしまいました。', '公演の予定が入ってしまいました。', 'スタジオが使えなくなってしまいました。', '体調を崩してしまいました。', 'またご都合のよい日に、ぜひお会いできたらうれしいです。']
+  move: ['ご迷惑をおかけして、申し訳ございません。', '急にリハーサルが入ってしまいました。', '公演の予定が入ってしまいました。', 'スタジオが使えなくなってしまいました。', '体調を崩してしまい、念のため日にちを変えさせてください。', 'ご都合が合わなければ、遠慮なくキャンセルしてください。'],
+  cancel: ['ご迷惑をおかけして、申し訳ございません。', '急にリハーサルが入ってしまいました。', '公演の予定が入ってしまいました。', 'スタジオが使えなくなってしまいました。', '体調を崩してしまいました。', 'またご都合のよい日に、ぜひお会いできたらうれしいです。']
 };
 const MEMOS_EN = {
-  move: ['A rehearsal came up suddenly.', 'I have a performance scheduled at that time.', 'The studio is no longer available at that time.', 'I’m not feeling well, so I’d like to move the lesson to be safe.', 'If the new time doesn’t work for you, please feel free to cancel.'],
-  cancel: ['A rehearsal came up suddenly.', 'I have a performance scheduled at that time.', 'The studio is no longer available at that time.', 'I’m not feeling well.', 'I hope to see you at another time soon.']
+  move: ['I’m very sorry for the inconvenience.', 'A rehearsal came up suddenly.', 'I have a performance scheduled at that time.', 'The studio is no longer available at that time.', 'I’m not feeling well, so I’d like to move the lesson to be safe.', 'If the new time doesn’t work for you, please feel free to cancel.'],
+  cancel: ['I’m very sorry for the inconvenience.', 'A rehearsal came up suddenly.', 'I have a performance scheduled at that time.', 'The studio is no longer available at that time.', 'I’m not feeling well.', 'I hope to see you at another time soon.']
 };
 function mariChange_(p, sh, r, data) {
   const bk = (data.booked || [])[+p.b];
