@@ -201,6 +201,7 @@ function doGet(e) {
   if (p.slots) return json_({ days: freeTimes_() });
   if (p.availability) return json_({ days: {} });
   if (p.pack) return json_({ packs: packsFor_(p.pack) });
+  if (p.reminders) { const c = CacheService.getScriptCache(); if (!c.get('remind')) { c.put('remind', '1', 6 * 3600); paymentReminders(); } return json_({ ok: true }); }
   if (p.act) return actionPage_(p);
   return HtmlService.createHtmlOutput('<p>OK</p>');
 }
