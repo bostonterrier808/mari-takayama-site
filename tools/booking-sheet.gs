@@ -605,8 +605,8 @@ function pretty_(text, isHtml) {
       ? '<a href="' + u + '" style="display:inline-block;margin:6px 0 2px;padding:11px 22px;background:#ecdfc6;border:1px solid #c9b48c;color:#2c2a30;text-decoration:none;letter-spacing:.04em">Venmo &rarr;</a>'
       : '<a href="' + u + '" style="color:#7a6233;word-break:break-all">' + u + '</a>')
     .split(/\n\n+/).map(p => '<p style="margin:0 0 16px">' + p.replace(/\n/g, '<br>') + '</p>').join('');
-  return '<div style="background:#faf7f1;padding:28px 12px"><div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e6dac3;padding:32px 30px;font-family:Georgia,\'Times New Roman\',\'Hiragino Mincho ProN\',\'Yu Mincho\',YuMincho,serif;font-size:16px;line-height:1.8;color:#2c2a30">'
-    + '<div style="text-align:center;margin:0 0 22px;padding-bottom:16px;border-bottom:1px solid #e6dac3"><div style="font-size:22px;letter-spacing:.08em;color:#2c2a30">Mari Takayama</div><div style="font-size:11px;letter-spacing:.32em;color:#8a7140;text-transform:uppercase;margin-top:4px">Ballet · New York</div></div>'
+  return '<div style="background:#faf7f1;padding:28px 12px"><div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e6dac3;padding:32px 30px;font-family:-apple-system,BlinkMacSystemFont,\'Hiragino Sans\',\'Hiragino Kaku Gothic ProN\',\'Yu Gothic\',YuGothic,Meiryo,\'Helvetica Neue\',Arial,sans-serif;font-size:16px;line-height:1.85;letter-spacing:.02em;color:#222222">'
+    + '<div style="text-align:center;margin:0 0 22px;padding-bottom:16px;border-bottom:1px solid #e6dac3"><div style="font-family:Georgia,\'Times New Roman\',serif;font-size:24px;letter-spacing:.08em;color:#2c2a30">Mari Takayama</div><div style="font-size:11px;letter-spacing:.32em;color:#8a7140;text-transform:uppercase;margin-top:4px">Ballet · New York</div></div>'
     + inner + '</div></div>';
 }
 
