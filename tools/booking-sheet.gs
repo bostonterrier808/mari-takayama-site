@@ -171,9 +171,9 @@ function notifyMari_(d, c, len, id, key) {
     ? '<p style="margin:10px 0"><b>まとめて予約（' + c.length + '回）：</b><br>' + c.map((x, i) => (i + 1) + '回目：' + choiceJa_(x, len)).join('<br>') + '</p><p style="margin:10px 0">' + btn(url + '?act=confirmall&id=' + id + '&k=' + key, 'この' + c.length + '回をまとめて確定', true) + '</p>'
     : c.map((x, i) => '<p style="margin:10px 0">' + btn(url + '?act=confirm&id=' + id + '&k=' + key + '&c=' + i, '第' + (i + 1) + '希望で確定：' + choiceJa_(x, len), true) + '</p>').join('');
   const info = [
-    ['名前', esc_(d.name) + '（' + (JA.visit[d.visit] || '') + '）'], d.nickname ? ['ニックネーム', esc_(clip(d.nickname, 60))] : null,
+    ['名前', esc_(d.name) + '（' + (JA.visit[d.visit] || '') + '）'], d.nickname ? ['ニックネーム', esc_(String(d.nickname).slice(0, 60))] : null,
     d.visit === 'First' && JA.gender[d.gender] ? ['性別', JA.gender[d.gender]] : null, ['メール', esc_(d.email)],
-    d.social ? ['SNS', esc_(clip(d.social, 120))] : null,
+    d.social ? ['SNS', esc_(String(d.social).slice(0, 120))] : null,
     d.visit === 'First' && JA.tongue[d.tongue] ? ['レッスンの言語', JA.tongue[d.tongue]] : null,
     goalsJa_(d) ? ['受けたい理由', esc_(goalsJa_(d))] : null,
     d.contact ? ['連絡方法', esc_(d.via) + '　' + esc_(d.contact)] : null,
@@ -201,6 +201,7 @@ function doGet(e) {
   if (p.slots) return json_({ days: freeTimes_() });
   if (p.availability) return json_({ days: {} });
   if (p.pack) return json_({ packs: packsFor_(p.pack) });
+  if (p.cleanup) { cleanupTests_(); return json_({ ok: true }); }
   if (p.reminders) { const c = CacheService.getScriptCache(); if (!c.get('remind')) { c.put('remind', '1', 6 * 3600); paymentReminders(); } return json_({ ok: true }); }
   if (p.act) return actionPage_(p);
   return HtmlService.createHtmlOutput('<p>OK</p>');
@@ -543,6 +544,20 @@ function setupPaymentReminders() {
   ScriptApp.newTrigger('paymentReminders').timeBased().everyDays(1).atHour(9).inTimezone(TZ).create();
   heardStats_();
 }
+// test bookings (name starting with TEST, or with テスト) leave Mari's calendar 30 minutes after they are confirmed
+function isTest_(name) { name = String(name || ''); return /^\s*test\b/i.test(name) || /テスト/.test(name); }
+function cleanupTests_() {
+  const now = Date.now(), from = new Date(now - 2 * 86400000), to = new Date(now + (DAYS_AHEAD + 7) * 86400000);
+  let n = 0;
+  CalendarApp.getDefaultCalendar().getEvents(from, to).forEach(ev => {
+    const title = ev.getTitle();
+    if (!/^(バレエレッスン|無料 Zoom 相談)：/.test(title) || !isTest_(title.split('：').slice(1).join('：'))) return;
+    if (ev.getDateCreated().getTime() > now - 30 * 60000) return;
+    ev.deleteEvent(); n++;
+  });
+  if (n) CacheService.getScriptCache().remove('free');
+  return n;
+}
 function paymentReminders() {
   const sh = book_().getSheetByName(REQ); if (!sh || sh.getLastRow() < 2) return;
   heardStats_();
@@ -553,6 +568,7 @@ function paymentReminders() {
     if (row[C['状況'] - 1] !== '予約確定' || paid !== false || !when) return;
     const [date, start] = when.split(' '); if (date < today) return;
     let data; try { data = JSON.parse(row[C['data'] - 1]); } catch (e) { return; }
+    if (isTest_(data.name)) return;
     const ch = { date, start: start || '19:00' }, days = Math.round((dateOf_(date).getTime() - t0) / 86400000);
     const log = String(row[C['催促'] - 1] || ''), stamp = Utilities.formatDate(new Date(), TZ, 'M/d');
     let tag = '';
