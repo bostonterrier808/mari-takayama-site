@@ -1,12 +1,18 @@
 # Every morning, ask the lesson booking script to send payment reminders
 # (to people whose lesson is confirmed but not yet marked paid in the sheet).
+# Every 30 minutes, remove test bookings (name starting with TEST or containing テスト) from Mari's calendar.
 name: Payment reminders
 on:
   schedule:
-    - cron: '7 14 * * *'   # about 9:07 am New York time (10:07 in summer)
+    - cron: '7 14 * * *'      # about 9:07 am New York time (10:07 in summer)
+    - cron: '*/30 * * * *'    # test-booking cleanup
   workflow_dispatch:
 jobs:
   remind:
     runs-on: ubuntu-latest
     steps:
-      - run: curl -fsSL "https://script.google.com/macros/s/AKfycbyoBjOrilADknvlRF8Mf6vzOootjaOEG_56OdEDFinrhrzaH4o8Z2fzm8niTlL0c6-9oQ/exec?reminders=1" | head -c 200
+      - name: Payment reminders (morning run only)
+        if: github.event.schedule != '*/30 * * * *'
+        run: curl -fsSL "https://script.google.com/macros/s/AKfycbyoBjOrilADknvlRF8Mf6vzOootjaOEG_56OdEDFinrhrzaH4o8Z2fzm8niTlL0c6-9oQ/exec?reminders=1" | head -c 200
+      - name: Remove test bookings older than 30 minutes
+        run: curl -fsSL "https://script.google.com/macros/s/AKfycbyoBjOrilADknvlRF8Mf6vzOootjaOEG_56OdEDFinrhrzaH4o8Z2fzm8niTlL0c6-9oQ/exec?cleanup=1" | head -c 200
