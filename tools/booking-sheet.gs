@@ -56,14 +56,13 @@ const AWAY = [['2026-11-22', '2027-01-09']];
 const isAway_ = k => AWAY.some(([a, b]) => k >= a && k <= b);
 const HEAD = ['受付日時', '初めて／2回目以降', '名前', '連絡方法', 'メール', '場所', 'エリア', '対象', 'バレエ経験',
   '第1希望', '第2希望', '第3希望', '第1希望の曜日', '第1希望の時間帯', '第2希望の曜日', '第2希望の時間帯', '第3希望の曜日', '第3希望の時間帯',
-  'メッセージ', '言語', '状況', 'その他の連絡先', 'レッスンの長さ（分）', '確定した日時', 'id', 'key', 'data', 'きっかけ', '紹介者', 'ニックネーム', '性別', 'SNS', 'レッスン日', '支払い', '催促', 'レッスンの言語', '日本人'];
+  'メッセージ', '言語', '状況', 'その他の連絡先', 'レッスンの長さ（分）', '確定した日時', 'id', 'key', 'data', 'きっかけ', '紹介者', 'ニックネーム', '性別', 'SNS', 'レッスン日', '支払い', '催促', 'レッスンの言語'];
 const C = Object.fromEntries(HEAD.map((h, i) => [h, i + 1]));
 const JA = {
   visit: { First: '初めて', Returning: '2回目以降' },
   place: { FuncPhysio: 'FuncPhysio', Studio: 'ダンススタジオ', Travel: '出張', Zoom: 'Zoom', Any: 'どこでも' },
   age: { Child: '子ども', Teen: '10代', Adult: '大人' },
   tongue: { English: '英語', Japanese: '日本語', Either: 'どちらでも' },
-  japanese: { Yes: 'はい', No: 'いいえ', None: '答えない' },
   gender: { Female: '女性', Male: '男性', Nonbinary: 'ノンバイナリー', Other: 'その他', None: '答えない' },
   heard: { Instagram: 'Instagram', Website: 'ウェブサイト・検索', Friend: '友達の紹介', Studio: 'スタジオ・学校', Performance: '公演を見て', Other: 'その他' },
   level: { 'New to ballet': '初めて', 'Some classes': '少し経験あり', 'Trains regularly': '定期的に練習', 'Professional dancer': 'プロのダンサー', 'Ballet student': 'バレエ学生', 'Dance student': 'ダンス学生', 'Musical theater (singer first)': 'ミュージカル（歌がメイン）', 'Musical theater (dancer first)': 'ミュージカル（ダンスがメイン）' },
@@ -140,7 +139,7 @@ function doPost(e) {
     for (let i = 0; i < 3; i++) row.push(c[i] ? choiceJa_(c[i], len) : '');
     for (let i = 0; i < 3; i++) row.push(c[i] ? WD_JA[dateOf_(c[i].date).getDay()] : '', c[i] ? partOf_(c[i]) : '');
     const more = c.slice(3).map((x, i) => '第' + (i + 4) + '希望：' + choiceJa_(x, len)).join('\n');
-    row.push(clip((more ? more + (d.note ? '\n' : '') : '') + (d.note || ''), 900), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '', multi: d.multi === true && c.length > 1 }), d.visit === 'First' ? (JA.heard[d.heard] || '') + (d.heard === 'Other' && d.heardNote ? '（' + clip(d.heardNote, 200) + '）' : '') : '', d.visit === 'First' && d.heard === 'Friend' ? clip(d.friend, 120) : '', clip(d.nickname, 60), d.visit === 'First' ? (JA.gender[d.gender] || '') : '', clip(d.social, 120), '', '', '', d.visit === 'First' ? (JA.tongue[d.tongue] || '') : '', d.visit === 'First' ? (JA.japanese[d.japanese] || '') : '');
+    row.push(clip((more ? more + (d.note ? '\n' : '') : '') + (d.note || ''), 900), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '', multi: d.multi === true && c.length > 1 }), d.visit === 'First' ? (JA.heard[d.heard] || '') + (d.heard === 'Other' && d.heardNote ? '（' + clip(d.heardNote, 200) + '）' : '') : '', d.visit === 'First' && d.heard === 'Friend' ? clip(d.friend, 120) : '', clip(d.nickname, 60), d.visit === 'First' ? (JA.gender[d.gender] || '') : '', clip(d.social, 120), '', '', '', d.visit === 'First' ? (JA.tongue[d.tongue] || '') : '');
     heardStats_();
     book_().getSheetByName(REQ).appendRow(row);
     notifyMari_(d, c, len, id, key);
@@ -175,7 +174,6 @@ function notifyMari_(d, c, len, id, key) {
     d.visit === 'First' && JA.gender[d.gender] ? ['性別', JA.gender[d.gender]] : null, ['メール', esc_(d.email)],
     d.social ? ['SNS', esc_(clip(d.social, 120))] : null,
     d.visit === 'First' && JA.tongue[d.tongue] ? ['レッスンの言語', JA.tongue[d.tongue]] : null,
-    d.visit === 'First' && JA.japanese[d.japanese] ? ['日本の方', JA.japanese[d.japanese]] : null,
     d.contact ? ['連絡方法', esc_(d.via) + '　' + esc_(d.contact)] : null,
     ['場所', esc_(JA.place[d.place] || d.place || '') + (d.area && d.place !== 'Zoom' ? '（' + esc_(d.area) + '）' : '')], ['長さ', len + '分' + (d.pack === '5' ? '（5回券を希望）' : '')],
     d.place === 'Studio' ? ['スタジオ', d.studio === 'mari' ? '<b>Mari が代わりに予約</b>（スタジオ代＋手数料 $' + STUDIO_FEE + '）' : 'お客さんが自分で予約'] : null,
@@ -481,7 +479,7 @@ function heardStats_() {
   const ss = book_(), req = ss.getSheetByName(REQ);
   if (req && req.getRange(1, C['きっかけ']).getValue() !== 'きっかけ') req.getRange(1, C['きっかけ'], 1, 2).setValues([['きっかけ', '紹介者']]).setFontWeight('bold').setBackground('#ecdfc6');
   if (req && req.getRange(1, C['ニックネーム']).getValue() !== 'ニックネーム') req.getRange(1, C['ニックネーム'], 1, 3).setValues([['ニックネーム', '性別', 'SNS']]).setFontWeight('bold').setBackground('#ecdfc6');
-  if (req && req.getRange(1, C['日本人']).getValue() !== '日本人') req.getRange(1, C['レッスンの言語'], 1, 2).setValues([['レッスンの言語', '日本人']]).setFontWeight('bold').setBackground('#ecdfc6');
+  if (req && req.getRange(1, C['レッスンの言語']).getValue() !== 'レッスンの言語') req.getRange(1, C['レッスンの言語'], 1, 1).setValues([['レッスンの言語']]).setFontWeight('bold').setBackground('#ecdfc6');
   if (req && req.getRange(1, C['支払い']).getValue() !== '支払い') { req.getRange(1, C['レッスン日'], 1, 3).setValues([['レッスン日', '支払い', '催促']]).setFontWeight('bold').setBackground('#ecdfc6'); try { req.hideColumns(C['レッスン日']); } catch (e) {} }
   const st = ss.getSheetByName(ST); if (!st || st.getRange('A51').getValue()) return;
   const R = "'" + REQ + "'!", q = (rng, label) => '=IFERROR(QUERY(' + rng + ',"select Col1, count(Col1) where Col1 is not null and Col1 <> \'\' group by Col1 order by count(Col1) desc label Col1 \'' + label + '\', count(Col1) \'人数\'",0),"まだありません")';
