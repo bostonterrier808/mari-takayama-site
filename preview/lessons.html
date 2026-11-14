@@ -274,6 +274,8 @@
         <button type="button" class="chip" data-value="Musical theater (singer first)">Musical theater (singer first)</button>
         <button type="button" class="chip" data-value="Musical theater (dancer first)">Musical theater (dancer first)</button>
       </div>
+      <p class="q">Why do you want lessons? <small>(choose any)</small></p>
+      <div class="chips" id="goal-chips"><button type="button" class="chip" data-value="Start ballet" aria-pressed="false">Start ballet</button><button type="button" class="chip" data-value="Better technique" aria-pressed="false">Better technique</button><button type="button" class="chip" data-value="Pointe work" aria-pressed="false">Pointe work</button><button type="button" class="chip" data-value="Learn a variation" aria-pressed="false">Learn a variation</button><button type="button" class="chip" data-value="Competition or audition" aria-pressed="false">Competition or audition</button><button type="button" class="chip" data-value="Fitness and posture" aria-pressed="false">Fitness and posture</button><button type="button" class="chip" data-value="Just for fun" aria-pressed="false">Just for fun</button><button type="button" class="chip" data-value="Something else" aria-pressed="false">Something else</button></div>
       </div>
     </section>
 
@@ -475,6 +477,10 @@
   }
   document.getElementById('tz').addEventListener('change', e => setZone(e.target.value, true));
 
+  // reasons for lessons (choose any)
+  const goalBox = document.getElementById('goal-chips');
+  goalBox.addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b) return; b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); });
+  const goals = () => [...goalBox.querySelectorAll('.chip[aria-pressed="true"]')].map(b => b.dataset.value);
   // chips (single choice)
   form.querySelectorAll('.chips[data-group]').forEach(group => {
     group.addEventListener('click', e => {
@@ -672,6 +678,7 @@
       choice.place && 'Place: ' + ({ FuncPhysio: 'FuncPhysio Physical Therapy', Studio: 'A dance studio', Travel: 'In-home lesson', Zoom: 'Online (Zoom)', Any: 'Any is fine' }[choice.place]) + (choice.place === 'Travel' && form.area.value.trim() ? ' (' + form.area.value.trim() + ')' : '') + (choice.place === 'Studio' ? (choice.studio === 'Mari' ? ' (please book the studio for me)' : " (I'll book the studio)") : ''),
       choice.age && 'For: ' + choice.age,
       choice.level && 'Experience: ' + choice.level,
+      choice.visit === 'First' && goals().length && 'Why: ' + goals().join(', '),
       '', 'Times that suit me (' + zoneName(zone) + '):', ...picks.map((p, i) => (many() ? T.lesson : T.choice).en[i] + ': ' + fmtLong(p) + (zone !== NY ? ' (New York ' + whenIn(NY, p) + ')' : '')), 'Lesson: ' + lenMin() + ' minutes' + (choice.pay === 'Pack' ? ' (5-lesson pack)' : ''), '',
       choice.visit === 'First' && form.nickname.value.trim() && 'Nickname: ' + form.nickname.value.trim(),
       choice.visit === 'First' && form.social.value.trim() && 'Social media: ' + form.social.value.trim(),
@@ -715,7 +722,7 @@
       place: choice.place || '', area: [choice.place === 'Travel' && choice.space ? { Small: '広さ：バーのみ（センターは無理）', Medium: '広さ：バー＋あまり動かないセンター', Large: '広さ：センターもしっかりできる', Variation: '広さ：バリエーションも踊れる' }[choice.space] : '', choice.place === 'Travel' && choice.barre ? { Yes: 'バー：あり', Substitute: 'バー：なし（椅子・台などで代用）', None: 'バー：なし' }[choice.barre] : '', form.area.value.trim(), form.arrive.value.trim()].filter(Boolean).join(' / '), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
       studio: choice.place === 'Studio' ? (choice.studio === 'Mari' ? 'mari' : 'self') : '',
       length: lenMin(), pack: choice.pay === 'Pack' && !intro ? '5' : '', free: intro, multi: many(), choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
-      heard: choice.visit === 'First' ? (choice.heard || '') : '', heardNote: choice.visit === 'First' && choice.heard === 'Other' ? form.heardnote.value.trim() : '', friend: choice.visit === 'First' && choice.heard === 'Friend' ? form.friend.value.trim() : '', nickname: choice.visit === 'First' ? form.nickname.value.trim() : '', gender: choice.visit === 'First' ? (choice.gender || '') : '', social: choice.visit === 'First' ? form.social.value.trim() : '', tongue: choice.visit === 'First' ? (choice.tongue || '') : '', note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
+      heard: choice.visit === 'First' ? (choice.heard || '') : '', heardNote: choice.visit === 'First' && choice.heard === 'Other' ? form.heardnote.value.trim() : '', friend: choice.visit === 'First' && choice.heard === 'Friend' ? form.friend.value.trim() : '', nickname: choice.visit === 'First' ? form.nickname.value.trim() : '', gender: choice.visit === 'First' ? (choice.gender || '') : '', social: choice.visit === 'First' ? form.social.value.trim() : '', tongue: choice.visit === 'First' ? (choice.tongue || '') : '', goals: choice.visit === 'First' ? goals() : [], note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
     };
     if (SHEET_APP) {
       const btn = document.getElementById('send-btn'); const label = btn.textContent;
