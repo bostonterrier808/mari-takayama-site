@@ -725,7 +725,12 @@ main { counter-reset: sec; }
   :root body .home-intro .wrap .home-intro-photo { max-width: 22rem !important; }
 }
 /* Lessons & Performances: smaller photos, never cropped */
-:root body .home-duo .home-path > img[data-photo-id][data-photo-id] { width: auto !important; max-width: 100% !important; height: clamp(15rem, 22vw, 19rem) !important; object-fit: contain !important; }
+@media (min-width: 761px) {
+  :root body .home-paths.duo .home-duo { max-width: 54rem !important; gap: clamp(3rem, 5vw, 4rem) !important; }
+  :root body .home-duo .home-path { grid-template-columns: auto minmax(0, 1fr) !important; gap: clamp(2.5rem, 5vw, 4rem) !important; }
+  :root body .home-duo .home-path.events { grid-template-columns: minmax(0, 1fr) auto !important; }
+}
+:root body .home-duo .home-path > img[data-photo-id][data-photo-id] { width: auto !important; max-width: 100% !important; height: clamp(16rem, 24vw, 21rem) !important; object-fit: contain !important; }
 @media (max-width: 760px) {
   :root body .home-duo .home-path > img[data-photo-id][data-photo-id] { height: auto !important; width: 62% !important; margin-inline: auto !important; }
 }
