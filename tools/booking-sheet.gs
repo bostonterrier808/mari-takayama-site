@@ -291,6 +291,7 @@ function actionPage_(p) {
   if (String(sh.getRange(r, C['key']).getValue()) !== String(p.k)) return page_('開けません', 'このボタンは使えません。');
   if (p.act === 'move' || p.act === 'keep') return moveAnswer_(p, sh, r, data);
   if (p.act === 'mmove' || p.act === 'mcancel') return mariChange_(p, sh, r, data);
+  if (p.act === 'refunded') return refundedPage_(p, sh, r, data);
   if (status === '予約確定' || status === 'お断り') return page_('対応済みです', 'このリクエストはもう「' + status + '」になっています。' + (status === '予約確定' ? '<br>確定した日時：' + esc_(sh.getRange(r, C['確定した日時']).getDisplayValue()) : ''));
   const self = ScriptApp.getService().getUrl() + '?act=' + encodeURIComponent(p.act) + '&id=' + encodeURIComponent(p.id) + '&k=' + encodeURIComponent(p.k) + (p.c != null ? '&c=' + encodeURIComponent(p.c) : '');
   if (p.act === 'confirm') {
@@ -678,11 +679,16 @@ function cancelLesson_(sh, r, data, b, rf, byMari, msg) {
     : '# Cancellation confirmed\n\nHi ' + data.name + ',\n\nYour lesson is cancelled.\n\nWhen: ' + when + '\nLesson: ' + bk.len + ' minutes\n\n' + rf.en + (rf.kind === 'full' || rf.kind === 'half' ? (paid === true ? '\nMari will send it back by Venmo.' : '') : '') + '\n\nHope to see you another time:\n' + BOOKING_PAGE + '\n\nMari Takayama';
   if (data.email) MailApp.sendEmail({ to: data.email, subject: byMari ? (ja ? 'レッスンのキャンセルのお知らせ（' + whenIn_(bk, bk.len, data.tz || TZ, true) + '）' : 'Your lesson is cancelled — ' + whenIn_(bk, bk.len, data.tz || TZ, false)) : ja ? 'キャンセルを承りました（' + whenIn_(bk, bk.len, data.tz || TZ, true) + '）' : 'Your lesson is cancelled — ' + whenIn_(bk, bk.len, data.tz || TZ, false), body: plain_(body = withAsk_(body)), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
   const me = Session.getEffectiveUser().getEmail();
-  const todo = rf.kind === 'full' || rf.kind === 'half' ? (paid === true ? '支払い済みなので、Venmo で ' + rf.mari + ' をお願いします。' : 'まだ支払いのチェックがないので、返金はいりません（受け取っていたら ' + rf.mari + '）。') : rf.mari + '。';
-  if (byMari) { sh.getRange(r, C['状況']).setValue('キャンセル（お客さん未確認）'); return todo; }
-  if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【キャンセル】' + data.name + '（' + choiceJa_(bk, bk.len) + '）',
-    body: data.name + ' さんがキャンセルしました。' + choiceJa_(bk, bk.len) + '\n' + todo,
-    htmlBody: pretty_('<p><b>' + esc_(data.name) + '</b> さんが、レッスンをキャンセルしました。Google カレンダーからも消しました。</p>' + infoBox_([['日時', choiceJa_(bk, bk.len)], ['返金', esc_(rf.mari)], ['メール', esc_(data.email)]]) + '<p>' + esc_(todo) + '</p>', true) });
+  const amt = (rf.kind === 'full' || rf.kind === 'half') && paid !== '不要' ? rf.amt : 0;
+  if (amt) { bk.refund = { amt: amt }; sh.getRange(r, C['data']).setValue(JSON.stringify(data)); }
+  const todo = amt ? (paid === true ? '支払い済みなので、$' + amt + ' の返金をお願いします。' : 'まだ支払いのチェックがないので、受け取っていなければ返金はいりません（受け取っていたら $' + amt + '）。') : rf.mari + '。';
+  if (byMari) sh.getRange(r, C['状況']).setValue('キャンセル（お客さん未確認）');
+  if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: (amt ? '【キャンセル・返金 $' + amt + '】' : '【キャンセル】') + data.name + '（' + choiceJa_(bk, bk.len) + '）',
+    body: data.name + ' さんのレッスンがキャンセルになりました。' + choiceJa_(bk, bk.len) + '\n' + todo,
+    htmlBody: pretty_('<p><b>' + esc_(data.name) + '</b> さんのレッスンが、' + (byMari ? 'Mari さんの都合で' : 'お客さんの都合で') + 'キャンセルになりました。Google カレンダーからも消しました。</p>'
+      + infoBox_([['日時', choiceJa_(bk, bk.len)], ['返金', esc_(amt ? '$' + amt + (rf.kind === 'half' ? '（半額）' : '（全額）') : rf.mari)], ['お支払い', paid === true ? '受け取り済み' : paid === false ? 'まだチェックなし' : esc_(String(paid || ''))], ['メール', esc_(data.email)]])
+      + '<p>' + esc_(todo) + '</p>' + (amt ? refundButtons_(sh, r, data, b, amt) : ''), true) });
+  return todo;
 }
 function moveTo_(sh, r, data, b, ch) {
   const bk = data.booked[b], old = { date: bk.date, start: bk.start };
@@ -729,7 +735,8 @@ function mariChange_(p, sh, r, data) {
     const rf = fullRefund_(data, bk);
     if (!p.go) return page_('キャンセルしますか？', head + '<p>Mari さんの都合のキャンセルなので、お客さんには「' + rf.ja + '」とお知らせします。Google カレンダーからも消します。</p><form method="get" action="' + u + '" target="_top">' + hidden + msgBox + submit('キャンセルして、お客さんにメールを送る') + '</form>');
     const todo = cancelLesson_(sh, r, data, +p.b, rf, true, String(p.msg || '').slice(0, 500));
-    return page_('キャンセルしました', head + '<p>お客さんにお知らせのメールを送り、Google カレンダーから消しました。お客さんが「確認しました」を押すと、メールでお知らせします（シートの「状況」も「確認済み」になります）。</p><p><b>' + esc_(todo) + '</b></p>');
+    const bk2 = data.booked[+p.b];
+    return page_('キャンセルしました', head + '<p>お客さんにお知らせのメールを送り、Google カレンダーから消しました。お客さんが「確認しました」を押すと、メールでお知らせします（シートの「状況」も「確認済み」になります）。</p><p><b>' + esc_(todo) + '</b></p>' + (bk2.refund ? refundButtons_(sh, r, data, +p.b, bk2.refund.amt) : ''));
   }
   // mmove: Mari picks a new time; the customer says OK or cancels with a full refund
   if (!p.go) {
@@ -789,6 +796,33 @@ function ackPage_(p, sh, r, data) {
   if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【確認済み】' + data.name + ' さんがキャンセルを確認しました（' + choiceJa_(bk, bk.len) + '）',
     body: data.name + ' さんが、キャンセルのメールを確認しました。', htmlBody: pretty_('<p><b>' + esc_(data.name) + '</b> さんが、キャンセルのメールを確認しました。</p>' + infoBox_([['日時', choiceJa_(bk, bk.len)], ['メール', esc_(data.email)]]), true) });
   return done;
+}
+
+// ---------- refunds: one tap opens Venmo with the amount, one tap records it ----------
+function refundButtons_(sh, r, data, b, amt) {
+  const bk = data.booked[b], d = dateOf_(bk.date);
+  const venmo = 'https://venmo.com/?txn=pay&amount=' + amt + '&note=' + encodeURIComponent('Refund: ballet lesson ' + (d.getMonth() + 1) + '/' + d.getDate());
+  const btn = (href, label, dark) => '<a href="' + href + '" style="display:block;margin:8px 0;padding:14px 12px;text-align:center;text-decoration:none;font-size:16px;' + (dark ? 'background:#2c2a30;color:#ffffff;border:1px solid #2c2a30' : 'background:#ffffff;color:#2c2a30;border:1px solid #2c2a30') + '">' + label + '</a>';
+  return '<p style="margin:18px 0 4px;font-weight:600">返金のしかた</p><p style="margin:0;font-size:15px">① 下のボタンで Venmo が開きます（金額とメモは入っています）。送り先に <b>' + esc_(data.name) + '</b> さんを選んで送ってください。<br>② 送ったら「返金しました」を押すと、シートに記録され、お客さんにお知らせが届きます。</p>'
+    + btn(venmo, 'Venmo で返金する（$' + amt + '）', true) + btn(mariUrl_(sh, r, data, 'refunded', b), '返金しました', false);
+}
+function refundedPage_(p, sh, r, data) {
+  const bk = (data.booked || [])[+p.b];
+  if (!bk || !bk.refund) return page_('見つかりません', 'この返金は見つかりませんでした。');
+  const amt = bk.refund.amt, head = '<b>' + esc_(data.name) + '</b> さん<br>' + choiceJa_(bk, bk.len) + '<br>返金：<b>$' + amt + '</b>';
+  if (bk.refund.done) return page_('記録済みです', head + '<p>この返金は、もう記録されています。</p>');
+  const self = mariUrl_(sh, r, data, 'refunded', +p.b) + '&go=1';
+  if (!p.go) return page_('返金しましたか？', head + '<p>押すと、シートに「返金済み」と記録し、お客さんに「返金しました」とメールでお知らせします。</p>', self, '返金しました（記録して、お知らせする）');
+  bk.refund.done = Date.now();
+  sh.getRange(r, C['data']).setValue(JSON.stringify(data));
+  const pc = sh.getRange(r, C['支払い']); pc.clearDataValidations(); pc.setValue('返金済み $' + amt);
+  log_('返金済み', data, bk, bk.len, { refund: '返金済み', amount: amt });
+  const ja = data.language === 'ja';
+  let body = ja
+    ? '# 返金のお知らせ\n\n' + data.name + ' 様\n\nキャンセルになったレッスンのレッスン代を、Venmo でお返ししました。\n\n日時：' + whenIn_(bk, bk.len, data.tz || TZ, true) + '\n返金：$' + amt + '\n\nお手数ですが、Venmo でご確認ください。\n\n何卒よろしくお願いいたします。\n\n髙山まり'
+    : '# Your refund\n\nHi ' + data.name + ',\n\nI’ve sent the refund for your cancelled lesson by Venmo.\n\nLesson: ' + whenIn_(bk, bk.len, data.tz || TZ, false) + '\nRefund: $' + amt + '\n\nPlease check your Venmo.\n\nMari Takayama';
+  if (data.email) MailApp.sendEmail({ to: data.email, subject: ja ? '返金のお知らせ（$' + amt + '）' : 'Your refund ($' + amt + ')', body: plain_(body = withAsk_(body)), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+  return page_('記録しました', head + '<p>シートに「返金済み」と記録し、お客さんにお知らせしました。</p>');
 }
 
 // Mari answers a change request
