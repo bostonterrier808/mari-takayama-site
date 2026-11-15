@@ -366,3 +366,8 @@ html[lang=ja] main :is(p, li, dd, .lesson-inquiry-copy, .interview-feature-summa
 }
 /* The top bar always stays on screen while scrolling */
 header.top.mt-hide { transform: none !important; }
+
+/* sponsor (FuncPhysio) */
+footer .sponsor { text-align: center; font-size: var(--step--1); color: var(--ink-soft); margin: 0 0 .4rem; letter-spacing: .04em; }
+footer .sponsor a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.sponsor-tag { margin: 0 0 .45rem !important; font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; color: var(--mauve, #8a7140); }
