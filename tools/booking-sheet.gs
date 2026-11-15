@@ -846,6 +846,7 @@ function payChoiceNote_(data, ch, ja, per, pk, travel, rules) {
     one,
     '',
     '## 5回券にする場合（$' + pack + '）' + (pk ? '　← 今の選択' : ''),
+    '通常 $' + per * PACK_SIZE + ' → $' + pack + '（$' + (per * PACK_SIZE - pack) + ' お得）',
     PACK_SIZE + '回分の料金から1回分の半額をお引きします。今回が1回目で、残りの' + (PACK_SIZE - 1) + '回は3⁠か⁠月⁠以内に⁠お使いください。',
     five
   ] : [
@@ -859,6 +860,7 @@ function payChoiceNote_(data, ch, ja, per, pk, travel, rules) {
     one,
     '',
     '## Get a 5-lesson pack ($' + pack + ')' + (pk ? ' ← your choice now' : ''),
+    'Usually $' + per * PACK_SIZE + ' → $' + pack + ' (you save $' + (per * PACK_SIZE - pack) + ')',
     'Half of one lesson comes off the price of ' + PACK_SIZE + '. This is lesson 1; use the other ' + (PACK_SIZE - 1) + ' within 3 months.',
     five
   ];
@@ -881,7 +883,7 @@ function payChoice_(p, sh, r, data) {
   if (wantPack === isPack) return page_(wantPack ? (ja ? '5回券です' : 'Your 5-lesson pack') : (ja ? '1回ずつのお支払いです' : 'Paying for this lesson'), wantPack ? payBox(pack, 'Ballet lessons (5-pack) from ' + md) : payBox(per, 'Ballet lesson ' + md));
   if (!p.go) return page_(wantPack ? (ja ? '5回券にしますか？' : 'Switch to a 5-lesson pack?') : (ja ? '1回ずつにしますか？' : 'Pay for just this lesson?'),
     (wantPack
-      ? (ja ? '<p><b>$' + pack + '</b>（' + PACK_SIZE + '回分の料金 $' + per * PACK_SIZE + ' から、1回分の半額をお引きしています）</p><p>今回のレッスンが1回目です。残りの' + (PACK_SIZE - 1) + '回は、3⁠か⁠月⁠以内に⁠お使いください。</p>' : '<p><b>$' + pack + '</b> (' + PACK_SIZE + ' lessons at $' + per * PACK_SIZE + ', less half a lesson)</p><p>This lesson is the first one. Use the other ' + (PACK_SIZE - 1) + ' within 3 months.</p>')
+      ? (ja ? '<p><s style="color:#888">$' + per * PACK_SIZE + '</s> → <b style="font-size:22px">$' + pack + '</b>　<span style="color:#8a7140;font-weight:600">$' + (per * PACK_SIZE - pack) + ' お得</span></p><p>' + PACK_SIZE + '回分の料金から、1回分の半額をお引きしています。</p><p>今回のレッスンが1回目です。残りの' + (PACK_SIZE - 1) + '回は、3⁠か⁠月⁠以内に⁠お使いください。</p>' : '<p><s style="color:#888">$' + per * PACK_SIZE + '</s> → <b style="font-size:22px">$' + pack + '</b>  <span style="color:#8a7140;font-weight:600">you save $' + (per * PACK_SIZE - pack) + '</span></p><p>Half of one lesson comes off the price of ' + PACK_SIZE + ' lessons.</p><p>This lesson is the first one. Use the other ' + (PACK_SIZE - 1) + ' within 3 months.</p>')
       : (ja ? '<p><b>$' + per + '</b>（今回のレッスン1回分）</p>' : '<p><b>$' + per + '</b> (this lesson only)</p>')),
     self, wantPack ? (ja ? '5回券にする' : 'Yes, get the pack') : (ja ? '1回ずつにする' : 'Yes, just this lesson'));
   const ps = packSheet_(), md2 = x => Utilities.formatDate(new Date(x), TZ, 'M/d');
