@@ -373,7 +373,7 @@ footer .sponsor a { color: inherit; text-decoration: underline; text-underline-o
 .sponsor-tag { margin: 0 0 .45rem !important; font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; color: var(--mauve, #8a7140); }
 footer .sponsor-wrap { display: flex !important; justify-content: flex-end; padding-top: 0 !important; padding-bottom: 0 !important; }
 footer .sponsor-block { width: fit-content; margin: 0 0 1rem auto; text-align: right; }
-footer .sponsor-label { margin: 0 0 .1rem; text-align: right; font-size: .66rem; letter-spacing: .24em; color: var(--ink-soft); line-height: 1.2; }
+footer .sponsor-label { margin: 0 0 .1rem; text-align: right; font-size: .6rem; letter-spacing: .1em; color: var(--ink-soft); line-height: 1.2; }
 footer .sponsor-logo { display: inline-block; }
 footer .sponsor-logo img { display: block; width: 135px; height: auto; margin-left: auto; mix-blend-mode: multiply; }
 @media (max-width: 760px) {
