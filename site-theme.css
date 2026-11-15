@@ -389,3 +389,8 @@ footer .sponsor-logo img { display: block; width: 135px; height: auto; margin-le
 .rates-ask-button { margin-top: .3rem; padding: .7rem 1.1rem; font: inherit; font-size: 1rem; letter-spacing: .03em; background: #fff; color: var(--ink); border: 1px solid var(--ink); cursor: pointer; }
 .rates-ask-button:hover { background: var(--ink); color: #fff; }
 .rates-ask-status { margin: .55rem 0 0; font-size: .92rem; color: var(--gold-ink, #7a6233); min-height: 1em; }
+.rates-ask-group { margin: 0 0 .6rem; }
+.rates-ask-group > span { display: block; font-size: .85rem; color: var(--ink-soft); margin-bottom: .25rem; }
+.rates-ask-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.rates-ask-chips button { padding: 5px 12px; font: inherit; font-size: .95rem; background: #fff; color: var(--ink); border: 1px solid var(--gold-line, #d9c9a8); cursor: pointer; }
+.rates-ask-chips button[aria-pressed="true"] { background: #ecdfc6; border-color: #c9b48c; }
