@@ -375,4 +375,4 @@ footer .sponsor-wrap { display: flex !important; justify-content: flex-end; padd
 footer .sponsor-block { width: fit-content; margin: 0 0 1.2rem auto; text-align: right; }
 footer .sponsor-logo { display: inline-block; }
 footer .sponsor-logo img { display: block; width: 150px; height: auto; margin-left: auto; mix-blend-mode: multiply; }
-footer .sponsor-block .sponsor { text-align: right; margin: .3rem 0 0; }
+footer .sponsor-label { margin: 0 0 .35rem; text-align: right; font-size: .72rem; letter-spacing: .24em; color: var(--ink-soft); }
