@@ -379,5 +379,3 @@ footer .sponsor-logo img { display: block; width: 135px; height: auto; margin-le
 @media (max-width: 760px) {
   footer .sponsor-logo img { width: 110px; }
 }
-.sponsor-page-logo { display: block; width: min(320px, 80%); height: auto; margin: 1.5rem 0 1.25rem; mix-blend-mode: multiply; }
-.sponsor-page-note { margin: .4rem 0 0; font-size: var(--step--1); color: var(--ink-soft); }
