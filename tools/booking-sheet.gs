@@ -130,6 +130,7 @@ function doPost(e) {
   const lock = LockService.getScriptLock(); lock.waitLock(20000);
   try {
     const d = JSON.parse(e.postData.contents);
+    if (d.type === 'rates') { if (ratesReal_(d)) sendRates_(d); return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON); }
     if (!looksReal_(d)) return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
     const len = Math.max(30, Math.min(240, +d.length || 60));
     const c = (d.choices || []).slice(0, 5).filter(x => /^\d{4}-\d\d-\d\d$/.test(x.date));
@@ -904,6 +905,28 @@ function payChoice_(p, sh, r, data) {
   return page_(wantPack ? (ja ? '5回券にしました' : 'Switched to a 5-lesson pack') : (ja ? '1回ずつにしました' : 'Switched to one lesson'), wantPack ? payBox(pack, 'Ballet lessons (5-pack) from ' + md) : payBox(per, 'Ballet lesson ' + md));
 }
 
+// ---------- "send me the rates": the rates page link goes only to people who ask ----------
+const RATES_PAGE = SITE + 'rates.html';
+function ratesReal_(d) {
+  if (!d || d.hp || (typeof d.ms === 'number' && d.ms < 3000)) return false;
+  const email = String(d.email || '').trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120 || !String(d.name || '').trim() || String(d.name).length > 100) return false;
+  const cache = CacheService.getScriptCache(), k = 'rt:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 3600);
+  const all = +(cache.get('rt:all') || 0) + 1; cache.put('rt:all', String(all), 3600);
+  return n <= 2 && all <= 30;
+}
+function sendRates_(d) {
+  const ja = d.language === 'ja', name = clip(d.name, 100), email = String(d.email).trim();
+  let body = ja
+    ? '# レッスン料金のご案内\n\n' + name + ' 様\n\nお問い合わせいただき、ありがとうございます。髙山まりです。\nレッスンの料金は、こちらのページにまとめています。\n' + RATES_PAGE + '\n\n・個人レッスン：30分 $' + RATE_PER_30 + '（60分 $' + RATE_PER_30 * 2 + '）\n・5回券：5回分の料金から1回分の半額をお引きします\n\nご予約は、こちらからどうぞ。\n' + BOOKING_PAGE + '\n\nお会いできるのを楽しみにしています。\n髙山まり'
+    : '# Lesson rates\n\nHi ' + name + ',\n\nThank you for asking! Here are my lesson rates:\n' + RATES_PAGE + '\n\n• Private lesson: $' + RATE_PER_30 + ' per 30 minutes ($' + RATE_PER_30 * 2 + ' for 60 minutes)\n• 5-lesson pack: half of one lesson comes off the price of five\n\nWhen you’re ready, you can book here:\n' + BOOKING_PAGE + '\n\nHope to see you soon!\nMari Takayama';
+  MailApp.sendEmail({ to: email, subject: ja ? 'レッスン料金のご案内' : 'Lesson rates — Mari Takayama', body: plain_(body = withAsk_(body)), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+  const me = Session.getEffectiveUser().getEmail();
+  if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【料金のお問い合わせ】' + name, body: name + ' さん（' + email + '）に料金表を送りました。',
+    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんが料金を知りたいとのことで、料金表のリンクを自動で送りました。</p>' + infoBox_([['名前', esc_(name)], ['メール', esc_(email)], ['言語', ja ? '日本語' : '英語']]), true) });
+  log_('料金表の問い合わせ', { name: name, email: email }, null, '', {});
+}
+
 // Mari answers a change request
 function moveAnswer_(p, sh, r, data) {
   const ch = data.change; if (!ch) return page_('対応済みです', '変更の希望はもうありません。');
@@ -1049,6 +1072,8 @@ function pretty_(text, isHtml) {
     ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:14px 12px;text-align:center;text-decoration:none;font-size:16px;letter-spacing:.04em;' + (/act=(mmove|take)&/.test(u) ? 'background:#2c2a30;color:#ffffff;border:1px solid #2c2a30' : 'background:#ffffff;color:#2c2a30;border:1px solid #2c2a30') + '">' + ({ mmove: '日時を変更する（お客さんに提案）', mcancel: 'キャンセルする', take: jaMail ? 'この日時で OK' : 'This time works', decl: jaMail ? 'キャンセルする（全額返金）' : 'Doesn’t work — cancel with a full refund' })[u.match(/act=(\w+)/)[1]] + '</a>'
     : /zoom\.us\//.test(u)
     ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:14px 12px;text-align:center;text-decoration:none;font-size:16px;letter-spacing:.04em;background:#ffffff;color:#2c2a30;border:1px solid #2c2a30">' + (jaMail ? 'Zoom に参加する' : 'Join on Zoom') + '</a>'
+    : u === RATES_PAGE
+    ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:15px 12px;text-align:center;text-decoration:none;font-size:17px;font-weight:600;letter-spacing:.04em;background:#2c2a30;color:#ffffff;border:1px solid #2c2a30">' + (jaMail ? '料金表を見る' : 'See the rates') + '</a>'
     : u === BOOKING_PAGE
     ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:14px 12px;text-align:center;text-decoration:none;font-size:16px;letter-spacing:.04em;background:#ffffff;color:#2c2a30;border:1px solid #2c2a30">' + (jaMail ? '予約ページを開く' : 'Open the booking page') + '</a>'
     : /[?&]act=ack&/.test(u)
