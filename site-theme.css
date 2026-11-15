@@ -371,5 +371,8 @@ header.top.mt-hide { transform: none !important; }
 footer .sponsor { text-align: center; font-size: var(--step--1); color: var(--ink-soft); margin: 0 0 .4rem; letter-spacing: .04em; }
 footer .sponsor a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 .sponsor-tag { margin: 0 0 .45rem !important; font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; color: var(--mauve, #8a7140); }
-footer .sponsor-logo { display: block; width: fit-content; margin: 2.2rem auto .5rem; }
-footer .sponsor-logo img { display: block; width: 180px; height: auto; mix-blend-mode: multiply; }
+footer .sponsor-wrap { display: flex !important; justify-content: flex-end; padding-top: 0 !important; padding-bottom: 0 !important; }
+footer .sponsor-block { width: fit-content; margin: 0 0 1.2rem auto; text-align: right; }
+footer .sponsor-logo { display: inline-block; }
+footer .sponsor-logo img { display: block; width: 150px; height: auto; margin-left: auto; mix-blend-mode: multiply; }
+footer .sponsor-block .sponsor { text-align: right; margin: .3rem 0 0; }
