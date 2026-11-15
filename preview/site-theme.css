@@ -379,3 +379,18 @@ footer .sponsor-logo img { display: block; width: 135px; height: auto; margin-le
 @media (max-width: 760px) {
   footer .sponsor-logo img { width: 110px; }
 }
+.rates-ask { margin-top: 1.4rem; padding: 1.1rem 1.1rem 1rem; border: 1px solid var(--gold-line, #d9c9a8); background: #fff; }
+.rates-ask-title { font-family: var(--font-display); font-size: clamp(1.25rem, 2vw, 1.5rem); font-weight: 600; margin-bottom: .3rem; }
+.rates-ask-copy { margin: 0 0 .7rem; font-size: 1rem; line-height: 1.5; color: var(--ink-soft); }
+.rates-ask-field { display: block; margin: 0 0 .55rem; }
+.rates-ask-field span { display: block; font-size: .85rem; color: var(--ink-soft); margin-bottom: .15rem; }
+.rates-ask-field input { width: 100%; box-sizing: border-box; padding: 6px 10px; font: inherit; font-size: 1rem; border: 1px solid var(--gold-line, #d9c9a8); background: #fff; }
+.rates-ask-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.rates-ask-button { margin-top: .3rem; padding: .7rem 1.1rem; font: inherit; font-size: 1rem; letter-spacing: .03em; background: #fff; color: var(--ink); border: 1px solid var(--ink); cursor: pointer; }
+.rates-ask-button:hover { background: var(--ink); color: #fff; }
+.rates-ask-status { margin: .55rem 0 0; font-size: .92rem; color: var(--gold-ink, #7a6233); min-height: 1em; }
+.rates-ask-group { margin: 0 0 .6rem; }
+.rates-ask-group > span { display: block; font-size: .85rem; color: var(--ink-soft); margin-bottom: .25rem; }
+.rates-ask-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.rates-ask-chips button { padding: 5px 12px; font: inherit; font-size: .95rem; background: #fff; color: var(--ink); border: 1px solid var(--gold-line, #d9c9a8); cursor: pointer; }
+.rates-ask-chips button[aria-pressed="true"] { background: #ecdfc6; border-color: #c9b48c; }
