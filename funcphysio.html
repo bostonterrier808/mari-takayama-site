@@ -30,7 +30,8 @@ iframe { flex: 1; width: 100%; border: 0; display: block; }
   <a class="back" href="index.html" id="back">← Back to Mari Takayama</a>
   <div class="side"><span class="name">Sponsor</span><a href="https://funcphysio.com" target="_blank" rel="noopener">Open in a new tab</a></div>
 </div>
-<iframe src="https://funcphysio.com" title="FuncPhysio Physical Therapy website" referrerpolicy="no-referrer-when-downgrade"></iframe>
+<!-- sandbox without top-navigation keeps the FuncPhysio site from taking over the whole window, so the back bar stays -->
+<iframe src="https://funcphysio.com" title="FuncPhysio Physical Therapy website" referrerpolicy="no-referrer-when-downgrade" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe>
 <script>
 // go back to the page the visitor came from on Mari's site, if there is one
 (function(){ try { var r = document.referrer, b = document.getElementById('back'); if (r && new URL(r).origin === location.origin && !/funcphysio\.html/.test(r)) b.href = r; } catch (e) {} })();
