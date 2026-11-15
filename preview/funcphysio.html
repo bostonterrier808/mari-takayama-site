@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en"><head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FuncPhysio Physical Therapy — Mari Takayama</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&amp;family=EB+Garamond:wght@400;500&amp;display=swap">
+<style>
+:root { --ink: #2c2a30; --ink-soft: #6a6670; --line: #e6dac3; --gold: #8a7140; --paper: #ffffff; }
+html, body { margin: 0; height: 100%; background: var(--paper); color: var(--ink); }
+body { display: flex; flex-direction: column; font-family: "EB Garamond", Garamond, "Times New Roman", serif; }
+.bar { flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top)); border-bottom: 1px solid var(--line); background: #faf7f1; }
+.back { display: inline-flex; align-items: center; gap: .5em; padding: 9px 16px; border: 1px solid var(--ink); color: var(--ink); text-decoration: none; font-family: "Cormorant Garamond", "EB Garamond", serif; font-size: 1.05rem; letter-spacing: .06em; background: #fff; white-space: nowrap; }
+.back:hover { background: var(--ink); color: #fff; }
+.side { margin-left: auto; white-space: nowrap; text-align: right; font-size: .85rem; color: var(--ink-soft); line-height: 1.4; }
+.side a { color: var(--gold); }
+.side .name { display: block; font-family: "Cormorant Garamond", serif; letter-spacing: .12em; font-size: .8rem; text-transform: uppercase; }
+iframe { flex: 1; width: 100%; border: 0; display: block; }
+@media (max-width: 480px) { .side .name { display: none; } .back { padding: 8px 12px; font-size: 1rem; } .side { font-size: .8rem; } }
+</style>
+<!-- Google Analytics (visitor counts only; skipped in the editor, previews and local copies) -->
+<script>
+(function(){var h=location.hostname;if(window.top!==window||h==='localhost'||h==='127.0.0.1'||h===''||location.pathname.indexOf('/preview/')>-1)return;window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments);};gtag('js',new Date());gtag('config','G-5XCKST502L');var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=G-5XCKST502L';document.head.appendChild(s);})();
+</script>
+</head>
+<body>
+<div class="bar">
+  <a class="back" href="index.html" id="back">← Back to Mari Takayama</a>
+  <div class="side"><span class="name">Sponsor</span><a href="https://funcphysio.com" target="_blank" rel="noopener">Open in a new tab</a></div>
+</div>
+<iframe src="https://funcphysio.com" title="FuncPhysio Physical Therapy website" referrerpolicy="no-referrer-when-downgrade"></iframe>
+<script>
+// go back to the page the visitor came from on Mari's site, if there is one
+(function(){ try { var r = document.referrer, b = document.getElementById('back'); if (r && new URL(r).origin === location.origin && !/funcphysio\.html/.test(r)) b.href = r; } catch (e) {} })();
+</script>
+<script>
+// show the bar in Japanese when the visitor chose 日本語 on Mari's site
+(function(){ var ja = false; try { ja = (new URLSearchParams(location.search).get('lang') || localStorage.getItem('mari-site-language')) === 'ja'; } catch (e) {}
+  if (!ja) return; document.documentElement.lang = 'ja';
+  document.getElementById('back').textContent = '← Mari Takayama に戻る';
+  document.querySelector('.side a').textContent = '新しいタブで開く'; })();
+</script>
+</body></html>
