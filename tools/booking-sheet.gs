@@ -918,8 +918,8 @@ function ratesReal_(d) {
 function sendRates_(d) {
   const ja = d.language === 'ja', name = clip(d.name, 100), email = String(d.email).trim();
   let body = ja
-    ? '# レッスン料金のご案内\n\n' + name + ' 様\n\nお問い合わせいただき、ありがとうございます。髙山まりです。\nレッスンの料金は、こちらのページにまとめています。\n' + RATES_PAGE + '\n\n・個人レッスン：30分 $' + RATE_PER_30 + '（60分 $' + RATE_PER_30 * 2 + '）\n・5回券：5回分の料金から1回分の半額をお引きします\n\nご予約は、こちらからどうぞ。\n' + BOOKING_PAGE + '\n\nお会いできるのを楽しみにしています。\n髙山まり'
-    : '# Lesson rates\n\nHi ' + name + ',\n\nThank you for asking! Here are my lesson rates:\n' + RATES_PAGE + '\n\n• Private lesson: $' + RATE_PER_30 + ' per 30 minutes ($' + RATE_PER_30 * 2 + ' for 60 minutes)\n• 5-lesson pack: half of one lesson comes off the price of five\n\nWhen you’re ready, you can book here:\n' + BOOKING_PAGE + '\n\nHope to see you soon!\nMari Takayama';
+    ? '# レッスン料金のご案内\n\n' + name + ' 様\n\nお問い合わせいただき、ありがとうございます。髙山まりです。\nレッスンの料金は、こちらのページにまとめています。\n' + RATES_PAGE + '\n\n個人レッスン：60分 $' + RATE_PER_30 * 2 + '（30分 $' + RATE_PER_30 + '）\n5回券（60分）：通常 $' + RATE_PER_30 * 2 * PACK_SIZE + ' → $' + packAmount_(RATE_PER_30 * 2) + '\n\nご予約は、こちらからどうぞ。\n' + BOOKING_PAGE + '\n\nお会いできるのを楽しみにしています。\n髙山まり'
+    : '# Lesson rates\n\nHi ' + name + ',\n\nThank you for asking! Here are my lesson rates:\n' + RATES_PAGE + '\n\nPrivate lesson: $' + RATE_PER_30 * 2 + ' for 60 minutes ($' + RATE_PER_30 + ' per 30)\n5-lesson pack (60 min): usually $' + RATE_PER_30 * 2 * PACK_SIZE + ' → $' + packAmount_(RATE_PER_30 * 2) + '\n\nWhen you’re ready, you can book here:\n' + BOOKING_PAGE + '\n\nHope to see you soon!\nMari Takayama';
   MailApp.sendEmail({ to: email, subject: ja ? 'レッスン料金のご案内' : 'Lesson rates — Mari Takayama', body: plain_(body = withAsk_(body)), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
   const me = Session.getEffectiveUser().getEmail();
   if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【料金のお問い合わせ】' + name, body: name + ' さん（' + email + '）に料金表を送りました。',
