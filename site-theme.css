@@ -379,3 +379,5 @@ footer .sponsor-logo img { display: block; width: 135px; height: auto; margin-le
 @media (max-width: 760px) {
   footer .sponsor-logo img { width: 110px; }
 }
+footer .sponsor-logo { position: relative; padding-right: 14px; }
+footer .sponsor-logo::after { content: "\2197\FE0E"; position: absolute; top: -2px; right: 0; font-size: 11px; line-height: 1; color: var(--ink-soft); }
