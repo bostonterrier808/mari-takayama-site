@@ -372,7 +372,13 @@ footer .sponsor { text-align: center; font-size: var(--step--1); color: var(--in
 footer .sponsor a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 .sponsor-tag { margin: 0 0 .45rem !important; font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; color: var(--mauve, #8a7140); }
 footer .sponsor-wrap { display: flex !important; justify-content: flex-end; padding-top: 0 !important; padding-bottom: 0 !important; }
-footer .sponsor-block { width: fit-content; margin: 0 0 1.2rem auto; text-align: right; }
+footer .sponsor-block { width: fit-content; margin: 0 0 1rem auto; text-align: right; }
+footer .sponsor-label { margin: 0 0 .1rem; text-align: right; font-size: .66rem; letter-spacing: .24em; color: var(--ink-soft); line-height: 1.2; }
 footer .sponsor-logo { display: inline-block; }
-footer .sponsor-logo img { display: block; width: 150px; height: auto; margin-left: auto; mix-blend-mode: multiply; }
-footer .sponsor-label { margin: 0 0 .35rem; text-align: right; font-size: .72rem; letter-spacing: .24em; color: var(--ink-soft); }
+footer .sponsor-logo img { display: block; width: 110px; height: auto; margin-left: auto; mix-blend-mode: multiply; }
+@media (max-width: 760px) {
+  footer .sponsor-wrap { justify-content: flex-start; }
+  footer .sponsor-block { margin: 0 auto 1rem 0; text-align: left; }
+  footer .sponsor-label { text-align: left; }
+  footer .sponsor-logo img { margin-left: 0; }
+}
