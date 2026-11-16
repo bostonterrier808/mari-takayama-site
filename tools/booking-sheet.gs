@@ -157,6 +157,7 @@ function doPost(e) {
   const lock = LockService.getScriptLock(); lock.waitLock(20000);
   try {
     const d = JSON.parse(e.postData.contents);
+    if (d.type === 'semiq') return ContentService.createTextOutput(JSON.stringify(semiQuestion_(d))).setMimeType(ContentService.MimeType.JSON);
     if (d.type === 'semi') return ContentService.createTextOutput(JSON.stringify(semiSignup_(d))).setMimeType(ContentService.MimeType.JSON);
     if (d.type === 'costume') { if (costumeReal_(d)) costumeRequest_(d); return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON); }
     if (d.type === 'rates') { if (ratesReal_(d)) sendRates_(d); return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON); }
@@ -1242,6 +1243,26 @@ function newsDaily_() {
   pr.setProperty('NEWS_OFFERED', next.date); if (!n) return;
   const body = '# 次のクラスのお知らせ\n\n次のセミプライベートクラスのお知らせを、今までの方に送れます。\n\nクラス：' + newsWhen_(next.date, true) + '\n残り：' + next.left + '席\n送る人：' + n + '人\n\n下のボタンを押すと、送る前の確認画面が開きます。\n' + newsUrl_(next.date);
   MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【お知らせを送る】' + newsWhen_(next.date, true) + ' のセミプライベートクラス', body: plain_(body), htmlBody: pretty_(body) });
+}
+
+// ---------- questions about the semi-private class (semi-private.html) ----------
+function semiQuestion_(d) {
+  if (!d || d.hp || (typeof d.ms === 'number' && d.ms < 3000)) return { ok: true };
+  const email = String(d.email || '').trim().toLowerCase(), name = clip(d.name, 100), q = String(d.question || '').trim().slice(0, 2000), ja = d.language === 'ja';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name.trim() || !q) return { ok: false };
+  const cache = CacheService.getScriptCache(), k = 'sq:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 3600);
+  const all = +(cache.get('sq:all') || 0) + 1; cache.put('sq:all', String(all), 3600);
+  if (n > 3 || all > 30) return { ok: true };
+  const me = Session.getEffectiveUser().getEmail();
+  if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', replyTo: email, subject: '【セミプライベートの質問】' + name,
+    body: name + '（' + email + '）\n\n' + q,
+    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんから、セミプライベートクラスについて質問が届きました。</p><p style="white-space:pre-wrap;background:#faf7f1;border:1px solid #eee3cf;padding:12px 14px">' + esc_(q) + '</p><p>このメールに返信すると、' + esc_(name) + ' さんに届きます。</p>', true) });
+  const body = ja
+    ? '# ご質問を受け付けました\n\n' + name + ' 様\n\nご質問ありがとうございます。\n髙山まりです。\nお返事はこのメールアドレスに\nお送りします。\n\n' + SEMI_PAGE + '\n\n髙山まり'
+    : '# Thanks for your question\n\nHi ' + name + ',\n\nThank you for your question! I’ll reply to this email address soon.\n\n' + SEMI_PAGE + '\n\nMari Takayama';
+  MailApp.sendEmail({ to: email, subject: ja ? 'ご質問を受け付けました（セミプライベートクラス）' : 'Thanks for your question — semi-private class', body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+  log_('セミプライベートの質問', { name: name, email: email }, null, '', { memo: q.slice(0, 200) });
+  return { ok: true };
 }
 
 // ---------- costume rental requests (costumes.html) ----------
