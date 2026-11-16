@@ -911,7 +911,7 @@ function payChoice_(p, sh, r, data) {
 const RATES_PAGE = SITE + 'rates.html';
 const RATES_TAB = '料金の問い合わせ';
 const RATES_HEAD = ['日時', '名前', 'メール', '言語', '対象', 'バレエの経験', '立場', 'その後の予約', '住んでいる所'];
-const AREA_JA = { Manhattan: 'マンハッタン', Brooklyn: 'ブルックリン', Queens: 'クイーンズ', Bronx: 'ブロンクス', 'Staten Island': 'スタテンアイランド', 'Long Island': 'ロングアイランド', 'New Jersey': 'ニュージャージー', 'Elsewhere in the U.S.': 'そのほかのアメリカ', Japan: '日本', 'Another country': 'そのほかの国' };
+const AREA_JA = { Manhattan: 'ニューヨーク（マンハッタン）', 'Long Island': 'ロングアイランド', 'New Jersey': 'ニュージャージー', Elsewhere: 'それ以外' };
 const WHO_JA = { Student: '学生', Professional: 'プロのダンサー', Teacher: 'ダンスの先生', Parent: '保護者', Hobby: '趣味', Other: 'その他' };
 function ratesSheet_() {
   const ss = book_(); let sh = ss.getSheetByName(RATES_TAB);
