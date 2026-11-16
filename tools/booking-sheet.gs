@@ -1025,17 +1025,23 @@ function semiSheet_() {
   sh.setFrozenRows(1); sh.getRange('H2:H').insertCheckboxes();
   return sh;
 }
+const SEMI_DATES_TAB = 'セミプライベートの日程';
+// Mari types each class day in column A of this tab (e.g. 2027-01-17); only these days are open for sign-up
+function semiDayList_() {
+  const ss = book_(); let sh = ss.getSheetByName(SEMI_DATES_TAB);
+  if (!sh) { sh = ss.insertSheet(SEMI_DATES_TAB); sh.getRange(1, 1, 2, 2).setValues([['クラスの日（11:00〜12:30）', 'メモ'], [SEMI_FIRST, '']]).setNumberFormat('@'); sh.getRange(1, 1, 1, 2).setFontWeight('bold').setBackground('#ecdfc6'); sh.setFrozenRows(1); }
+  if (sh.getLastRow() < 2) return [];
+  return sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues().map(r => {
+    const v = r[0];
+    if (v instanceof Date) return Utilities.formatDate(v, TZ, 'yyyy-MM-dd');
+    const t = String(v || '').trim(), m = t.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})$/), u = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    return m ? m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2) : u ? u[3] + '-' + ('0' + u[1]).slice(-2) + '-' + ('0' + u[2]).slice(-2) : '';
+  }).filter(Boolean).sort().filter((x, i, a) => a.indexOf(x) === i);
+}
 function semiDates_() {
-  const today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'), out = [];
+  const today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
   const sh = book_().getSheetByName(SEMI_TAB), rows = sh && sh.getLastRow() > 1 ? sh.getRange(2, 2, sh.getLastRow() - 1, 1).getDisplayValues().map(r => String(r[0]).slice(0, 10)) : [];
-  let d = dateOf_(SEMI_FIRST);
-  for (let k = 0; k < 24 && out.length < 3; k++) {
-    const y = d.getFullYear(), m = d.getMonth(), first = new Date(y, m, 1, 12), sun = 1 + (7 - first.getDay()) % 7 + 14;
-    const ymd = Utilities.formatDate(new Date(y, m, sun, 12), TZ, 'yyyy-MM-dd');
-    if (ymd >= today && ymd >= SEMI_FIRST) out.push({ date: ymd, left: Math.max(0, SEMI_SEATS - rows.filter(x => x === ymd).length) });
-    d = new Date(y, m + 1, 1, 12);
-  }
-  return out;
+  return semiDayList_().filter(d => d >= today).slice(0, 6).map(d => ({ date: d, left: Math.max(0, SEMI_SEATS - rows.filter(x => x === d).length) }));
 }
 function semiCoupon_(email) {
   const sh = book_().getSheetByName(SEMI_REVIEW_TAB); if (!sh || sh.getLastRow() < 2) return 0;
