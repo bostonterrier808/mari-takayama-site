@@ -960,7 +960,7 @@ function sendRates_(d) {
   if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【料金のお問い合わせ】' + name, body: name + ' さん（' + email + '）に料金表を送りました。',
     htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんが料金を知りたいとのことで、料金表のリンクを自動で送りました。</p>' + infoBox_([['名前', esc_(name)], ['メール', esc_(email)], ['言語', ja ? '日本語' : '英語'], ['対象', esc_(JA.age[d.age] || '－')], ['経験', esc_(JA.level[d.level] || '－')], ['立場', esc_(WHO_JA[d.who] || '－')], ['住んでいる所', esc_((AREA_JA[d.area] || '－') + (d.area === 'Elsewhere' && String(d.areaOther || '').trim() ? '（' + clip(d.areaOther, 80) + '）' : ''))], ['性別', esc_(gender || '－')]]), true) });
   const age = JA.age[d.age] || '', level = JA.level[d.level] || '', who = WHO_JA[d.who] || '', area = (AREA_JA[d.area] || '') + (d.area === 'Elsewhere' && String(d.areaOther || '').trim() ? '（' + clip(d.areaOther, 80) + '）' : '');
-  try { ratesSheet_().appendRow([new Date(), name, email, ja ? '日本語' : '英語', age || '（未回答）', level || '（未回答）', who || '（未回答）', 'まだ', area || '（未回答）', gender || '（未回答）']); } catch (e) {}
+  try { const rs = ratesSheet_(), rv = [new Date(), name, email, ja ? '日本語' : '英語', age || '（未回答）', level || '（未回答）', who || '（未回答）', 'まだ', area || '（未回答）', gender || '（未回答）']; const next = rs.getRange('B2:B').getValues().findIndex(x => !String(x[0]).trim()) + 2; rs.getRange(next > 1 ? next : rs.getLastRow() + 1, 1, 1, rv.length).setValues([rv]); } catch (e) {}  // first empty row (appendRow would land below the summaries)
   log_('料金表の問い合わせ', { name: name, email: email }, null, '', { memo: [age, level, who, area, gender].filter(Boolean).join('・') });
 }
 
