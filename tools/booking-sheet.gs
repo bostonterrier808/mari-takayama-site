@@ -1024,7 +1024,7 @@ function semiSheet_() {
   if (sh) { if (!sh.getRange(1, 12).getValue()) sh.getRange(1, 12, 1, 2).setValues([['お席', '言語']]).setFontWeight('bold').setBackground('#ecdfc6'); return sh; }
   sh = ss.insertSheet(SEMI_TAB);
   sh.getRange(1, 1, 1, 13).setValues([['受付日時', 'クラスの日', '名前', 'メール', 'レベル', '料金', 'レビュー割引', '支払い', 'メッセージ', 'レビューのお願い', 'id', 'お席', '言語']]).setFontWeight('bold').setBackground('#ecdfc6');
-  sh.setFrozenRows(1); sh.getRange('H2:H').insertCheckboxes();
+  sh.setFrozenRows(1);
   return sh;
 }
 const SEMI_DATES_TAB = 'セミプライベートの日程';
@@ -1115,8 +1115,9 @@ function semiSignup_(d) {
   if (mine) return { ok: false, error: 'already' };
   const cRow = semiCoupon_(email), price = cRow ? SEMI_PRICE - SEMI_OFF : SEMI_PRICE, id = 's' + Utilities.getUuid().slice(0, 7);
   if (cRow) book_().getSheetByName(SEMI_REVIEW_TAB).getRange(cRow, 6).setValue('使用済み（' + d.date + '）');
-  sh.appendRow([new Date(), d.date + ' ' + SEMI_START, name, email, SEMI_LEVEL_JA[d.level] || '', price, cRow ? '$' + SEMI_OFF + ' 引き' : '', false, clip(d.note, 300), '', id, '', ja ? 'ja' : 'en']);
-  sh.getRange(sh.getLastRow(), 8).insertCheckboxes();
+  const colB = sh.getRange('B:B').getValues(); let at = 2; while (at <= colB.length && String(colB[at - 1][0]).trim()) at++;  // first empty row (the checkbox column runs far down)
+  sh.getRange(at, 1, 1, 13).setValues([[new Date(), d.date + ' ' + SEMI_START, name, email, SEMI_LEVEL_JA[d.level] || '', price, cRow ? '$' + SEMI_OFF + ' 引き' : '', false, clip(d.note, 300), '', id, '', ja ? 'ja' : 'en']]);
+  sh.getRange(at, 8).insertCheckboxes();
   const day = dateOf_(d.date), md = (day.getMonth() + 1) + '/' + day.getDate(), wd = WD_JA[day.getDay()];
   const whenJa = md + '（' + wd + '）' + SEMI_START + '〜12:30', whenEn = Utilities.formatDate(day, TZ, 'EEE, MMM d') + ', 11:00 am–12:30 pm';
   const pay = venmoLink_(price, 'Semi-private class ' + md);
