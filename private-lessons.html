@@ -378,7 +378,7 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
   .banner .wrap { align-items: flex-start; padding-top: 1.25rem; }
 }
 </style>
-<link rel="stylesheet" href="site-theme.css?v=48">
+<link rel="stylesheet" href="site-theme.css?v=49">
 <style id="manual-box-styles">@media(min-width:761px){[data-box-slot="29"]{translate:-3px 0px !important}}@media(max-width:760px){}</style><style id="manual-text-styles">@media(min-width:761px){}@media(max-width:760px){[data-text-slot="19"]{translate:1px -8px !important;font-size:16px !important;position:relative !important}[data-text-slot="20"]{translate:1px -8px !important;font-size:15px !important;position:relative !important}}</style><meta name="editor-published-at" content="1794434805000">
 <style id="lesson-photo-whole">
 /* Lesson photo: show the whole photo (no cropping) */
@@ -440,7 +440,7 @@ body .row-photo.tall[data-box-slot] { height: auto !important; }
   <div class="rates-ask-group" data-group="age"><span>Who is it for?</span><div class="rates-ask-chips"><button type="button" data-value="Adult">Adult</button><button type="button" data-value="Teen">Teen</button><button type="button" data-value="Child">Child</button></div></div>
   <div class="rates-ask-group" data-group="level"><span>Ballet experience</span><div class="rates-ask-chips"><button type="button" data-value="New to ballet">New to ballet</button><button type="button" data-value="Some classes">Some classes</button><button type="button" data-value="Trains regularly">Trains regularly</button></div></div>
   <div class="rates-ask-group" data-group="who"><span>You are</span><div class="rates-ask-chips"><button type="button" data-value="Student">A student</button><button type="button" data-value="Professional">A professional dancer</button><button type="button" data-value="Teacher">A dance teacher</button><button type="button" data-value="Parent">A parent</button><button type="button" data-value="Hobby">Dancing for fun</button><button type="button" data-value="Other">Other</button></div></div>
-  <div class="rates-ask-group" data-group="area"><span>Where do you live?</span><div class="rates-ask-chips"><button type="button" data-value="Manhattan">Manhattan, New York</button><button type="button" data-value="Long Island">Long Island</button><button type="button" data-value="New Jersey">New Jersey</button><button type="button" data-value="Elsewhere">Somewhere else</button></div></div>
+  <div class="rates-ask-group" data-group="area"><span>Where do you live?</span><div class="rates-ask-chips"><button type="button" data-value="Manhattan">Manhattan, New York</button><button type="button" data-value="Long Island">Long Island</button><button type="button" data-value="New Jersey">New Jersey</button><button type="button" data-value="Japan">Japan</button><button type="button" data-value="Elsewhere">Somewhere else</button></div><input class="rates-ask-other" name="areaOther" maxlength="80" placeholder="Where?" aria-label="Where do you live?" hidden></div>
   <label class="rates-ask-field"><span>Name</span><input name="name" autocomplete="name" required></label>
   <label class="rates-ask-field"><span>Email</span><input name="email" type="email" autocomplete="email" required></label>
   <input name="hp" tabindex="-1" autocomplete="off" aria-hidden="true" class="rates-ask-hp">
@@ -459,6 +459,7 @@ body .row-photo.tall[data-box-slot] { height: auto !important; }
     g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', 'false'));
     if (!on) b.setAttribute('aria-pressed', 'true');
     pick[g.dataset.group] = on ? '' : b.dataset.value;
+    if (g.dataset.group === 'area') { const o = f.elements['areaOther']; o.hidden = pick.area !== 'Elsewhere'; if (!o.hidden) o.focus(); }
   }));
   f.addEventListener('submit', async e => {
     e.preventDefault();
@@ -466,9 +467,9 @@ body .row-photo.tall[data-box-slot] { height: auto !important; }
     if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { st.textContent = ja() ? 'お名前とメールアドレスを入れてください。' : 'Please enter your name and email.'; return; }
     const b = f.querySelector('button'); b.disabled = true; st.textContent = ja() ? '送っています…' : 'Sending…';
     try {
-      await fetch(APP, { method: 'POST', body: JSON.stringify({ type: 'rates', name, email, age: pick.age || '', level: pick.level || '', who: pick.who || '', area: pick.area || '', hp: f.elements['hp'].value, ms: Date.now() - t0, language: ja() ? 'ja' : 'en' }) });
+      await fetch(APP, { method: 'POST', body: JSON.stringify({ type: 'rates', name, email, age: pick.age || '', level: pick.level || '', who: pick.who || '', area: pick.area || '', areaOther: pick.area === 'Elsewhere' ? f.elements['areaOther'].value.trim() : '', hp: f.elements['hp'].value, ms: Date.now() - t0, language: ja() ? 'ja' : 'en' }) });
       st.textContent = ja() ? '料金表をメールでお送りしました。届かないときは、迷惑メールのフォルダもご確認ください。' : 'Sent! Check your email for the rates (and your spam folder, just in case).';
-      f.reset(); f.querySelectorAll('.rates-ask-group button').forEach(x => x.setAttribute('aria-pressed', 'false')); for (const k in pick) pick[k] = '';
+      f.reset(); f.elements['areaOther'].hidden = true; f.querySelectorAll('.rates-ask-group button').forEach(x => x.setAttribute('aria-pressed', 'false')); for (const k in pick) pick[k] = '';
     } catch (err) { st.textContent = ja() ? '送れませんでした。もう一度お試しください。' : 'Something went wrong. Please try again.'; }
     b.disabled = false;
   });

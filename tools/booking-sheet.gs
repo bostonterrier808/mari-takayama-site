@@ -911,7 +911,7 @@ function payChoice_(p, sh, r, data) {
 const RATES_PAGE = SITE + 'rates.html';
 const RATES_TAB = '料金の問い合わせ';
 const RATES_HEAD = ['日時', '名前', 'メール', '言語', '対象', 'バレエの経験', '立場', 'その後の予約', '住んでいる所'];
-const AREA_JA = { Manhattan: 'ニューヨーク（マンハッタン）', 'Long Island': 'ロングアイランド', 'New Jersey': 'ニュージャージー', Elsewhere: 'それ以外' };
+const AREA_JA = { Manhattan: 'ニューヨーク（マンハッタン）', 'Long Island': 'ロングアイランド', 'New Jersey': 'ニュージャージー', Japan: '日本', Elsewhere: 'それ以外' };
 const WHO_JA = { Student: '学生', Professional: 'プロのダンサー', Teacher: 'ダンスの先生', Parent: '保護者', Hobby: '趣味', Other: 'その他' };
 function ratesSheet_() {
   const ss = book_(); let sh = ss.getSheetByName(RATES_TAB);
@@ -953,7 +953,7 @@ function sendRates_(d) {
   const me = Session.getEffectiveUser().getEmail();
   if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【料金のお問い合わせ】' + name, body: name + ' さん（' + email + '）に料金表を送りました。',
     htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんが料金を知りたいとのことで、料金表のリンクを自動で送りました。</p>' + infoBox_([['名前', esc_(name)], ['メール', esc_(email)], ['言語', ja ? '日本語' : '英語'], ['対象', esc_(JA.age[d.age] || '－')], ['経験', esc_(JA.level[d.level] || '－')], ['立場', esc_(WHO_JA[d.who] || '－')], ['住んでいる所', esc_(AREA_JA[d.area] || '－')]]), true) });
-  const age = JA.age[d.age] || '', level = JA.level[d.level] || '', who = WHO_JA[d.who] || '', area = AREA_JA[d.area] || '';
+  const age = JA.age[d.age] || '', level = JA.level[d.level] || '', who = WHO_JA[d.who] || '', area = (AREA_JA[d.area] || '') + (d.area === 'Elsewhere' && String(d.areaOther || '').trim() ? '（' + clip(d.areaOther, 80) + '）' : '');
   try { ratesSheet_().appendRow([new Date(), name, email, ja ? '日本語' : '英語', age || '（未回答）', level || '（未回答）', who || '（未回答）', 'まだ', area || '（未回答）']); } catch (e) {}
   log_('料金表の問い合わせ', { name: name, email: email }, null, '', { memo: [age, level, who, area].filter(Boolean).join('・') });
 }
