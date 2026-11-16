@@ -385,6 +385,9 @@ footer .sponsor-logo img { display: block; width: 135px; height: auto; margin-le
 .rates-ask-field { display: block; margin: 0 0 .55rem; }
 .rates-ask-field span { display: block; font-size: .85rem; color: var(--ink-soft); margin-bottom: .15rem; }
 .rates-ask-field input { width: 100%; box-sizing: border-box; padding: 6px 10px; font: inherit; font-size: 1rem; border: 1px solid var(--gold-line, #d9c9a8); background: #fff; }
+.rates-ask-names { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 10px; }
+.rates-ask-field small { font-size: .8rem; }
+@media (max-width: 560px) { .rates-ask-names { grid-template-columns: 1fr; } }
 .rates-ask-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .rates-ask-button { margin-top: .3rem; padding: .7rem 1.1rem; font: inherit; font-size: 1rem; letter-spacing: .03em; background: #fff; color: var(--ink); border: 1px solid var(--ink); cursor: pointer; }
 .rates-ask-button:hover { background: var(--ink); color: #fff; }
