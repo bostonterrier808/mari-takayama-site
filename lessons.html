@@ -253,9 +253,10 @@
       <p class="q">How would you like to pay?</p>
       <div class="chips" data-group="pay" data-single>
         <button type="button" class="chip" data-value="Single">One lesson at a time</button>
+        <button type="button" class="chip" data-value="Pack3">3-lesson pack</button>
         <button type="button" class="chip" data-value="Pack">5-lesson pack</button>
       </div>
-      <p class="contact-hint" id="pack-note"><span class="line">A 5-lesson pack is paid ahead: half of one lesson comes off the price of five.</span><span class="line">Use it within 3 months.</span><span class="line">Mari will send the amount in the confirmation email.</span></p>
+      <p class="contact-hint" id="pack-note"><span class="line">A 3-lesson pack is paid ahead. Use it within 2 months.</span><span class="line">A 5-lesson pack is paid ahead: half of one lesson comes off the price of five.</span><span class="line">Use it within 3 months.</span><span class="line">Mari will send the amount in the confirmation email.</span></p>
       <div id="pack-check"><p class="q">Already have a pack?</p><div class="pack-check-row"><input type="email" id="pack-email" autocomplete="email" placeholder="Your email" aria-label="Your email"><button type="button" id="pack-btn">Check</button></div><p class="contact-hint" id="pack-result" hidden></p></div>
       </div>
       <div id="first-only">
@@ -294,7 +295,7 @@
       <p class="note-flex" id="loading">Loading open times…</p>
       <div id="mode-row" hidden><div class="chips" data-group="mode" data-single><button type="button" class="chip" data-value="One">One lesson</button><button type="button" class="chip" data-value="Many">Several lessons at once</button></div></div>
       <p class="note-flex" id="pick-note">Choose 3 to 5 times. Mari will confirm one of them by email.</p>
-      <p class="note-flex" id="pick-note-many" hidden>Pick a time for each lesson (2 to 5). Each one becomes a lesson.</p>
+      <p class="note-flex" id="pick-note-many" hidden>Pick a time for each lesson (up to the number in your pack). Each one becomes a lesson.</p>
       <ol class="picked" id="picked"></ol>
       <p class="picked-empty" id="picked-empty">No times chosen yet.</p>
       <p class="note-flex">Only times when Mari is free are shown. If none suit you, write the times that work in the message below.</p>
@@ -413,7 +414,7 @@
   const mins = hhmm => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
   const hhmm = n => Math.floor(n / 60) + ':' + pad(n % 60);
   const lenMin = () => +(choice.len || 60);
-  const many = () => choice.pay === 'Pack' && choice.mode === 'Many';
+  const many = () => /^Pack/.test(choice.pay || '') && choice.mode === 'Many';
   // a start time shown with its end, e.g. 9:00–10:30 am
   const span = s => { const e = s + lenMin(); if (ja()) return clock(s) + '〜' + clock(e); const a = clock(s), b = clock(e); return a.slice(-2) === b.slice(-2) ? a.slice(0, -3) + '–' + b : a + '–' + b; };
   const clock = (n) => { if (ja()) return hhmm(n).replace(':', '\u2060:\u2060'); let h = Math.floor(n / 60); const m = pad(n % 60), ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12; return h + ':' + m + ' ' + ap; };
@@ -510,7 +511,7 @@
         if (choice.place === 'Studio' && !choice.studio) pick('studio', 'Self');
         if (!zoneTouched) setZone(choice.place === 'Zoom' ? here : NY);
       }
-      if (name === 'pay' || name === 'mode') { document.getElementById('mode-row').hidden = choice.pay !== 'Pack'; document.getElementById('pick-note').hidden = many(); document.getElementById('pick-note-many').hidden = !many(); if (typeof renderPicks === 'function' && slots) renderPicks(); }
+      if (name === 'pay' || name === 'mode') { document.getElementById('mode-row').hidden = !/^Pack/.test(choice.pay || ''); document.getElementById('pick-note').hidden = many(); document.getElementById('pick-note-many').hidden = !many(); if (typeof renderPicks === 'function' && slots) renderPicks(); }
       if (name === 'heard') { document.getElementById('friend-field').hidden = choice.heard !== 'Friend'; document.getElementById('heard-other').hidden = choice.heard !== 'Other'; }
       if (name === 'via') showContact();
       if (name === 'visit') { const back = choice.visit === 'Returning'; document.getElementById('reach-more').hidden = back; document.getElementById('same-note').hidden = !back; if (back && !form.contact.value.trim()) pick('via', 'Email'); }
@@ -650,7 +651,7 @@
       if (at >= 0) { const r = document.createElement('span'); r.className = 'rank'; r.textContent = at + 1; b.append(r); }
       b.addEventListener('click', () => {
         const i = picks.findIndex(p => p.at === sl.at);
-        if (i >= 0) picks.splice(i, 1); else { if (picks.length >= 5) picks.shift(); picks.push({ date: sl.k, start: hhmm(sl.t), at: sl.at }); }
+        if (i >= 0) picks.splice(i, 1); else { if (picks.length >= (many() && choice.pay === 'Pack3' ? 3 : 5)) picks.shift(); picks.push({ date: sl.k, start: hhmm(sl.t), at: sl.at }); }
         renderDates(); renderTimes(); renderPicks();
       });
       box.append(b);
@@ -757,7 +758,7 @@
       visit: choice.visit, name: form.name.value.trim(), email: form.email.value.trim(), via: choice.via, contact: choice.via === 'Email' ? '' : form.contact.value.trim(),
       place: choice.place || '', area: [choice.place === 'Travel' && choice.space ? { Small: '広さ：バーのみ（センターは無理）', Medium: '広さ：バー＋あまり動かないセンター', Large: '広さ：センターもしっかりできる', Variation: '広さ：バリエーションも踊れる' }[choice.space] : '', choice.place === 'Travel' && choice.barre ? { Yes: 'バー：あり', Substitute: 'バー：なし（椅子・台などで代用）', None: 'バー：なし' }[choice.barre] : '', form.area.value.trim(), form.arrive.value.trim()].filter(Boolean).join(' / '), age: choice.visit === 'First' ? (choice.age || '') : '', level: choice.visit === 'First' ? (choice.level || '') : '',
       studio: choice.place === 'Studio' ? (choice.studio === 'Mari' ? 'mari' : 'self') : '',
-      length: lenMin(), pack: choice.pay === 'Pack' && !intro ? '5' : '', free: intro, multi: many(), choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
+      length: lenMin(), pack: !intro && choice.pay === 'Pack' ? '5' : !intro && choice.pay === 'Pack3' ? '3' : '', free: intro, multi: many(), choices: picks.map(p => ({ date: p.date, start: p.start })), tz: zone,
       heard: choice.visit === 'First' ? (choice.heard || '') : '', heardNote: choice.visit === 'First' && choice.heard === 'Other' ? form.heardnote.value.trim() : '', friend: choice.visit === 'First' && choice.heard === 'Friend' ? form.friend.value.trim() : '', nickname: choice.visit === 'First' ? form.nickname.value.trim() : '', gender: choice.visit === 'First' ? (choice.gender || '') : '', social: choice.visit === 'First' ? form.social.value.trim() : '', tongue: choice.visit === 'First' ? (choice.tongue || '') : '', goals: choice.visit === 'First' ? goals() : [], note: form.note.value.trim(), language: ja() ? 'ja' : 'en', message: text
     };
     if (SHEET_APP) {
