@@ -157,6 +157,7 @@ function doPost(e) {
   const lock = LockService.getScriptLock(); lock.waitLock(20000);
   try {
     const d = JSON.parse(e.postData.contents);
+    if (d.type === 'costume') { if (costumeReal_(d)) costumeRequest_(d); return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON); }
     if (d.type === 'rates') { if (ratesReal_(d)) sendRates_(d); return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON); }
     if (!looksReal_(d)) return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
     const len = Math.max(30, Math.min(240, +d.length || 60));
@@ -963,6 +964,44 @@ function payChoice_(p, sh, r, data) {
     body: data.name + ' さんが' + label + 'に変えました。金額：$' + amt(want),
     htmlBody: pretty_('<p><b>' + esc_(data.name) + '</b> さんが、確定メールから<b>' + label + '</b>に変えました。</p>' + infoBox_([['レッスン', choiceJa_(bk, bk.len)], ['金額', '$' + amt(want)], ['メール', esc_(data.email)]]) + (want !== '1' ? '<p style="color:#6a6670;font-size:13px">「回数券」タブに自動で記録しました。</p>' : ''), true) });
   return page_(want === '1' ? (ja ? '1回ずつにしました' : 'Switched to one lesson') : (ja ? want + '回券にしました' : 'Switched to a ' + want + '-lesson pack'), payBox(want));
+}
+
+// ---------- costume rental requests (costumes.html) ----------
+const COSTUME_TAB = '衣装の貸し出し';
+const COSTUME_JA = { 'Practice tutu': '練習用チュチュ', 'Romantic tutu': 'ロマンティックチュチュ', Either: 'どちらでも' };
+const COSTUME_USE_JA = { Lesson: 'Mari のレッスン', Photo: '撮影', Rehearsal: 'リハーサル', Performance: '本番', Other: 'その他' };
+function costumePrice_(costume, days, use) {
+  if (use === 'Lesson' && days <= 1) return 20;
+  const rom = costume === 'Romantic tutu';
+  if (days <= 1) return rom ? 40 : 35;
+  if (days < 7) return Math.min((rom ? 40 : 35) + 10 * (days - 1), rom ? 80 : 70);
+  if (days === 7) return rom ? 80 : 70;
+  if (days <= 14) return 120;
+  return rom ? 170 : 150;
+}
+function costumeReal_(d) {
+  if (!d || d.hp || (typeof d.ms === 'number' && d.ms < 3000)) return false;
+  const email = String(d.email || '').trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !String(d.name || '').trim() || !COSTUME_JA[d.costume] || !/^\d{4}-\d\d-\d\d$/.test(d.from) || !/^\d{4}-\d\d-\d\d$/.test(d.until)) return false;
+  const cache = CacheService.getScriptCache(), k = 'cs:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 3600);
+  return n <= 3;
+}
+function costumeRequest_(d) {
+  const ja = d.language === 'ja', name = clip(d.name, 100), email = String(d.email).trim();
+  const days = Math.round((dateOf_(d.until).getTime() - dateOf_(d.from).getTime()) / 86400000) + 1;
+  const price = costumePrice_(d.costume, days, d.use), when = d.from === d.until ? d.from : d.from + ' 〜 ' + d.until;
+  const ss = book_(); let sh = ss.getSheetByName(COSTUME_TAB);
+  if (!sh) { sh = ss.insertSheet(COSTUME_TAB); sh.getRange(1, 1, 1, 11).setValues([['受付日時', '名前', 'メール', '衣装', '使う目的', '借りる日', '返す日', '日数', '目安の料金', '身長', 'メッセージ']]).setFontWeight('bold').setBackground('#ecdfc6'); sh.setFrozenRows(1); }
+  sh.appendRow([new Date(), name, email, COSTUME_JA[d.costume], COSTUME_USE_JA[d.use] || '', d.from, d.until, days, '$' + price, clip(d.height, 30), clip(d.note, 300)]);
+  let body = ja
+    ? '# 衣装のお申し込みを受け付けました\n\n' + name + ' 様\n\nお申し込みありがとうございます。髙山まりです。\n空いているかを確認して、あらためてメールでご連絡します。\n\n衣装：' + COSTUME_JA[d.costume] + '\n日にち：' + when + '（' + days + '日）\n目安の料金：$' + price + '（クリーニング代込み）\n\nまだ予約は確定していません。\n\n髙山まり'
+    : '# We got your costume request\n\nHi ' + name + ',\n\nThank you for asking! I’ll check that the costume is free and email you back.\n\nCostume: ' + d.costume + '\nDates: ' + when + ' (' + days + (days > 1 ? ' days' : ' day') + ')\nAbout: $' + price + ' (cleaning included)\n\nIt isn’t booked yet.\n\nMari Takayama';
+  MailApp.sendEmail({ to: email, subject: ja ? '衣装のお申し込みを受け付けました' : 'Your costume request — Mari Takayama', body: plain_(body = withAsk_(body)), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+  const me = Session.getEffectiveUser().getEmail();
+  if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', replyTo: email, subject: '【衣装の貸し出し】' + name + '（' + COSTUME_JA[d.costume] + '・' + when + '）',
+    body: name + ' さんから衣装の貸し出しの申し込みです。このメールに返信すると、' + name + ' さんに届きます。',
+    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんから衣装の貸し出しの申し込みです。</p>' + infoBox_([['衣装', COSTUME_JA[d.costume]], ['使う目的', esc_(COSTUME_USE_JA[d.use] || '－')], ['日にち', esc_(when) + '（' + days + '日）'], ['目安の料金', '$' + price], ['身長', esc_(clip(d.height, 30))], ['メール', esc_(email)], ['メッセージ', esc_(clip(d.note, 300)) || '－']]) + '<p>このメールに返信すると、そのまま ' + esc_(name) + ' さんに届きます。「衣装の貸し出し」タブに記録しました。</p>', true) });
+  log_('衣装の申し込み', { name: name, email: email }, null, '', { memo: COSTUME_JA[d.costume] + '・' + when + '・$' + price });
 }
 
 // ---------- "send me the rates": the rates page link goes only to people who ask ----------
