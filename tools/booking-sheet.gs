@@ -410,7 +410,11 @@ function bookLesson_(sh, r, data, ch, len, how) {
   data.booked.push({ date: ch.date, start: ch.start, len: len, ev: ev.getId(), pack: data.packInfo ? data.packInfo.row : 0 });
   data._b = data.booked.length - 1;
   sh.getRange(r, C['data']).setValue(JSON.stringify(data));
-  const friendLine = data.first && data.friend ? '\n紹介：' + data.friend + ' さんの紹介です。' : '';  // record only, no automatic credit
+  const perNow = data.place === 'FuncPhysio' ? Math.round(rate30_(data) * len / 30) : 0, pkNow = data.packInfo;
+  let ref = { off: 0, mari: '' }; try { ref = referralUse_(data, pkNow ? (pkNow.bought && perNow ? packPrice_(perNow, pkNow.kind || data.pack || '5') : 0) : perNow); } catch (x) {}
+  if (ref.off) data.booked[data._b].off = ref.off;
+  sh.getRange(r, C['data']).setValue(JSON.stringify(data));
+  const friendLine = ref.mari;
   sendCustomer_(data, 'confirm', ch);
   markRatesBooked_(data.email, '予約確定');
   log_('予約確定', data, ch, len, { memo: data.free ? '無料相談' : data.packInfo ? (data.packInfo.bought ? '5回券を購入' : '回数券') : '' });
@@ -424,7 +428,7 @@ function bookLesson_(sh, r, data, ch, len, how) {
   CacheService.getScriptCache().remove('free');
   const me = Session.getEffectiveUser().getEmail();
   if (me) sendPretty_({ to: me, subject: '予約が確定しました：' + data.name + '（' + choiceJa_(ch, len) + '）',
-    body: data.name + ' さんのレッスンが確定しました' + (how ? '（' + how + '）' : '') + '。\n\n日時：' + choiceJa_(ch, len) + '（' + len + '分・ニューヨーク時間）' + theirs + '\n場所：' + placeText_(data, true) + (data.area && data.place !== 'Zoom' ? '（' + data.area + '）' : '') + '\nメール：' + data.email + packLine_(data.packInfo) + friendLine + '\n\nお客さんにも確定メールを送りました。Google カレンダーに入れました' + (EXTRA_CALENDAR_EMAIL ? '（Yahoo カレンダーにも招待として送りました）' : '') + '。\n添付のファイルを開くと、ほかのカレンダーにも追加できます。'
+    body: data.name + ' さんのレッスンが確定しました' + (how ? '（' + how + '）' : '') + '。' + friendLine + '\n\n日時：' + choiceJa_(ch, len) + '（' + len + '分・ニューヨーク時間）' + theirs + '\n場所：' + placeText_(data, true) + (data.area && data.place !== 'Zoom' ? '（' + data.area + '）' : '') + '\nメール：' + data.email + packLine_(data.packInfo) + friendLine + '\n\nお客さんにも確定メールを送りました。Google カレンダーに入れました' + (EXTRA_CALENDAR_EMAIL ? '（Yahoo カレンダーにも招待として送りました）' : '') + '。\n添付のファイルを開くと、ほかのカレンダーにも追加できます。'
       + '\n\nMari さんの都合で変えるときは：\n' + mariUrl_(sh, r, data, 'mmove') + '\n' + mariUrl_(sh, r, data, 'mcancel'),
     attachments: [ics_(data, ch, len)], name: 'Lesson booking' });
 }
@@ -475,14 +479,15 @@ function payNote_(data, ch, ja) {
     ja ? '残り：' + pk.left + '回（' + pk.until + 'まで）' : 'Left on your pack: ' + pk.left + ' (use by ' + pk.until + ')'].concat(travel, rules).join('\n');
   const per = data.place === 'FuncPhysio' ? Math.round(rate30_(data) * data.len / 30) : 0;
   const kind = (pk && pk.kind) || data.pack || '5', P = PACKS[kind] || PACKS['5'];
-  const amount = pk ? (per ? packPrice_(per, kind) : 0) : per;
-  const what = pk ? (ja ? [kind + '回券（今回が1回目、残り' + pk.left + '回は' + pk.until + 'まで使えます）'] : [kind + '-lesson pack (this is lesson 1; the other ' + pk.left + ' can be used until ' + pk.until + ')']) : [];
+  const off = offOf_(data), full = pk ? (per ? packPrice_(per, kind) : 0) : per, amount = full ? Math.max(0, full - off) : 0;
+  const offLine = off ? (ja ? ['紹介割引：$' + off + ' 引き' + (data.refBy ? '（' + data.refBy + ' さんのご紹介）' : '')] : ['Referral discount: $' + off + ' off' + (data.refBy ? ' (introduced by ' + data.refBy + ')' : '')]) : [];
+  const what = (pk ? (ja ? [kind + '回券（今回が1回目、残り' + pk.left + '回は' + pk.until + 'まで使えます）'] : [kind + '-lesson pack (this is lesson 1; the other ' + pk.left + ' can be used until ' + pk.until + ')']) : []).concat(offLine);
   if (data.payWay) { const w = data.payWay === '現金' ? (ja ? '現金（前のレッスンのときに）' : 'Cash (at the lesson before)') : data.payWay;
     return what.concat(ja ? ['お支払いについて：', 'レッスン代は前払いでお願いしています。', '', amount ? '金額：$' + amount : '', '期限：' + payBy_(ch).ja + 'まで', '方法：' + w] : ['Payment:', 'Lessons are paid ahead.', '', amount ? 'Amount: $' + amount : '', 'Pay by: ' + payBy_(ch).en, 'How: ' + w], travel, rules).filter(x => x !== null).join('\n'); }
   if (data.noVenmo) return what.concat(ja ? ['お支払いについて：', 'レッスン代は前払いでお願いしています。', '', amount ? '金額：$' + amount : '', '期限：' + payBy_(ch).ja + 'まで', '方法：Venmo 以外', '  Mari から別のメールで', '  ご連絡します'] : ['Payment:', 'Lessons are paid ahead.', '', amount ? 'Amount: $' + amount : '', 'Pay by: ' + payBy_(ch).en, 'How: Not Venmo', '  Mari will email you', '  about how to pay'], travel, rules).filter(x => x !== null).join('\n');
   const z = ZONES[data.tz || TZ];
   if (!z || !z[2]) return what.concat([ja ? 'レッスン代は前もって（遅くとも ' + payBy_(ch).ja + 'まで）お願いしています。お支払いの方法は、別のメールでお知らせします。' : 'Lessons are paid ahead of time (at the latest by ' + payBy_(ch).en + '). Mari will email you how to pay from where you are.'], travel, rules).join('\n');
-  if (per && VENMO && data.ckey && data._b != null) return payChoiceNote_(data, ch, ja, per, pk, travel, rules);
+  if (per && VENMO && data.ckey && data._b != null) return payChoiceNote_(data, ch, ja, per, pk, travel, rules, off);
   const d = dateOf_(ch.date); const memo = (pk ? 'Ballet lessons (' + kind + '-pack) from ' : 'Ballet lesson ') + (d.getMonth() + 1) + '/' + d.getDate();
   const link = VENMO ? 'https://venmo.com/' + VENMO + '?txn=pay' + (amount ? '&amount=' + amount : '') + '&note=' + encodeURIComponent(memo) : '';
   const dl = payBy_(ch);
@@ -630,7 +635,7 @@ function manageLine_(data, ja) {
 function daysTo_(ymd) { return Math.round((dateOf_(ymd).getTime() - dateOf_(Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd')).getTime()) / 86400000); }
 // what happens to the money (or the pack) if this lesson is cancelled now
 function refundOf_(data, bk) {
-  const d = daysTo_(bk.date), per = data.place === 'FuncPhysio' ? Math.round(rate30_(data) * bk.len / 30) : 0;
+  const d = daysTo_(bk.date), per0 = data.place === 'FuncPhysio' ? Math.round(rate30_(data) * bk.len / 30) : 0, per = per0 ? Math.max(0, per0 - offOf_(data, bk)) : 0;
   if (data.free) return { kind: 'free', ja: '無料相談なので、お支払いはありません。', en: 'This call is free, so there is nothing to refund.', mari: '無料相談' };
   if (bk.pack) return d >= 2
     ? { kind: 'packback', ja: '回数券に1回分をお戻しします。', en: 'The lesson goes back on your pack.', mari: '回数券に1回分戻しました' }
@@ -729,7 +734,8 @@ function cancelLesson_(sh, r, data, b, rf, byMari, msg) {
   const bk = data.booked[b], ja = data.language === 'ja';
   const ev = eventOf_(data, bk); if (ev) ev.deleteEvent();
   if (rf.kind === 'packback') { const ps = packSheet_(); const c = ps.getRange(bk.pack, 6); c.setValue(Math.max(0, +c.getValue() - 1)); }
-  bk.cancelled = true; if (byMari) { bk.byMari = true; bk.rf = rf.kind; } if (data.change && +data.change.b === b) data.change = null;
+  bk.cancelled = true; if (byMari) { bk.byMari = true; bk.rf = rf.kind; }
+  if (bk.off) { try { referralRestore_(data, b); } catch (x) {} } if (data.change && +data.change.b === b) data.change = null;
   refreshRow_(sh, r, data);
   const paid = sh.getRange(r, C['支払い']).getValue();
   log_(byMari ? 'キャンセル（Mari）' : (rf.declined ? '提案を断ってキャンセル（お客さん）' : 'キャンセル（お客さん）'), data, bk, bk.len, { refund: (rf.kind === 'full' || rf.kind === 'half') && paid !== true ? '返金なし（未払い）' : rf.mari.replace(/（\$\d+）/, ''), amount: (rf.kind === 'full' || rf.kind === 'half') && paid === true ? rf.amt : '', memo: (paid === true ? '支払い済み' : paid === false ? '未払い' : String(paid || '')) + (msg ? '／' + msg : '') + (byMari || rf.declined ? '' : '／レッスンの' + daysTo_(bk.date) + '日前') });
@@ -767,7 +773,7 @@ function mariUrl_(sh, r, data, act, b) {
   return ScriptApp.getService().getUrl() + '?act=' + act + '&id=' + encodeURIComponent(data.id || '') + '&k=' + String(sh.getRange(r, C['key']).getValue()) + '&b=' + (b == null ? data._b : b);
 }
 function fullRefund_(data, bk) {
-  const per = data.place === 'FuncPhysio' ? Math.round(rate30_(data) * bk.len / 30) : 0;
+  const per0 = data.place === 'FuncPhysio' ? Math.round(rate30_(data) * bk.len / 30) : 0, per = per0 ? Math.max(0, per0 - offOf_(data, bk)) : 0;
   if (data.free) return { kind: 'free', ja: '無料相談なので、お支払いはありません。', en: 'This call was free, so there is nothing to refund.', mari: '無料相談' };
   if (bk.pack) return { kind: 'packback', ja: '回数券に1回分をお戻しします。', en: 'The lesson goes back on your pack.', mari: '回数券に1回分戻しました' };
   return { kind: 'full', amt: per, ja: '全額お返しします。', en: 'You will get a full refund.', mari: '全額返金' + (per ? '（$' + per + '）' : '') };
@@ -891,11 +897,12 @@ function refundedPage_(p, sh, r, data) {
 // ---------- one lesson or a 5-lesson pack: the customer can still choose in the confirmation email ----------
 function packAmount_(per) { return Math.round(per * PACK_SIZE - per / 2); }
 function venmoLink_(amount, memo) { return 'https://venmo.com/' + VENMO + '?txn=pay&amount=' + amount + '&note=' + encodeURIComponent(memo); }
-function payChoiceNote_(data, ch, ja, per, pk, travel, rules) {
-  const d = dateOf_(ch.date), md = (d.getMonth() + 1) + '/' + d.getDate(), dl = payBy_(ch), p3 = packPrice_(per, '3'), p5 = packPrice_(per, '5');
+function payChoiceNote_(data, ch, ja, per, pk, travel, rules, off) {
+  off = off || 0;
+  const d = dateOf_(ch.date), md = (d.getMonth() + 1) + '/' + d.getDate(), dl = payBy_(ch), p1 = Math.max(0, per - off), p3 = Math.max(0, packPrice_(per, '3') - off), p5 = Math.max(0, packPrice_(per, '5') - off);
   const base = ScriptApp.getService().getUrl() + '?id=' + encodeURIComponent(data.id) + '&k=' + data.ckey + '&b=' + data._b;
   const cur = pk ? (pk.kind || data.pack || '5') : '1';
-  const opt = { '1': [per, 'Ballet lesson ' + md, 'single'], '3': [p3, 'Ballet lessons (3-pack) from ' + md, 'pack3'], '5': [p5, 'Ballet lessons (5-pack) from ' + md, 'pack'] };
+  const opt = { '1': [p1, 'Ballet lesson ' + md, 'single'], '3': [p3, 'Ballet lessons (3-pack) from ' + md, 'pack3'], '5': [p5, 'Ballet lessons (5-pack) from ' + md, 'pack'] };
   const link = k => k === cur ? venmoLink_(opt[k][0], opt[k][1]) : base.replace('?', '?act=' + opt[k][2] + '&');
   const now = k => k === cur ? (ja ? '　← 今⁠の⁠選⁠択' : ' ← your choice now') : '';
   const lines = ja ? [
@@ -903,9 +910,10 @@ function payChoiceNote_(data, ch, ja, per, pk, travel, rules) {
     'ご予約を確実にするため、今すぐお支払いをお願いします。',
     '',
     '期限：' + dl.ja + 'まで',
+    off ? '割引：紹介割引 $' + off + ' 引き済み' : '',
     '方法：Venmo', '  ほかの方法は、ご⁠相⁠談ください', '  現金は、前のレッスンのときに', '  次の分をお渡しください', '  初回は Venmo でお願いします',
     '',
-    '## 1回ずつ払う場合（$' + per + '）' + now('1'),
+    '## 1回ずつ払う場合（$' + p1 + '）' + now('1'),
     link('1'),
     '',
     '## 3回券にする場合（$' + p3 + '）' + now('3'),
@@ -921,9 +929,10 @@ function payChoiceNote_(data, ch, ja, per, pk, travel, rules) {
     'To secure your booking, please pay now.',
     '',
     'Pay by: ' + dl.en,
+    off ? 'Discount: $' + off + ' referral discount included' : '',
     'How: Venmo', '  Other ways to pay? Just ask.', '  Cash: hand it to Mari at the lesson before.', '  First lesson: please use Venmo.',
     '',
-    '## Pay for this lesson ($' + per + ')' + now('1'),
+    '## Pay for this lesson ($' + p1 + ')' + now('1'),
     link('1'),
     '',
     '## Get a 3-lesson pack ($' + p3 + ')' + now('3'),
@@ -949,7 +958,7 @@ function payChoice_(p, sh, r, data) {
   const d = dateOf_(bk.date), md = (d.getMonth() + 1) + '/' + d.getDate(), dl = payBy_(bk);
   const have = data.packInfo && data.packInfo.bought && bk.pack ? (data.packInfo.kind || '5') : '1';
   const want = p.act === 'pack' ? '5' : p.act === 'pack3' ? '3' : '1';
-  const amt = k => k === '1' ? per : packPrice_(per, k), memo = k => k === '1' ? 'Ballet lesson ' + md : 'Ballet lessons (' + k + '-pack) from ' + md;
+  const off = offOf_(data, bk), amt = k => Math.max(0, (k === '1' ? per : packPrice_(per, k)) - off), memo = k => k === '1' ? 'Ballet lesson ' + md : 'Ballet lessons (' + k + '-pack) from ' + md;
   const name = k => k === '1' ? (ja ? '1回ずつのお支払い' : 'paying for this lesson') : (ja ? k + '回券' : 'a ' + k + '-lesson pack');
   const self = ScriptApp.getService().getUrl() + '?act=' + p.act + '&id=' + encodeURIComponent(p.id) + '&k=' + encodeURIComponent(p.k) + '&b=' + p.b + '&go=1';
   const payBox = k => '<p>' + (ja ? 'お支払い：<b>$' + amt(k) + '</b>（' + dl.ja + 'まで）' : 'Amount: <b>$' + amt(k) + '</b> (by ' + dl.en + ')') + '</p>' + custBtn_(venmoLink_(amt(k), memo(k)), (ja ? 'Venmo で今すぐ支払う（$' : 'Pay now with Venmo ($') + amt(k) + ')', true);
@@ -959,7 +968,7 @@ function payChoice_(p, sh, r, data) {
       ? (ja ? '<p><s style="color:#888">$' + per * PACK_SIZE + '</s> → <b style="font-size:22px">$' + amt('5') + '</b>　<span style="color:#8a7140;font-weight:600">$' + (per * PACK_SIZE - amt('5')) + ' お得</span></p><p>' + PACK_SIZE + '回分の料金から、1回分の半額をお引きしています。</p><p>今回のレッスンが1回目です。残りの' + (PACK_SIZE - 1) + '回は、3⁠か⁠月⁠以内に⁠お使いください。</p>' : '<p><s style="color:#888">$' + per * PACK_SIZE + '</s> → <b style="font-size:22px">$' + amt('5') + '</b>  <span style="color:#8a7140;font-weight:600">you save $' + (per * PACK_SIZE - amt('5')) + '</span></p><p>Half of one lesson comes off the price of ' + PACK_SIZE + ' lessons.</p><p>This lesson is the first one. Use the other ' + (PACK_SIZE - 1) + ' within 3 months.</p>')
       : want === '3'
       ? (ja ? '<p><b style="font-size:22px">$' + amt('3') + '</b>（3回分）</p><p>今回のレッスンが1回目です。残りの2回は、2⁠か⁠月⁠以内に⁠お使いください。</p>' : '<p><b style="font-size:22px">$' + amt('3') + '</b> (3 lessons)</p><p>This lesson is the first one. Use the other 2 within 2 months.</p>')
-      : (ja ? '<p><b>$' + per + '</b>（今回のレッスン1回分）</p>' : '<p><b>$' + per + '</b> (this lesson only)</p>');
+      : (ja ? '<p><b>$' + amt('1') + '</b>（今回のレッスン1回分）</p>' : '<p><b>$' + amt('1') + '</b> (this lesson only)</p>');
     return page_(want === '1' ? (ja ? '1回ずつにしますか？' : 'Pay for just this lesson?') : (ja ? want + '回券にしますか？' : 'Switch to a ' + want + '-lesson pack?'), body, self, want === '1' ? (ja ? '1回ずつにする' : 'Yes, just this lesson') : (ja ? want + '回券にする' : 'Yes, get the pack'));
   }
   const ps = packSheet_(), md2 = x => Utilities.formatDate(new Date(x), TZ, 'M/d');
@@ -1267,6 +1276,62 @@ function semiQuestion_(d) {
   return { ok: true };
 }
 
+// ---------- referral discounts: the friend who refers gets $20 off their next lesson, the new friend gets $10 off their first ----------
+const REF_TAB = '紹介割引', REF_GIVER = 20, REF_NEW = 10;
+const REF_HEAD = ['日時', '名前', 'メール', '金額', '理由', '状態'];
+function refSheet_() { const ss = book_(); let sh = ss.getSheetByName(REF_TAB); if (!sh) { sh = ss.insertSheet(REF_TAB); sh.getRange(1, 1, 1, 6).setValues([REF_HEAD]).setFontWeight('bold').setBackground('#ecdfc6'); sh.setFrozenRows(1); } return sh; }
+function offOf_(data, bk) { return Math.max(0, +((bk || (data.booked || [])[data._b] || {}).off) || 0); }
+const normName_ = x => String(x || '').toLowerCase().replace(/[　\s]+/g, ' ').trim();
+// who is the friend they named? matched by email or name against past customers; only a single clear match counts
+function findReferrer_(text, selfEmail) {
+  const t = normName_(text), self = String(selfEmail || '').trim().toLowerCase(); if (!t) return null;
+  const people = {}, add = (name, email) => { email = String(email || '').trim().toLowerCase(); if (!/@/.test(email) || email === self || isTest_(name)) return; if (!people[email]) people[email] = { name: String(name || '').trim(), email: email }; };
+  const rq = book_().getSheetByName(REQ); if (rq && rq.getLastRow() > 1) rq.getRange(2, 1, rq.getLastRow() - 1, HEAD.length).getValues().forEach(r => add(r[C['名前'] - 1], r[C['メール'] - 1]));
+  const pk = book_().getSheetByName(PK); if (pk && pk.getLastRow() > 1) pk.getRange(2, 1, pk.getLastRow() - 1, 3).getValues().forEach(r => add(r[1], r[2]));
+  const list = Object.values(people);
+  const byEmail = list.filter(x => x.email === t); if (byEmail.length) return byEmail[0];
+  const exact = list.filter(x => normName_(x.name) === t); if (exact.length === 1) return exact[0];
+  const words = t.split(' ').filter(w => w.length >= 2), part = words.length ? list.filter(x => { const n = normName_(x.name).split(' '); return words.every(w => n.includes(w)); }) : [];
+  return part.length === 1 ? part[0] : null;
+}
+// called when a lesson is confirmed: hands out referral credits on a friend's first booking, then uses any credits this person has
+function referralUse_(data, amount) {
+  const out = { off: 0, note: '', mari: '' }; if (data.free) return out;
+  const sh = refSheet_(), email = String(data.email || '').trim().toLowerCase();
+  if (data.first && data.friend && !data.refDone) {
+    data.refDone = true;
+    const ref = findReferrer_(data.friend, email);
+    if (ref) {
+      sh.appendRow([new Date(), ref.name, ref.email, REF_GIVER, '紹介：' + data.name, '未使用']);
+      sh.appendRow([new Date(), data.name, email, REF_NEW, '紹介された（' + ref.name + ' さん）', '未使用']);
+      data.refBy = ref.name;
+      const ja = /[぀-ヿ一-鿿]/.test(ref.name) || data.language === 'ja';
+      const body = ja
+        ? '# ご紹介のお礼\n\n' + ref.name + ' 様\n\n' + data.name + ' さんを\nご紹介いただき、\nありがとうございます。\n\nお礼に、次回のレッスンが\n$' + REF_GIVER + ' 引きになります。\nご予約のときに、自動で\nお引きします。\n\n' + BOOKING_PAGE + '\n\n髙山まり'
+        : '# Thank you for the referral\n\nHi ' + ref.name + ',\n\nThank you for introducing ' + data.name + '!\nAs a thank-you, your next lesson is $' + REF_GIVER + ' off. It comes off automatically when you book.\n\n' + BOOKING_PAGE + '\n\nMari Takayama';
+      try { MailApp.sendEmail({ to: ref.email, subject: ja ? 'ご紹介ありがとうございます（次回 $' + REF_GIVER + ' 引き）' : 'Thank you — $' + REF_GIVER + ' off your next lesson', body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO }); } catch (x) {}
+      out.mari += '\n紹介：' + ref.name + ' さん（' + ref.email + '）の紹介です。' + ref.name + ' さんの次回に $' + REF_GIVER + ' 引き、' + data.name + ' さんの今回に $' + REF_NEW + ' 引きをつけました（「紹介割引」タブ）。';
+    } else out.mari += '\n紹介：「' + data.friend + '」さんの紹介です。だれか特定できなかったので、割引はまだつけていません。分かったら「紹介割引」タブに足してください（紹介した人 $' + REF_GIVER + '・この人 $' + REF_NEW + '、状態は「未使用」）。';
+  }
+  if (data.packInfo && !data.packInfo.bought) return out;  // nothing to pay this time: keep the credit for later
+  if (sh.getLastRow() < 2) return out;
+  const v = sh.getRange(2, 1, sh.getLastRow() - 1, 6).getValues(), tag = '使用済み（' + (data.id || '') + '#' + data._b + '）';
+  let left = amount > 0 ? amount : Infinity;
+  v.forEach((r, i) => {
+    if (String(r[2]).trim().toLowerCase() !== email || String(r[5]) !== '未使用') return;
+    const a = +r[3] || 0; if (!a || a > left) return;
+    sh.getRange(i + 2, 6).setValue(tag); out.off += a; left -= a;
+  });
+  if (out.off) { out.note = data.refBy ? 'ref-new' : 'ref'; out.mari += '\n紹介割引：$' + out.off + ' 引き' + (amount > 0 ? '（お支払い $' + Math.max(0, amount - out.off) + '）' : '（金額を送るときに $' + out.off + ' 引いてください）'); }
+  return out;
+}
+// a cancelled lesson gives its referral credit back
+function referralRestore_(data, b) {
+  const sh = book_().getSheetByName(REF_TAB); if (!sh || sh.getLastRow() < 2) return;
+  const tag = '使用済み（' + (data.id || '') + '#' + b + '）', v = sh.getRange(2, 6, sh.getLastRow() - 1, 1).getValues();
+  v.forEach((r, i) => { if (String(r[0]) === tag) sh.getRange(i + 2, 6).setValue('未使用'); });
+}
+
 // ---------- costume rental requests (costumes.html) ----------
 const COSTUME_TAB = '衣装の貸し出し';
 const COSTUME_JA = { 'Practice tutu': '練習用チュチュ', 'Romantic tutu': 'ロマンティックチュチュ', Either: 'どちらでも' };
@@ -1454,7 +1519,7 @@ function sendPayReminder_(data, ch, tag) {
   if (!data.email || data.noVenmo || data.payWay) return;  // paying another way: Mari arranges it herself
   const ja = data.language === 'ja', when = custWhen_(data, ch, data.len, ja), dl = payBy_(ch);
   const one = data.place === 'FuncPhysio' ? Math.round(rate30_(data) * data.len / 30) : 0, isPack = !!(data.packInfo && data.packInfo.bought);
-  const per = isPack ? packPrice_(one, data.packInfo.kind || '5') : one;
+  const per0 = isPack ? packPrice_(one, data.packInfo.kind || '5') : one, per = per0 ? Math.max(0, per0 - offOf_(data, ch)) : 0;
   const d = dateOf_(ch.date), memo = (isPack ? 'Ballet lessons (' + (data.packInfo.kind || '5') + '-pack) from ' : 'Ballet lesson ') + (d.getMonth() + 1) + '/' + d.getDate();
   const link = VENMO ? 'https://venmo.com/' + VENMO + '?txn=pay' + (per ? '&amount=' + per : '') + '&note=' + encodeURIComponent(memo) : '';
   const last = tag === '3日前';
