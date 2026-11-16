@@ -142,7 +142,7 @@ function doPost(e) {
     for (let i = 0; i < 3; i++) row.push(c[i] ? choiceJa_(c[i], len) : '');
     for (let i = 0; i < 3; i++) row.push(c[i] ? WD_JA[dateOf_(c[i].date).getDay()] : '', c[i] ? partOf_(c[i]) : '');
     const more = c.slice(3).map((x, i) => '第' + (i + 4) + '希望：' + choiceJa_(x, len)).join('\n');
-    row.push(clip((more ? more + (d.note ? '\n' : '') : '') + (d.note || ''), 900), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '', multi: d.multi === true && c.length > 1 }), d.visit === 'First' ? (JA.heard[d.heard] || '') + (d.heard === 'Other' && d.heardNote ? '（' + clip(d.heardNote, 200) + '）' : '') : '', d.visit === 'First' && d.heard === 'Friend' ? clip(d.friend, 120) : '', clip(d.nickname, 60), d.visit === 'First' ? (JA.gender[d.gender] || '') : '', clip(d.social, 120), '', '', '', d.visit === 'First' ? (JA.tongue[d.tongue] || '') : '', goalsJa_(d));
+    row.push(clip((more ? more + (d.note ? '\n' : '') : '') + (d.note || ''), 900), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: d.pack === '5' ? '5' : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '', multi: d.multi === true && c.length > 1, noVenmo: d.noVenmo === true, payOther: d.noVenmo === true ? String(d.payOther || '').slice(0, 80) : '' }), d.visit === 'First' ? (JA.heard[d.heard] || '') + (d.heard === 'Other' && d.heardNote ? '（' + clip(d.heardNote, 200) + '）' : '') : '', d.visit === 'First' && d.heard === 'Friend' ? clip(d.friend, 120) : '', clip(d.nickname, 60), d.visit === 'First' ? (JA.gender[d.gender] || '') : '', clip(d.social, 120), '', '', '', d.visit === 'First' ? (JA.tongue[d.tongue] || '') : '', goalsJa_(d));
     heardStats_();
     book_().getSheetByName(REQ).appendRow(row);
     notifyMari_(d, c, len, id, key);
@@ -182,6 +182,7 @@ function notifyMari_(d, c, len, id, key) {
     goalsJa_(d) ? ['受けたい理由', esc_(goalsJa_(d))] : null,
     d.contact ? ['連絡方法', esc_(d.via) + '　' + esc_(d.contact)] : null,
     ['場所', esc_(JA.place[d.place] || d.place || '') + (d.area && d.place !== 'Zoom' ? '（' + esc_(d.area) + '）' : '')], ['長さ', len + '分' + (d.pack === '5' ? '（5回券を希望）' : '')],
+    d.noVenmo === true ? ['お支払い', '<b>Venmo が使えない</b>' + (String(d.payOther || '').trim() ? '（希望：' + esc_(clip(d.payOther, 80)) + '）' : '') + '<br>お支払い方法を、お客さんにメールで知らせてください'] : null,
     d.place === 'Studio' ? ['スタジオ', d.studio === 'mari' ? '<b>Mari が代わりに予約</b>（スタジオ代＋手数料 $' + STUDIO_FEE + '）' : 'お客さんが自分で予約'] : null,
     d.free === true ? ['種類', '<b>無料の Zoom 相談（60分）</b>'] : null,
     d.visit === 'First' && d.heard ? ['知ったきっかけ', esc_(JA.heard[d.heard] || d.heard) + (d.heard === 'Friend' && d.friend ? '（' + esc_(clip(d.friend)) + ' さん）' : '') + (d.heard === 'Other' && d.heardNote ? '（' + esc_(clip(d.heardNote, 200)) + '）' : '')] : null,
@@ -430,6 +431,7 @@ function payNote_(data, ch, ja) {
   const per = data.place === 'FuncPhysio' ? Math.round(RATE_PER_30 * data.len / 30) : 0;
   const amount = pk ? (per ? Math.round(per * PACK_SIZE - per / 2) : 0) : per;
   const what = pk ? (ja ? ['5回券（今回が1回目、残り' + pk.left + '回は' + pk.until + 'まで使えます）'] : ['5-lesson pack (this is lesson 1; the other ' + pk.left + ' can be used until ' + pk.until + ')']) : [];
+  if (data.noVenmo) return what.concat(ja ? ['お支払いについて：', 'レッスン代は前払いでお願いしています。', '', amount ? '金額：$' + amount : '', '期限：' + payBy_(ch).ja + 'まで', '方法：Venmo 以外', '  Mari から別のメールで', '  ご連絡します'] : ['Payment:', 'Lessons are paid ahead.', '', amount ? 'Amount: $' + amount : '', 'Pay by: ' + payBy_(ch).en, 'How: Not Venmo', '  Mari will email you', '  about how to pay'], travel, rules).filter(x => x !== null).join('\n');
   const z = ZONES[data.tz || TZ];
   if (!z || !z[2]) return what.concat([ja ? 'レッスン代は前もって（遅くとも ' + payBy_(ch).ja + 'まで）お願いしています。お支払いの方法は、別のメールでお知らせします。' : 'Lessons are paid ahead of time (at the latest by ' + payBy_(ch).en + '). Mari will email you how to pay from where you are.'], travel, rules).join('\n');
   if (per && VENMO && data.ckey && data._b != null) return payChoiceNote_(data, ch, ja, per, pk, travel, rules);
@@ -1052,7 +1054,7 @@ function paymentReminders() {
   });
 }
 function sendPayReminder_(data, ch, tag) {
-  if (!data.email) return;
+  if (!data.email || data.noVenmo) return;  // paying another way: Mari arranges it herself
   const ja = data.language === 'ja', when = custWhen_(data, ch, data.len, ja), dl = payBy_(ch);
   const one = data.place === 'FuncPhysio' ? Math.round(RATE_PER_30 * data.len / 30) : 0, isPack = !!(data.packInfo && data.packInfo.bought);
   const per = isPack ? packAmount_(one) : one;
