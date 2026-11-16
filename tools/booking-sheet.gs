@@ -206,6 +206,7 @@ function doGet(e) {
   if (p.slots) return json_({ days: freeTimes_() });
   if (p.availability) return json_({ days: {} });
   if (p.pack) return json_({ packs: packsFor_(p.pack) });
+  if (p.known) return json_({ known: knownCustomer_(p.known) });
   if (p.cleanup) { cleanupTests_(); return json_({ ok: true }); }
   if (p.reminders) { const c = CacheService.getScriptCache(); if (!c.get('remind')) { c.put('remind', '1', 6 * 3600); paymentReminders(); } return json_({ ok: true }); }
   if (p.act) return actionPage_(p);
@@ -504,6 +505,14 @@ function creditFriend_(data) {
   return '\n紹介：' + data.friend + ' さんの紹介です（5回券が見つからなかったので、まだ何も追加していません。お礼をするなら「回数券」タブで足してください）。';
 }
 // remaining lessons on someone's packs (only numbers and dates go back to the page)
+// has this email booked through the form before (or bought a pack)?
+function knownCustomer_(email) {
+  email = String(email || '').trim().toLowerCase(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
+  const cache = CacheService.getScriptCache(), k = 'kn:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 600); if (n > 10) return true;
+  const ss = book_(), same = sh => !!sh && sh.getLastRow() > 1 && sh.getRange(2, sh === req ? C['メール'] : 3, sh.getLastRow() - 1, 1).getValues().some(v => String(v[0]).trim().toLowerCase() === email);
+  const req = ss.getSheetByName(REQ);
+  return same(req) || same(ss.getSheetByName(PK));
+}
 function packsFor_(email) {
   email = String(email || '').trim().toLowerCase(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return [];
   const cache = CacheService.getScriptCache(), k = 'pk:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 600); if (n > 10) return [];

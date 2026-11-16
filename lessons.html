@@ -389,6 +389,7 @@
       age: { en: 'Please choose who the lesson is for.', ja: 'どなたのレッスンか選んでください。' },
       level: { en: 'Please choose your ballet experience.', ja: 'バレエ経験を選んでください。' },
       goals: { en: 'Please choose at least one reason for lessons.', ja: 'レッスンを受けたい理由を1つ以上選んでください。' },
+      notKnown: { en: 'We couldn’t find you with this email. If this is your first time, please choose “First lesson” at the top and register.', ja: '登録が見つかりませんでした。初めての方は、上の「初めて」を選んで登録してください。' },
       send: { en: 'Sorry, the request could not be sent. Please try again, or use Instagram DM or email.', ja: '送信できませんでした。もう一度お試しいただくか、Instagram の DM かメールでお送りください。' }
     },
     doneSent: { en: v => 'Your request was sent. Mari will contact you ' + (v === 'email' ? 'by email' : 'on ' + v) + ' within one or two days.', ja: v => 'リクエストを送りました。1〜2日以内に Mari から ' + v + ' で連絡します。' },
@@ -712,6 +713,11 @@
     syncName();
     if (!form.first.value.trim()) return fail(T.errors.first, form.first);
     if (!form.last.value.trim()) return fail(T.errors.last, form.last);
+    if (choice.visit === 'Returning' && SHEET_APP) {  // returning: must already be registered
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.value.trim())) return fail(T.errors.email, form.email);
+      let known = true; try { known = (await fetch(SHEET_APP + '?known=' + encodeURIComponent(form.email.value.trim())).then(r => r.json())).known !== false; } catch (x) {}
+      if (!known) return fail(T.errors.notKnown, form.email);
+    }
     if (choice.visit === 'First' && !choice.gender) return fail(T.errors.gender);
     if (choice.visit === 'First' && !choice.tongue) return fail(T.errors.tongue);
     const shown = el => !!el && el.offsetParent !== null, grp = g => form.querySelector('[data-group=' + g + ']'), need = g => shown(grp(g)) && !choice[g];
