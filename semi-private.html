@@ -266,6 +266,7 @@ footer nav a:hover { color: var(--slate); }
 .rates-personal { margin: 1.2rem 0 1.6rem; padding: 1rem 1.1rem; border-left: 2px solid var(--gold-line, #d9c9a8); background: #fbf8f2; }
 .rates-personal p { margin: .25rem 0; line-height: 1.7; }
 html[lang=ja] .semi-page h1#semi-title { font-size: min(7vw, 3.2rem) !important; letter-spacing: 0 !important; }
+.semi-pay-now { display: inline-block; margin-top: .6rem; text-decoration: none; background: var(--ink, #2c2a30) !important; color: #fff !important; border-color: var(--ink, #2c2a30) !important; }
 </style>
 <style id="photo-layout">.grid { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: clamp(40px, 8vw, 160px); gap: 20px; align-items: stretch; } .grid button { min-height: 0; overflow: hidden; } .grid img { height: 100%; } @media (max-width: 760px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; align-items: start; } .grid button { grid-column: span 1 !important; grid-row: auto !important; } .grid img { height: auto !important; aspect-ratio: 3 / 4 !important; } }
 #grid button, .hero-photo, .about .wrap > img, .row-photo, .banner { overflow: hidden; }
@@ -431,7 +432,7 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
         <label class="rates-ask-field rates-ask-select"><span>Which Sunday?</span><select name="date"><option value="">Choose</option></select></label>
         <label class="rates-ask-field rates-ask-select"><span>Ballet experience</span><select name="level"><option value="">Choose</option><option value="New">New to ballet</option><option value="Some">Some classes</option><option value="Back">Coming back after a break</option><option value="Regular">Taking classes now</option></select></label>
         <label class="rates-ask-field"><span>Message <small>(optional)</small></span><input name="note" maxlength="300"></label>
-        <p class="rates-note" id="semi-pay">$60, paid ahead by Venmo. The details come by email.</p>
+        <p class="rates-note" id="semi-pay">$60 by Venmo. Your spot is held for 24 hours and confirmed once you pay.</p>
         <input name="hp" tabindex="-1" autocomplete="off" aria-hidden="true" class="rates-ask-hp">
         <button type="submit" class="rates-ask-button">Sign up</button>
         <p class="rates-ask-status" id="semi-ask-status" role="status"></p>
@@ -486,7 +487,7 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
     const nx = dates.find(x => x.left > 0), n = document.getElementById('semi-next'); if (n) n.textContent = nx ? (ja() ? '次回：' : 'Next: ') + label(nx).replace(/[　 ]—?.*$/, '').replace(/　.*$/, '') : '';
     const pr = price < 60 ? (ja() ? '$' + price + '（レビューのお礼で $10 引き）' : '$' + price + ' ($10 off, thank you for your review)') : '$60';
     document.getElementById('semi-price').textContent = pr;
-    document.getElementById('semi-pay').textContent = ja() ? pr.replace(/（.*/, '') + '。Venmo で前払いです。くわしくはメールでお知らせします。' : pr.replace(/ \(.*/, '') + ', paid ahead by Venmo. The details come by email.';
+    document.getElementById('semi-pay').textContent = ja() ? pr.replace(/（.*/, '') + '。Venmo でお支払いください。お席は24時間お取りし、お支払いの確認で確定します。' : pr.replace(/ \(.*/, '') + ' by Venmo. Your spot is held for 24 hours and confirmed once you pay.';
   };
   fetch(APP + '?semi=1').then(r => r.json()).then(j => { dates = j.dates || []; draw(); }).catch(() => {});
   new MutationObserver(() => setTimeout(draw, 0)).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
@@ -498,10 +499,10 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email'))) return say('メールアドレスを入れてください。', 'Please enter your email.', 'email');
     if (!v('date')) return say('日にちを選んでください。', 'Please choose a Sunday.', 'date');
     if (!v('level')) return say('バレエ経験を選んでください。', 'Please choose your ballet experience.', 'level');
-    const b = f.querySelector('.rates-ask-button'); b.disabled = true; st.textContent = ja() ? '送っています…' : 'Sending…';
+    const b = f.querySelector('button.rates-ask-button'); b.disabled = true; f.querySelectorAll('.semi-pay-now').forEach(x => x.remove()); st.textContent = ja() ? '送っています…' : 'Sending…';
     try {
       const r = await fetch(APP, { method: 'POST', body: JSON.stringify({ type: 'semi', name: v('first') + ' ' + v('last'), email: v('email'), date: v('date'), level: v('level'), note: v('note'), hp: v('hp'), ms: Date.now() - t0, language: ja() ? 'ja' : 'en' }) }).then(x => x.json());
-      if (r && r.ok) { f.reset(); st.textContent = ja() ? 'お申し込みありがとうございます。確認のメールをお送りしました。' : 'Thank you! A confirmation email is on its way.'; fetch(APP + '?semi=1').then(x => x.json()).then(j => { dates = j.dates || []; draw(); }).catch(() => {}); }
+      if (r && r.ok) { f.reset(); st.textContent = ja() ? 'お申し込みありがとうございます。お席を24時間お取りしました。下のボタンから Venmo でお支払いください。お支払いを確認したら確定です。' : 'Thank you! Your spot is held for 24 hours. Please pay with Venmo below; it’s confirmed once you pay.'; if (r.pay) { const a = document.createElement('a'); a.href = r.pay; a.target = '_blank'; a.rel = 'noopener'; a.className = 'rates-ask-button semi-pay-now'; a.textContent = (ja() ? 'Venmo で支払う（$' : 'Pay with Venmo ($') + r.price + ')'.replace(')', ja() ? '）' : ')'); st.after(a); } fetch(APP + '?semi=1').then(x => x.json()).then(j => { dates = j.dates || []; draw(); }).catch(() => {}); }
       else st.textContent = r && r.error === 'full' ? (ja() ? 'すみません、この日は満席になりました。ほかの日をお選びください。' : 'Sorry, that Sunday just filled up. Please choose another.') : r && r.error === 'already' ? (ja() ? 'この日はもうお申し込みいただいています。' : 'You are already signed up for that Sunday.') : (ja() ? '送れませんでした。もう一度お試しください。' : 'Sorry, it could not be sent. Please try again.');
     } catch (x) { st.textContent = ja() ? '送れませんでした。もう一度お試しいただくか、メールでご連絡ください。' : 'Sorry, it could not be sent. Please try again, or email Mari.'; }
     b.disabled = false;

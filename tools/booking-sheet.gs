@@ -236,13 +236,13 @@ function notifyMari_(d, c, len, id, key) {
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.special) { const sp = specialFor_(p.special, ''); return json_(sp ? { name: sp.name, per60: sp.per60, pay: sp.pay, note: sp.note } : {}); }
-  if (p.slots) { const c = CacheService.getScriptCache(); if (!c.get('splink')) { c.put('splink', '1', 300); try { fillSpecialLinks_(); } catch (x) {} } return json_({ days: freeTimes_() }); }
+  if (p.slots) { const c = CacheService.getScriptCache(); if (!c.get('splink')) { c.put('splink', '1', 300); try { fillSpecialLinks_(); } catch (x) {} } if (!c.get('semitick')) { c.put('semitick', '1', 600); try { semiTick_(); } catch (x) {} } return json_({ days: freeTimes_() }); }
   if (p.availability) return json_({ days: {} });
   if (p.pack) return json_({ packs: packsFor_(p.pack) });
   if (p.known) return json_({ known: knownCustomer_(p.known) });
   if (p.cleanup) { cleanupTests_(); return json_({ ok: true }); }
   if (p.reminders) { const c = CacheService.getScriptCache(); if (!c.get('remind')) { c.put('remind', '1', 6 * 3600); paymentReminders(); try { semiReviewAsks_(); } catch (x) {} try { newsDaily_(); } catch (x) {} } return json_({ ok: true }); }
-  if (p.semi) return json_({ dates: semiDates_() });
+  if (p.semi) { const c = CacheService.getScriptCache(); if (!c.get('semitick')) { c.put('semitick', '1', 600); try { semiTick_(); } catch (x) {} } return json_({ dates: semiDates_() }); }
   if (p.semiprice) return json_(semiPriceFor_(p.semiprice));
   if (p.act) return actionPage_(p);
   return HtmlService.createHtmlOutput('<p>OK</p>');
@@ -318,6 +318,7 @@ function busyEvents_(start, end) {
 function actionPage_(p) {
   if (p.act === 'review') return semiReviewPage_(p);
   if (p.act === 'announce') return newsPage_(p);
+  if (p.act === 'semipaid') return semiPaidPage_(p);
   if (p.act === 'unsub') return newsStop_(p);
   const sh = book_().getSheetByName(REQ);
   const ids = sh.getLastRow() > 1 ? sh.getRange(2, C['id'], sh.getLastRow() - 1, 1).getValues().map(r => String(r[0])) : [];
@@ -1019,9 +1020,10 @@ const SEMI_TAB = 'セミプライベート', SEMI_REVIEW_TAB = 'レビュー';
 const SEMI_PRICE = 60, SEMI_OFF = 10, SEMI_SEATS = 4, SEMI_FIRST = '2027-01-17', SEMI_START = '11:00', SEMI_LEN = 90;
 const SEMI_LEVEL_JA = { New: '初めて', Some: '少し習ったことがある', Back: '久しぶりに再開', Regular: '今も習っている' };
 function semiSheet_() {
-  const ss = book_(); let sh = ss.getSheetByName(SEMI_TAB); if (sh) return sh;
+  const ss = book_(); let sh = ss.getSheetByName(SEMI_TAB);
+  if (sh) { if (!sh.getRange(1, 12).getValue()) sh.getRange(1, 12, 1, 2).setValues([['お席', '言語']]).setFontWeight('bold').setBackground('#ecdfc6'); return sh; }
   sh = ss.insertSheet(SEMI_TAB);
-  sh.getRange(1, 1, 1, 11).setValues([['受付日時', 'クラスの日', '名前', 'メール', 'レベル', '料金', 'レビュー割引', '支払い', 'メッセージ', 'レビューのお願い', 'id']]).setFontWeight('bold').setBackground('#ecdfc6');
+  sh.getRange(1, 1, 1, 13).setValues([['受付日時', 'クラスの日', '名前', 'メール', 'レベル', '料金', 'レビュー割引', '支払い', 'メッセージ', 'レビューのお願い', 'id', 'お席', '言語']]).setFontWeight('bold').setBackground('#ecdfc6');
   sh.setFrozenRows(1); sh.getRange('H2:H').insertCheckboxes();
   return sh;
 }
@@ -1040,8 +1042,56 @@ function semiDayList_() {
 }
 function semiDates_() {
   const today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
-  const sh = book_().getSheetByName(SEMI_TAB), rows = sh && sh.getLastRow() > 1 ? sh.getRange(2, 2, sh.getLastRow() - 1, 1).getDisplayValues().map(r => String(r[0]).slice(0, 10)) : [];
+  const rows = semiSeats_().filter(x => x.held).map(x => x.date);
   return semiDayList_().filter(d => d >= today).slice(0, 6).map(d => ({ date: d, left: Math.max(0, SEMI_SEATS - rows.filter(x => x === d).length) }));
+}
+// a seat is held for 24 hours after signing up; it is kept once paid (支払い checked), otherwise it is released
+const SEMI_HOLD_H = 24, SEMI_GONE = '取り消し（未払い）';
+function semiSeats_() {
+  const sh = book_().getSheetByName(SEMI_TAB); if (!sh || sh.getLastRow() < 2) return [];
+  const n = sh.getLastRow() - 1, v = sh.getRange(2, 1, n, 13).getValues(), dv = sh.getRange(2, 1, n, 13).getDisplayValues(), now = Date.now();
+  return v.map((r, i) => {
+    const at = r[0] instanceof Date ? r[0].getTime() : 0, paid = r[7] === true, st = String(r[11] || '');
+    return { row: i + 2, date: String(dv[i][1]).slice(0, 10), name: dv[i][2], email: String(dv[i][3]).trim().toLowerCase(), price: dv[i][5], coupon: !!dv[i][6], paid: paid, status: st, id: dv[i][10], at: at, ja: dv[i][12] === 'ja',
+      held: st !== SEMI_GONE && (paid || st === '確定' || now - at < SEMI_HOLD_H * 3600000) };
+  });
+}
+function semiWhen_(date, ja) { const day = dateOf_(date); return ja ? (day.getMonth() + 1) + '/' + day.getDate() + '（' + WD_JA[day.getDay()] + '）' + SEMI_START + '〜12:30' : Utilities.formatDate(day, TZ, 'EEE, MMM d') + ', 11:00 am–12:30 pm'; }
+function semiConfirmMail_(x) {
+  const ja = /[぀-ヿ一-鿿]/.test(x.name) || x.ja;
+  const body = ja
+    ? '# お席が確定しました\n\n' + x.name + ' 様\n\nお支払いを確認しました。ありがとうございます。\nセミプライベートクラスのお席が確定しました。\n\n日時：' + semiWhen_(x.date, true) + '（ニューヨーク時間）\n場所：FuncPhysio Physical Therapy（2 W 45th Street, Suite 1600）\n\n' + funcArrive_(true) + '\n\nバレエシューズで、動きやすい服装でお越しください。\nお会いできるのを楽しみにしています。\n髙山まり'
+    : '# Your spot is confirmed\n\nHi ' + x.name + ',\n\nThank you, your payment came through. Your spot in the semi-private class is confirmed.\n\nWhen: ' + semiWhen_(x.date, false) + ' (New York time)\nWhere: FuncPhysio Physical Therapy, 2 W 45th Street, Suite 1600\n\n' + funcArrive_(false) + '\n\nPlease bring ballet flats and wear something easy to move in.\nSee you soon!\nMari Takayama';
+  MailApp.sendEmail({ to: x.email, subject: ja ? 'お席が確定しました（' + semiWhen_(x.date, true) + '）' : 'Your spot is confirmed — ' + semiWhen_(x.date, false), body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+}
+// releases unpaid seats after 24 hours, and sends the "confirmed" email when Mari ticks 支払い in the sheet
+function semiTick_() {
+  const sh = book_().getSheetByName(SEMI_TAB); if (!sh || sh.getLastRow() < 2) return;
+  const today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'), me = Session.getEffectiveUser().getEmail();
+  semiSeats_().forEach(x => {
+    if (!x.id || x.date < today || isTest_(x.name)) return;
+    if (x.paid && !x.status) { sh.getRange(x.row, 12).setValue('確定'); semiConfirmMail_(x); return; }
+    if (x.paid || x.status || x.held) return;
+    sh.getRange(x.row, 12).setValue(SEMI_GONE);
+    if (x.coupon) { const rs = book_().getSheetByName(SEMI_REVIEW_TAB); if (rs && rs.getLastRow() > 1) { const v = rs.getRange(2, 1, rs.getLastRow() - 1, 6).getValues(), i = v.findIndex(r => String(r[2]).trim().toLowerCase() === x.email && String(r[5]) === '使用済み（' + x.date + '）'); if (i >= 0) rs.getRange(i + 2, 6).setValue('未使用'); } }
+    const ja = x.ja || /[぀-ヿ一-鿿]/.test(x.name);
+    const body = ja
+      ? '# お席の取り消しのお知らせ\n\n' + x.name + ' 様\n\nセミプライベートクラス（' + semiWhen_(x.date, true) + '）のお申し込みについて、24時間以内にお支払いの確認ができなかったため、お席の確保を取り消しました。\nご不便をおかけして申し訳ありません。\n\nまだ参加をご希望の場合は、もう一度お申し込みください。\n' + SEMI_PAGE + '\n\n髙山まり'
+      : '# About your semi-private class spot\n\nHi ' + x.name + ',\n\nWe didn’t receive payment within 24 hours, so your spot for ' + semiWhen_(x.date, false) + ' has been released. I’m sorry for any inconvenience.\n\nIf you’d still like to join, please sign up again:\n' + SEMI_PAGE + '\n\nMari Takayama';
+    MailApp.sendEmail({ to: x.email, subject: ja ? 'セミプライベートクラスのお席について' : 'About your semi-private class spot', body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+    if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【未払いで取り消し】' + x.name + '（' + semiWhen_(x.date, true) + '）', body: x.name + ' さんのお席を、24時間お支払いがなかったので取り消しました。', htmlBody: pretty_('<p><b>' + esc_(x.name) + '</b> さんは24時間以内にお支払いがなかったので、お席を取り消して本人にお知らせしました。</p><p>あとで支払いが届いた場合は、「セミプライベート」タブの「支払い」にチェックを入れ、「お席」を空にしてください。確定のメールが送られます。</p>', true) });
+  });
+}
+// Mari's button in her notification: payment received -> tick 支払い and email the dancer
+function semiPaidPage_(p) {
+  if (!p.id || p.s !== newsSig_('paid:' + p.id)) return page_('開けません', 'このリンクは使えません。');
+  const sh = book_().getSheetByName(SEMI_TAB), x = semiSeats_().find(y => y.id === String(p.id)); if (!sh || !x) return page_('見つかりません', '');
+  if (x.status === '確定') return page_('確定済みです', esc_(x.name) + ' さんのお席は、もう確定しています。');
+  const slot = semiDates_().find(y => y.date === x.date);
+  if (!x.held && slot && slot.left < 1) return page_('満席です', esc_(x.name) + ' さんの仮予約は期限が切れていて、今は満席です。返金するか、ほかの日をご案内してください。');
+  sh.getRange(x.row, 8).setValue(true); sh.getRange(x.row, 12).setValue('確定'); semiConfirmMail_(x);
+  log_('セミプライベート確定', { name: x.name, email: x.email }, null, '', { memo: x.date });
+  return page_('確定しました', esc_(x.name) + ' さんのお席を確定して、確定のメールを送りました。');
 }
 function semiCoupon_(email) {
   const sh = book_().getSheetByName(SEMI_REVIEW_TAB); if (!sh || sh.getLastRow() < 2) return 0;
@@ -1061,34 +1111,34 @@ function semiSignup_(d) {
   const lock = LockService.getScriptLock(); try { lock.waitLock(20000); } catch (x) {}
   const dates = semiDates_(), slot = dates.find(x => x.date === d.date); if (!slot) return { ok: false, error: 'date' };
   if (slot.left < 1) return { ok: false, error: 'full' };
-  const sh = semiSheet_(), mine = sh.getLastRow() > 1 ? sh.getRange(2, 2, sh.getLastRow() - 1, 3).getDisplayValues().some(r => String(r[0]).slice(0, 10) === d.date && String(r[2]).trim().toLowerCase() === email) : false;
+  const sh = semiSheet_(), mine = semiSeats_().some(x => x.held && x.date === d.date && x.email === email);
   if (mine) return { ok: false, error: 'already' };
   const cRow = semiCoupon_(email), price = cRow ? SEMI_PRICE - SEMI_OFF : SEMI_PRICE, id = 's' + Utilities.getUuid().slice(0, 7);
   if (cRow) book_().getSheetByName(SEMI_REVIEW_TAB).getRange(cRow, 6).setValue('使用済み（' + d.date + '）');
-  sh.appendRow([new Date(), d.date + ' ' + SEMI_START, name, email, SEMI_LEVEL_JA[d.level] || '', price, cRow ? '$' + SEMI_OFF + ' 引き' : '', false, clip(d.note, 300), '', id]);
+  sh.appendRow([new Date(), d.date + ' ' + SEMI_START, name, email, SEMI_LEVEL_JA[d.level] || '', price, cRow ? '$' + SEMI_OFF + ' 引き' : '', false, clip(d.note, 300), '', id, '', ja ? 'ja' : 'en']);
   sh.getRange(sh.getLastRow(), 8).insertCheckboxes();
   const day = dateOf_(d.date), md = (day.getMonth() + 1) + '/' + day.getDate(), wd = WD_JA[day.getDay()];
   const whenJa = md + '（' + wd + '）' + SEMI_START + '〜12:30', whenEn = Utilities.formatDate(day, TZ, 'EEE, MMM d') + ', 11:00 am–12:30 pm';
   const pay = venmoLink_(price, 'Semi-private class ' + md);
   let body = ja
-    ? '# セミプライベートクラスのお申し込み\n\n' + name + ' 様\n\nお申し込みありがとうございます。髙山まりです。\n\n日時：' + whenJa + '（ニューヨーク時間）\n場所：FuncPhysio Physical Therapy（2 W 45th Street, Suite 1600）\n料金：$' + price + (cRow ? '（レビューのお礼で $' + SEMI_OFF + ' 引き）' : '') + '\n\nお支払いは前もってお願いしています。\n' + pay + '\n\n' + funcArrive_(true) + '\n\nバレエシューズで、動きやすい服装でお越しください。\nお会いできるのを楽しみにしています。\n髙山まり'
-    : '# Your semi-private class\n\nHi ' + name + ',\n\nThank you for signing up!\n\nWhen: ' + whenEn + ' (New York time)\nWhere: FuncPhysio Physical Therapy, 2 W 45th Street, Suite 1600\nPrice: $' + price + (cRow ? ' ($' + SEMI_OFF + ' off — thank you for your review)' : '') + '\n\nPlease pay ahead:\n' + pay + '\n\n' + funcArrive_(false) + '\n\nPlease bring ballet flats and wear something easy to move in.\nSee you soon!\nMari Takayama';
-  MailApp.sendEmail({ to: email, subject: ja ? 'セミプライベートクラス（' + whenJa + '）' : 'Semi-private class — ' + whenEn, body: plain_(body = withAsk_(body)), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+    ? '# 仮予約を受け付けました\n\n' + name + ' 様\n\nありがとうございます。\n髙山まりです。\nお席を24時間、\nお取りしています。\nお支払いを確認したら、\n確定のメールをお送りします。\n\n日時：' + whenJa + '（ニューヨーク時間）\n場所：FuncPhysio Physical Therapy（2 W 45th Street, Suite 1600）\n料金：$' + price + (cRow ? '（レビューのお礼で $' + SEMI_OFF + ' 引き）' : '') + '\n\n24時間以内に、\nVenmo でお支払いください。\n' + pay + '\n\nお支払いがない場合は、\nお席の確保を取り消します。\n\n髙山まり'
+    : '# Your spot is held for 24 hours\n\nHi ' + name + ',\n\nThank you for signing up! Your spot is held for 24 hours and confirmed once you pay.\n\nWhen: ' + whenEn + ' (New York time)\nWhere: FuncPhysio Physical Therapy, 2 W 45th Street, Suite 1600\nPrice: $' + price + (cRow ? ' ($' + SEMI_OFF + ' off — thank you for your review)' : '') + '\n\nPlease pay with Venmo within 24 hours:\n' + pay + '\n\nIf payment doesn’t come in, the spot is released. Once it’s confirmed, I’ll email you how to get in.\nMari Takayama';
+  MailApp.sendEmail({ to: email, subject: ja ? '【24時間以内にお支払いを】セミプライベートクラス（' + whenJa + '）' : 'Please pay within 24 hours — semi-private class ' + whenEn, body: plain_(body = withAsk_(body)), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
   const me = Session.getEffectiveUser().getEmail(), left = slot.left - 1;
   if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', replyTo: email, subject: '【セミプライベート】' + name + '（' + whenJa + '・残り' + left + '席）',
     body: name + ' さんが申し込みました。',
-    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんがセミプライベートクラスに申し込みました。</p>' + infoBox_([['日時', whenJa], ['料金', '$' + price + (cRow ? '（レビュー割引）' : '')], ['レベル', esc_(SEMI_LEVEL_JA[d.level] || '－')], ['メール', esc_(email)], ['残り', left + '席'], ['メッセージ', esc_(clip(d.note, 300)) || '－']]) + '<p>「セミプライベート」タブに記録しました。お支払いが来たら「支払い」にチェックしてください。</p>', true) });
+    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんがセミプライベートクラスに申し込みました。</p>' + infoBox_([['日時', whenJa], ['料金', '$' + price + (cRow ? '（レビュー割引）' : '')], ['レベル', esc_(SEMI_LEVEL_JA[d.level] || '－')], ['メール', esc_(email)], ['残り', left + '席'], ['メッセージ', esc_(clip(d.note, 300)) || '－']]) + '<p>お席は24時間だけ取ってあります。Venmo にお支払いが届いたら、下のボタンを押してください。確定のメールが本人に届きます。</p>'+'<p><a href="' + ScriptApp.getService().getUrl() + '?act=semipaid&id=' + id + '&s=' + newsSig_('paid:' + id) + '" style="display:block;margin:6px 0;padding:15px 12px;text-align:center;text-decoration:none;font-size:17px;font-weight:600;background:#2c2a30;color:#ffffff">支払いを確認した（お席を確定する）</a></p><p style="font-size:14px;color:#555">24時間お支払いがなければ、自動でお席を取り消して本人にお知らせします。</p>', true) });
   log_('セミプライベート申し込み', { name: name, email: email }, null, '', { memo: d.date + '・$' + price, amount: price });
-  return { ok: true, price: price, left: left };
+  return { ok: true, price: price, left: left, pay: pay };
 }
 // the day after a class: ask each person for a short review ($10 off next time)
 function semiReviewAsks_() {
   const sh = book_().getSheetByName(SEMI_TAB); if (!sh || sh.getLastRow() < 2) return;
-  const today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'), v = sh.getRange(2, 1, sh.getLastRow() - 1, 11).getDisplayValues();
+  const today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'), v = sh.getRange(2, 1, sh.getLastRow() - 1, 13).getDisplayValues();
   v.forEach((r, i) => {
-    const day = String(r[1]).slice(0, 10); if (!day || day >= today || r[9] || !r[10] || isTest_(r[2])) return;
+    const day = String(r[1]).slice(0, 10); if (!day || day >= today || r[9] || !r[10] || isTest_(r[2]) || !(r[7] === 'TRUE' || r[11] === '確定')) return;
     const url = ScriptApp.getService().getUrl() + '?act=review&id=' + r[10] + '&e=' + encodeURIComponent(r[3]);
-    const ja = /[぀-ヿ一-鿿]/.test(r[2]);
+    const ja = r[12] === 'ja' || /[぀-ヿ一-鿿]/.test(r[2]);
     let body = ja
       ? '# クラスに来てくれてありがとう\n\n' + r[2] + ' 様\n\nセミプライベートクラスに来てくださり、ありがとうございました。\nよろしければ、短い感想を書いていただけますか？\n書いてくださった方は、次回のクラスが $' + SEMI_OFF + ' 引きになります。\n\n' + url + '\n\n髙山まり'
       : '# Thank you for coming\n\nHi ' + r[2] + ',\n\nThank you for coming to the semi-private class!\nWould you write a short review? If you do, your next class is $' + SEMI_OFF + ' off.\n\n' + url + '\n\nMari Takayama';
@@ -1350,6 +1400,7 @@ function cleanupTests_() {
   return n;
 }
 function paymentReminders() {
+  try { semiTick_(); } catch (x) {}
   const sh = book_().getSheetByName(REQ); if (!sh || sh.getLastRow() < 2) return;
   heardStats_();
   const v = sh.getRange(2, 1, sh.getLastRow() - 1, HEAD.length).getValues();
