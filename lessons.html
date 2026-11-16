@@ -34,6 +34,9 @@
   .q { margin: 16px 0 8px; font-weight: 500; }
   .q small { font-weight: 400; color: var(--muted); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips.as-select { display: none !important; }
+  .chip-select { display: block; width: 100%; box-sizing: border-box; padding: 9px 34px 9px 12px; font: 1rem var(--font-body); color: var(--ink); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%237a6233' stroke-width='1.2'/%3E%3C/svg%3E") no-repeat right 12px center; border: 1px solid var(--champagne-line); border-radius: 0; -webkit-appearance: none; appearance: none; cursor: pointer; }
+  html[lang=ja] .chip-select { font-family: "Shippori Mincho", serif; letter-spacing: .04em; }
   .chip { appearance: none; border: 1px solid var(--champagne-line); background: #fff; color: var(--ink); font: 1rem var(--font-body); padding: 9px 14px; cursor: pointer; transition: background-color .4s ease, border-color .4s ease; }
   .chip:hover { background: var(--champagne-pale); }
   .chip[aria-pressed="true"] { background: var(--champagne); border-color: var(--champagne-deep); }
@@ -516,6 +519,17 @@
     });
     group.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
   });
+  // show each one-answer question as a drop-down; the hidden chips keep doing the work
+  form.querySelectorAll('.chips[data-group]').forEach(group => {
+    const chips = [...group.querySelectorAll('.chip')], keep = ['len', 'visit', 'via'].includes(group.dataset.group);
+    const q = group.previousElementSibling, sel = document.createElement('select');
+    sel.className = 'chip-select'; if (q && q.textContent.trim()) sel.setAttribute('aria-label', q.textContent.trim());
+    const ph = new Option('Choose', ''); sel.append(ph); chips.forEach(c => sel.append(new Option(c.textContent.trim(), c.dataset.value)));
+    const sync = () => { const on = chips.find(c => c.getAttribute('aria-pressed') === 'true'); sel.value = on ? on.dataset.value : ''; chips.forEach((c, i) => { sel.options[i + 1].disabled = c.disabled; }); ph.disabled = keep && !!on; };
+    sel.addEventListener('change', () => { const c = chips.find(x => x.dataset.value === sel.value), on = chips.find(x => x.getAttribute('aria-pressed') === 'true'); if (c) { if (c !== on) c.click(); } else if (on) on.click(); sync(); });
+    new MutationObserver(sync).observe(group, { subtree: true, attributes: true, attributeFilter: ['aria-pressed', 'disabled'] });
+    group.classList.add('as-select'); group.after(sel); sync();
+  });
   const STORE = 'mt-booking-me';
   const pick = (group, value) => { const b = value && form.querySelector('[data-group=' + group + '] [data-value="' + value + '"]'); if (b && b.getAttribute('aria-pressed') !== 'true') b.click(); };
   pick('via', 'Email');
@@ -716,18 +730,18 @@
     }
     if (choice.visit === 'First' && !choice.gender) return fail(T.errors.gender);
     if (choice.visit === 'First' && !choice.tongue) return fail(T.errors.tongue);
-    const shown = el => !!el && el.offsetParent !== null, grp = g => form.querySelector('[data-group=' + g + ']'), need = g => shown(grp(g)) && !choice[g];
-    if (need('heard')) return fail(T.errors.heard, grp('heard').querySelector('.chip'));
+    const shown = el => !!el && el.offsetParent !== null, grp = g => { const x = form.querySelector('[data-group=' + g + ']'); return x && x.classList.contains('as-select') ? x.nextElementSibling : x; }, need = g => shown(grp(g)) && !choice[g];
+    if (need('heard')) return fail(T.errors.heard, grp('heard'));
     if (choice.heard === 'Friend' && shown(form.friend) && !form.friend.value.trim()) return fail(T.errors.friend, form.friend);
     if (choice.heard === 'Other' && shown(form.heardnote) && !form.heardnote.value.trim()) return fail(T.errors.heardNote, form.heardnote);
     if (!choice.len) return fail(T.errors.len);
     if (picks.length < (many() ? 2 : 3)) return fail(many() ? T.errors.timesMany : T.errors.times);
     if (choice.place === 'Travel' && !choice.space) return fail(T.errors.space);
     if (choice.place === 'Travel' && !form.area.value.trim()) return fail(T.errors.area, form.area);
-    if (need('place')) return fail(T.errors.place, grp('place').querySelector('.chip'));
-    if (need('barre')) return fail(T.errors.barre, grp('barre').querySelector('.chip'));
-    if (need('age')) return fail(T.errors.age, grp('age').querySelector('.chip'));
-    if (need('level')) return fail(T.errors.level, grp('level').querySelector('.chip'));
+    if (need('place')) return fail(T.errors.place, grp('place'));
+    if (need('barre')) return fail(T.errors.barre, grp('barre'));
+    if (need('age')) return fail(T.errors.age, grp('age'));
+    if (need('level')) return fail(T.errors.level, grp('level'));
     if (shown(goalBox) && !goals().length) return fail(T.errors.goals, goalBox.querySelector('.chip'));
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.value.trim())) return fail(T.errors.email, form.email);
     if (!choice.via) pick('via', 'Email');
