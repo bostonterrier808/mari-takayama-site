@@ -442,9 +442,10 @@ body .row-photo.tall[data-box-slot] { height: auto !important; }
   <div class="rates-ask-group" data-group="who"><span>You are</span><div class="rates-ask-chips"><button type="button" data-value="Student">A student</button><button type="button" data-value="Professional">A professional dancer</button><button type="button" data-value="Teacher">A dance teacher</button><button type="button" data-value="Parent">A parent</button><button type="button" data-value="Hobby">Dancing for fun</button><button type="button" data-value="Other">Other</button></div></div>
   <div class="rates-ask-names">
     <label class="rates-ask-field"><span>First name</span><input name="first" autocomplete="given-name" maxlength="50" required></label>
-    <label class="rates-ask-field"><span>Middle name <small>(optional)</small></span><input name="middle" autocomplete="additional-name" maxlength="50"></label>
     <label class="rates-ask-field"><span>Last name</span><input name="last" autocomplete="family-name" maxlength="50" required></label>
   </div>
+  <button type="button" class="rates-ask-add" id="rates-ask-add-middle">+ Add a middle name</button>
+  <label class="rates-ask-field" id="rates-ask-middle" hidden><span>Middle name</span><input name="middle" autocomplete="additional-name" maxlength="50"></label>
   <label class="rates-ask-field rates-ask-select"><span>Gender</span><select name="gender" required><option value="">Choose</option><option value="Female">Female</option><option value="Male">Male</option><option value="Nonbinary">Non-binary</option><option value="Other">Other</option><option value="None">Prefer not to say</option></select></label>
   <input class="rates-ask-other" name="genderOther" maxlength="60" placeholder="Please write" aria-label="Gender" hidden>
   <label class="rates-ask-field rates-ask-select"><span>Where do you live?</span><select name="area"><option value="">Choose</option><option value="Manhattan">Manhattan, New York</option><option value="Long Island">Long Island</option><option value="New Jersey">New Jersey</option><option value="Japan">Japan</option><option value="Elsewhere">Somewhere else</option></select></label>
@@ -467,6 +468,7 @@ body .row-photo.tall[data-box-slot] { height: auto !important; }
     if (!on) b.setAttribute('aria-pressed', 'true');
     pick[g.dataset.group] = on ? '' : b.dataset.value;
   }));
+  document.getElementById('rates-ask-add-middle').addEventListener('click', e => { e.currentTarget.hidden = true; const m = document.getElementById('rates-ask-middle'); m.hidden = false; f.elements['middle'].focus(); });
   [['gender', 'genderOther', 'Other'], ['area', 'areaOther', 'Elsewhere']].forEach(([k, ok, v]) => f.elements[k].addEventListener('change', () => { const o = f.elements[ok]; o.hidden = f.elements[k].value !== v; if (!o.hidden) o.focus(); }));
   f.addEventListener('submit', async e => {
     e.preventDefault();
@@ -478,7 +480,7 @@ body .row-photo.tall[data-box-slot] { height: auto !important; }
     try {
       await fetch(APP, { method: 'POST', body: JSON.stringify({ type: 'rates', name, first, middle, last, email, age: pick.age || '', level: pick.level || '', who: pick.who || '', gender: f.elements['gender'].value, genderOther: f.elements['gender'].value === 'Other' ? f.elements['genderOther'].value.trim() : '', area: f.elements['area'].value, areaOther: f.elements['area'].value === 'Elsewhere' ? f.elements['areaOther'].value.trim() : '', hp: f.elements['hp'].value, ms: Date.now() - t0, language: ja() ? 'ja' : 'en' }) });
       st.textContent = ja() ? '料金表をメールでお送りしました。届かないときは、迷惑メールのフォルダもご確認ください。' : 'Sent! Check your email for the rates (and your spam folder, just in case).';
-      f.reset(); f.elements['areaOther'].hidden = f.elements['genderOther'].hidden = true; f.querySelectorAll('.rates-ask-group button').forEach(x => x.setAttribute('aria-pressed', 'false')); for (const k in pick) pick[k] = '';
+      f.reset(); f.elements['areaOther'].hidden = f.elements['genderOther'].hidden = document.getElementById('rates-ask-middle').hidden = true; document.getElementById('rates-ask-add-middle').hidden = false; f.querySelectorAll('.rates-ask-group button').forEach(x => x.setAttribute('aria-pressed', 'false')); for (const k in pick) pick[k] = '';
     } catch (err) { st.textContent = ja() ? '送れませんでした。もう一度お試しください。' : 'Something went wrong. Please try again.'; }
     b.disabled = false;
   });
