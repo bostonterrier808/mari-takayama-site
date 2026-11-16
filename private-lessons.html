@@ -469,6 +469,7 @@ body .row-photo.tall[data-box-slot] { height: auto !important; }
 <script>
 (() => {
   const f = document.getElementById('rates-ask'), st = document.getElementById('rates-ask-status'), t0 = Date.now();
+  document.getElementById('rates-ask-add-middle').addEventListener('click', e => { e.preventDefault(); const m = document.getElementById('rates-ask-middle'); m.hidden = false; e.currentTarget.hidden = true; m.querySelector('input').focus(); });
   const APP = 'https://script.google.com/macros/s/AKfycbyoBjOrilADknvlRF8Mf6vzOootjaOEG_56OdEDFinrhrzaH4o8Z2fzm8niTlL0c6-9oQ/exec';
   const ja = () => (window.mariSiteLanguage || document.documentElement.lang) === 'ja';
   [['gender', 'genderOther', 'Other'], ['area', 'areaOther', 'Elsewhere']].forEach(([k, ok, v]) => f.elements[k].addEventListener('change', () => { const o = f.elements[ok]; o.hidden = f.elements[k].value !== v; if (!o.hidden) o.focus(); }));
