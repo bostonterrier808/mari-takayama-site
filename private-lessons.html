@@ -437,9 +437,6 @@ body .row-photo.tall[data-box-slot] { height: auto !important; }
 <form class="rates-ask" id="rates-ask" novalidate>
   <div class="rates-ask-title">Lesson rates</div>
   <p class="rates-ask-copy">Leave your name and email, and the rates will be sent to you right away.</p>
-  <div class="rates-ask-group" data-group="age"><span>Who is it for?</span><div class="rates-ask-chips"><button type="button" data-value="Adult">Adult</button><button type="button" data-value="Teen">Teen</button><button type="button" data-value="Child">Child</button></div></div>
-  <div class="rates-ask-group" data-group="level"><span>Ballet experience</span><div class="rates-ask-chips"><button type="button" data-value="New to ballet">New to ballet</button><button type="button" data-value="Some classes">Some classes</button><button type="button" data-value="Trains regularly">Trains regularly</button></div></div>
-  <div class="rates-ask-group" data-group="who"><span>You are</span><div class="rates-ask-chips"><button type="button" data-value="Student">A student</button><button type="button" data-value="Professional">A professional dancer</button><button type="button" data-value="Teacher">A dance teacher</button><button type="button" data-value="Parent">A parent</button><button type="button" data-value="Hobby">Dancing for fun</button><button type="button" data-value="Other">Other</button></div></div>
   <div class="rates-ask-names">
     <label class="rates-ask-field"><span>First name</span><input name="first" autocomplete="given-name" maxlength="50" required></label>
     <label class="rates-ask-field"><span>Last name</span><input name="last" autocomplete="family-name" maxlength="50" required></label>
@@ -451,6 +448,9 @@ body .row-photo.tall[data-box-slot] { height: auto !important; }
   <label class="rates-ask-field rates-ask-select"><span>Where do you live?</span><select name="area"><option value="">Choose</option><option value="Manhattan">Manhattan, New York</option><option value="Long Island">Long Island</option><option value="New Jersey">New Jersey</option><option value="Japan">Japan</option><option value="Elsewhere">Somewhere else</option></select></label>
   <input class="rates-ask-other" name="areaOther" maxlength="80" placeholder="Where?" aria-label="Where do you live?" hidden>
   <label class="rates-ask-field"><span>Email</span><input name="email" type="email" autocomplete="email" required></label>
+  <div class="rates-ask-group" data-group="age"><span>Who is it for?</span><div class="rates-ask-chips"><button type="button" data-value="Adult">Adult</button><button type="button" data-value="Teen">Teen</button><button type="button" data-value="Child">Child</button></div></div>
+  <div class="rates-ask-group" data-group="level"><span>Ballet experience</span><div class="rates-ask-chips"><button type="button" data-value="New to ballet">New to ballet</button><button type="button" data-value="Some classes">Some classes</button><button type="button" data-value="Trains regularly">Trains regularly</button></div></div>
+  <div class="rates-ask-group" data-group="who"><span>You are</span><div class="rates-ask-chips"><button type="button" data-value="Student">A student</button><button type="button" data-value="Professional">A professional dancer</button><button type="button" data-value="Teacher">A dance teacher</button><button type="button" data-value="Parent">A parent</button><button type="button" data-value="Hobby">Dancing for fun</button><button type="button" data-value="Other">Other</button></div></div>
   <input name="hp" tabindex="-1" autocomplete="off" aria-hidden="true" class="rates-ask-hp">
   <button type="submit" class="rates-ask-button">Send me the rates</button>
   <p class="rates-ask-status" id="rates-ask-status" role="status"></p>
@@ -476,7 +476,7 @@ body .row-photo.tall[data-box-slot] { height: auto !important; }
     const name = [first, middle, last].filter(Boolean).join(' ');
     if (!first || !last || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { st.textContent = ja() ? '名・姓とメールアドレスを入れてください。' : 'Please enter your first name, last name and email.'; return; }
     if (!f.elements['gender'].value) { st.textContent = ja() ? '性別を選んでください。' : 'Please choose your gender.'; f.elements['gender'].focus(); return; }
-    const b = f.querySelector('button'); b.disabled = true; st.textContent = ja() ? '送っています…' : 'Sending…';
+    const b = f.querySelector('.rates-ask-button'); b.disabled = true; st.textContent = ja() ? '送っています…' : 'Sending…';
     try {
       await fetch(APP, { method: 'POST', body: JSON.stringify({ type: 'rates', name, first, middle, last, email, age: pick.age || '', level: pick.level || '', who: pick.who || '', gender: f.elements['gender'].value, genderOther: f.elements['gender'].value === 'Other' ? f.elements['genderOther'].value.trim() : '', area: f.elements['area'].value, areaOther: f.elements['area'].value === 'Elsewhere' ? f.elements['areaOther'].value.trim() : '', hp: f.elements['hp'].value, ms: Date.now() - t0, language: ja() ? 'ja' : 'en' }) });
       st.textContent = ja() ? '料金表をメールでお送りしました。届かないときは、迷惑メールのフォルダもご確認ください。' : 'Sent! Check your email for the rates (and your spam folder, just in case).';
