@@ -910,7 +910,8 @@ function payChoice_(p, sh, r, data) {
 // ---------- "send me the rates": the rates page link goes only to people who ask ----------
 const RATES_PAGE = SITE + 'rates.html';
 const RATES_TAB = '料金の問い合わせ';
-const RATES_HEAD = ['日時', '名前', 'メール', '言語', '対象', 'バレエの経験', '立場', 'その後の予約'];
+const RATES_HEAD = ['日時', '名前', 'メール', '言語', '対象', 'バレエの経験', '立場', 'その後の予約', '住んでいる所'];
+const AREA_JA = { Manhattan: 'マンハッタン', Brooklyn: 'ブルックリン', Queens: 'クイーンズ', Bronx: 'ブロンクス', 'Staten Island': 'スタテンアイランド', 'Long Island': 'ロングアイランド', 'New Jersey': 'ニュージャージー', 'Elsewhere in the U.S.': 'そのほかのアメリカ', Japan: '日本', 'Another country': 'そのほかの国' };
 const WHO_JA = { Student: '学生', Professional: 'プロのダンサー', Teacher: 'ダンスの先生', Parent: '保護者', Hobby: '趣味', Other: 'その他' };
 function ratesSheet_() {
   const ss = book_(); let sh = ss.getSheetByName(RATES_TAB);
@@ -918,11 +919,12 @@ function ratesSheet_() {
   sh = ss.insertSheet(RATES_TAB);
   sh.getRange(1, 1, 1, RATES_HEAD.length).setValues([RATES_HEAD]).setFontWeight('bold').setBackground('#ecdfc6');
   sh.setFrozenRows(1); sh.getRange('A2:A').setNumberFormat('yyyy/mm/dd hh:mm');
-  const q = (cell, title, query) => { sh.getRange(cell).setValue(title).setFontWeight('bold'); sh.getRange(cell).offset(1, 0).setFormula('=IFERROR(QUERY(A2:H,"' + query + '",0),"まだありません")'); };
+  const q = (cell, title, query) => { sh.getRange(cell).setValue(title).setFontWeight('bold'); sh.getRange(cell).offset(1, 0).setFormula('=IFERROR(QUERY(A2:I,"' + query + '",0),"まだありません")'); };
   q('J1', '対象', "select E, count(B) where B is not null group by E label E '対象', count(B) '人数'");
   q('M1', 'バレエの経験', "select F, count(B) where B is not null group by F label F '経験', count(B) '人数'");
   q('P1', '立場', "select G, count(B) where B is not null group by G label G '立場', count(B) '人数'");
   q('S1', 'その後の予約', "select H, count(B) where B is not null group by H label H 'その後', count(B) '人数'");
+  q('V1', '住んでいる所', "select I, count(B) where B is not null group by I order by count(B) desc label I '住んでいる所', count(B) '人数'");
   q('J14', '月ごとの人数', "select year(A), month(A)+1, count(B) where B is not null group by year(A), month(A)+1 label year(A) '年', month(A)+1 '月', count(B) '人数'");
   return sh;
 }
@@ -950,10 +952,10 @@ function sendRates_(d) {
   MailApp.sendEmail({ to: email, subject: ja ? 'レッスン料金のご案内' : 'Lesson rates — Mari Takayama', body: plain_(body = withAsk_(body)), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
   const me = Session.getEffectiveUser().getEmail();
   if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【料金のお問い合わせ】' + name, body: name + ' さん（' + email + '）に料金表を送りました。',
-    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんが料金を知りたいとのことで、料金表のリンクを自動で送りました。</p>' + infoBox_([['名前', esc_(name)], ['メール', esc_(email)], ['言語', ja ? '日本語' : '英語'], ['対象', esc_(JA.age[d.age] || '－')], ['経験', esc_(JA.level[d.level] || '－')], ['立場', esc_(WHO_JA[d.who] || '－')]]), true) });
-  const age = JA.age[d.age] || '', level = JA.level[d.level] || '', who = WHO_JA[d.who] || '';
-  try { ratesSheet_().appendRow([new Date(), name, email, ja ? '日本語' : '英語', age || '（未回答）', level || '（未回答）', who || '（未回答）', 'まだ']); } catch (e) {}
-  log_('料金表の問い合わせ', { name: name, email: email }, null, '', { memo: [age, level, who].filter(Boolean).join('・') });
+    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんが料金を知りたいとのことで、料金表のリンクを自動で送りました。</p>' + infoBox_([['名前', esc_(name)], ['メール', esc_(email)], ['言語', ja ? '日本語' : '英語'], ['対象', esc_(JA.age[d.age] || '－')], ['経験', esc_(JA.level[d.level] || '－')], ['立場', esc_(WHO_JA[d.who] || '－')], ['住んでいる所', esc_(AREA_JA[d.area] || '－')]]), true) });
+  const age = JA.age[d.age] || '', level = JA.level[d.level] || '', who = WHO_JA[d.who] || '', area = AREA_JA[d.area] || '';
+  try { ratesSheet_().appendRow([new Date(), name, email, ja ? '日本語' : '英語', age || '（未回答）', level || '（未回答）', who || '（未回答）', 'まだ', area || '（未回答）']); } catch (e) {}
+  log_('料金表の問い合わせ', { name: name, email: email }, null, '', { memo: [age, level, who, area].filter(Boolean).join('・') });
 }
 
 // Mari answers a change request
