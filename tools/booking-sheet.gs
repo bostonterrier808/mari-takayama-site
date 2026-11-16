@@ -1098,7 +1098,8 @@ function log_(kind, data, ch, len, extra) {
 function plain_(s) { return String(s).replace(/^#{1,2} /gm, ''); }
 function sendPretty_(m) { m.htmlBody = pretty_(m.body); m.body = plain_(m.body); m.body += '\n\n' + SITE; MailApp.sendEmail(m); }
 function pretty_(text, isHtml) {
-  const jaMail = /[\u3040-\u30ff]/.test(text);
+  // English emails start with "Hi …" (after an optional title), so a Japanese name doesn't switch the buttons to Japanese
+  const jaMail = isHtml ? /[\u3040-\u30ff]/.test(text) : !/^(# [^\n]*\n\n)?Hi /.test(String(text));
   const link = u => /[?&]act=(mmove|mcancel|take|decl)&/.test(u)
     ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:14px 12px;text-align:center;text-decoration:none;font-size:16px;letter-spacing:.04em;' + (/act=(mmove|take)&/.test(u) ? 'background:#2c2a30;color:#ffffff;border:1px solid #2c2a30' : 'background:#ffffff;color:#2c2a30;border:1px solid #2c2a30') + '">' + ({ mmove: '日時を変更する（お客さんに提案）', mcancel: 'キャンセルする', take: jaMail ? 'この日時で OK' : 'This time works', decl: jaMail ? 'キャンセルする（全額返金）' : 'Doesn’t work — cancel with a full refund' })[u.match(/act=(\w+)/)[1]] + '</a>'
     : /zoom\.us\//.test(u)
