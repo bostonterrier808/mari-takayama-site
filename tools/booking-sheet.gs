@@ -57,22 +57,23 @@ function rate30_(data) { return +(data && data.rate30) || RATE_PER_30; }
 function specialSheet_() {
   const ss = book_(); let sh = ss.getSheetByName(SP_TAB); if (sh) return sh;
   sh = ss.insertSheet(SP_TAB);
-  sh.getRange(1, 1, 1, 5).setValues([['名前', 'メール', '60分の料金（$）', '専用リンク（自動）', 'メモ']]).setFontWeight('bold').setBackground('#ecdfc6');
-  sh.setFrozenRows(1); sh.setColumnWidth(4, 420);
-  sh.getRange('G1').setValue('名前・メール・60分の料金を書くと、D列に専用リンクが自動でできます。そのリンクを本人に送ってください。料金を消すと、普通の料金に戻ります。');
+  sh.getRange(1, 1, 1, 7).setValues([['名前', 'メール', '60分の料金（$）', '支払い方法', '本人へのメッセージ（専用ページに出る）', '専用リンク（自動）', 'メモ（Mari だけ）']]).setFontWeight('bold').setBackground('#ecdfc6');
+  sh.setFrozenRows(1); sh.setColumnWidth(5, 360); sh.setColumnWidth(6, 380);
+  sh.getRange(2, 4, 200, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['Venmo', 'Zelle', '現金'], true).build());
+  sh.getRange('I1').setValue('名前と60分の料金を書くと、F列に専用リンクができます。そのリンクを本人に送ってください。メールも書いておくと、普通の予約ページから予約しても特別料金になります。料金を消すと、普通の料金に戻ります。');
   return sh;
 }
 function fillSpecialLinks_() {
   const sh = specialSheet_(), n = sh.getLastRow(); if (n < 2) return;
-  sh.getRange(2, 1, n - 1, 4).getValues().forEach((r, i) => {
-    if (String(r[1]).trim() && +r[2] > 0 && !String(r[3]).trim()) sh.getRange(i + 2, 4).setValue(SITE + 'rates.html?p=' + Utilities.getUuid().replace(/-/g, '').slice(0, 10));
+  sh.getRange(2, 1, n - 1, 6).getValues().forEach((r, i) => {
+    if (String(r[0]).trim() && +r[2] > 0 && !String(r[5]).trim()) sh.getRange(i + 2, 6).setValue(SITE + 'rates.html?p=' + Utilities.getUuid().replace(/-/g, '').slice(0, 10));
   });
 }
 function specialFor_(token, email) {
   const sh = book_().getSheetByName(SP_TAB); if (!sh || sh.getLastRow() < 2) return null;
-  const t = String(token || '').trim(), em = String(email || '').trim().toLowerCase(), v = sh.getRange(2, 1, sh.getLastRow() - 1, 4).getValues();
-  const row = (/^[a-f0-9]{10}$/.test(t) && v.find(r => String(r[3]).indexOf('p=' + t) >= 0)) || (em && v.find(r => String(r[1]).trim().toLowerCase() === em));
-  return row && +row[2] > 0 ? { name: String(row[0]).trim(), per60: +row[2] } : null;
+  const t = String(token || '').trim(), em = String(email || '').trim().toLowerCase(), v = sh.getRange(2, 1, sh.getLastRow() - 1, 6).getValues();
+  const row = (/^[a-f0-9]{10}$/.test(t) && v.find(r => String(r[5]).indexOf('p=' + t) >= 0)) || (em && v.find(r => String(r[1]).trim().toLowerCase() === em));
+  return row && +row[2] > 0 ? { name: String(row[0]).trim(), per60: +row[2], pay: /^(Zelle|現金)$/.test(String(row[3]).trim()) ? String(row[3]).trim() : 'Venmo', note: String(row[4] || '').trim().slice(0, 1200) } : null;
 }
 function onEdit(e) { try { if (e && e.range && e.range.getSheet().getName() === SP_TAB) fillSpecialLinks_(); } catch (x) {} }
 const PACKS = { '5': { n: 5, months: 3 }, '3': { n: 3, months: 2 } };  // 3-lesson pack: no discount, use within 2 months
@@ -169,7 +170,7 @@ function doPost(e) {
     for (let i = 0; i < 3; i++) row.push(c[i] ? choiceJa_(c[i], len) : '');
     for (let i = 0; i < 3; i++) row.push(c[i] ? WD_JA[dateOf_(c[i].date).getDay()] : '', c[i] ? partOf_(c[i]) : '');
     const more = c.slice(3).map((x, i) => '第' + (i + 4) + '希望：' + choiceJa_(x, len)).join('\n');
-    row.push(clip((more ? more + (d.note ? '\n' : '') : '') + (d.note || ''), 900), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, rate30: sp ? sp.per60 / 2 : 0, choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: PACKS[d.pack] ? d.pack : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '', multi: d.multi === true && c.length > 1, noVenmo: d.noVenmo === true, payOther: d.noVenmo === true ? String(d.payOther || '').slice(0, 80) : '' }), d.visit === 'First' ? (JA.heard[d.heard] || '') + (d.heard === 'Other' && d.heardNote ? '（' + clip(d.heardNote, 200) + '）' : '') : '', d.visit === 'First' && d.heard === 'Friend' ? clip(d.friend, 120) : '', clip(d.nickname, 60), d.visit === 'First' ? (JA.gender[d.gender] || '') : '', clip(d.social, 120), '', '', '', d.visit === 'First' ? (JA.tongue[d.tongue] || '') : '', goalsJa_(d));
+    row.push(clip((more ? more + (d.note ? '\n' : '') : '') + (d.note || ''), 900), d.language || '', '新規', clip(d.contact), len, '', id, key, JSON.stringify({ id, rate30: sp ? sp.per60 / 2 : 0, payWay: sp && sp.pay !== 'Venmo' ? sp.pay : '', choices: c, len, place: d.place || '', area: String(d.area || '').slice(0, 120), name: String(d.name || '').slice(0, 100), email: String(d.email || '').slice(0, 120), language: d.language === 'ja' ? 'ja' : 'en', tz, pack: PACKS[d.pack] ? d.pack : '', first: d.visit === 'First', free: d.free === true, studio: d.place === 'Studio' ? (d.studio === 'mari' ? 'mari' : 'self') : '', friend: d.visit === 'First' ? String(d.friend || '').slice(0, 120) : '', multi: d.multi === true && c.length > 1, noVenmo: d.noVenmo === true, payOther: d.noVenmo === true ? String(d.payOther || '').slice(0, 80) : '' }), d.visit === 'First' ? (JA.heard[d.heard] || '') + (d.heard === 'Other' && d.heardNote ? '（' + clip(d.heardNote, 200) + '）' : '') : '', d.visit === 'First' && d.heard === 'Friend' ? clip(d.friend, 120) : '', clip(d.nickname, 60), d.visit === 'First' ? (JA.gender[d.gender] || '') : '', clip(d.social, 120), '', '', '', d.visit === 'First' ? (JA.tongue[d.tongue] || '') : '', goalsJa_(d));
     heardStats_();
     book_().getSheetByName(REQ).appendRow(row);
     notifyMari_(d, c, len, id, key);
@@ -208,7 +209,7 @@ function notifyMari_(d, c, len, id, key) {
     d.visit === 'First' && JA.tongue[d.tongue] ? ['レッスンの言語', JA.tongue[d.tongue]] : null,
     goalsJa_(d) ? ['受けたい理由', esc_(goalsJa_(d))] : null,
     d.contact ? ['連絡方法', esc_(d.via) + '　' + esc_(d.contact)] : null,
-    d.sp ? ['料金', '<b>特別料金</b>（60分 $' + d.sp.per60 + '・「特別料金」タブ）'] : null,
+    d.sp ? ['料金', '<b>特別料金</b>（60分 $' + d.sp.per60 + (d.sp.pay !== 'Venmo' ? '・支払い：' + esc_(d.sp.pay) : '') + '・「特別料金」タブ）'] : null,
     ['場所', esc_(JA.place[d.place] || d.place || '') + (d.area && d.place !== 'Zoom' ? '（' + esc_(d.area) + '）' : '')], ['長さ', len + '分' + (PACKS[d.pack] ? '（' + d.pack + '回券を希望）' : '')],
     d.noVenmo === true ? ['お支払い', '<b>Venmo が使えない</b>' + (String(d.payOther || '').trim() ? '（希望：' + esc_(clip(d.payOther, 80)) + '）' : '') + '<br>お支払い方法を、お客さんにメールで知らせてください'] : null,
     d.place === 'Studio' ? ['スタジオ', d.studio === 'mari' ? '<b>Mari が代わりに予約</b>（スタジオ代＋手数料 $' + STUDIO_FEE + '）' : 'お客さんが自分で予約'] : null,
@@ -231,7 +232,7 @@ function notifyMari_(d, c, len, id, key) {
 // ---------- the website asks for free times, or Mari taps a button ----------
 function doGet(e) {
   const p = (e && e.parameter) || {};
-  if (p.special) { const sp = specialFor_(p.special, ''); return json_(sp ? { name: sp.name, per60: sp.per60 } : {}); }
+  if (p.special) { const sp = specialFor_(p.special, ''); return json_(sp ? { name: sp.name, per60: sp.per60, pay: sp.pay, note: sp.note } : {}); }
   if (p.slots) { const c = CacheService.getScriptCache(); if (!c.get('splink')) { c.put('splink', '1', 300); try { fillSpecialLinks_(); } catch (x) {} } return json_({ days: freeTimes_() }); }
   if (p.availability) return json_({ days: {} });
   if (p.pack) return json_({ packs: packsFor_(p.pack) });
@@ -462,6 +463,8 @@ function payNote_(data, ch, ja) {
   const kind = (pk && pk.kind) || data.pack || '5', P = PACKS[kind] || PACKS['5'];
   const amount = pk ? (per ? packPrice_(per, kind) : 0) : per;
   const what = pk ? (ja ? [kind + '回券（今回が1回目、残り' + pk.left + '回は' + pk.until + 'まで使えます）'] : [kind + '-lesson pack (this is lesson 1; the other ' + pk.left + ' can be used until ' + pk.until + ')']) : [];
+  if (data.payWay) { const w = data.payWay === '現金' ? (ja ? '現金（前のレッスンのときに）' : 'Cash (at the lesson before)') : data.payWay;
+    return what.concat(ja ? ['お支払いについて：', 'レッスン代は前払いでお願いしています。', '', amount ? '金額：$' + amount : '', '期限：' + payBy_(ch).ja + 'まで', '方法：' + w] : ['Payment:', 'Lessons are paid ahead.', '', amount ? 'Amount: $' + amount : '', 'Pay by: ' + payBy_(ch).en, 'How: ' + w], travel, rules).filter(x => x !== null).join('\n'); }
   if (data.noVenmo) return what.concat(ja ? ['お支払いについて：', 'レッスン代は前払いでお願いしています。', '', amount ? '金額：$' + amount : '', '期限：' + payBy_(ch).ja + 'まで', '方法：Venmo 以外', '  Mari から別のメールで', '  ご連絡します'] : ['Payment:', 'Lessons are paid ahead.', '', amount ? 'Amount: $' + amount : '', 'Pay by: ' + payBy_(ch).en, 'How: Not Venmo', '  Mari will email you', '  about how to pay'], travel, rules).filter(x => x !== null).join('\n');
   const z = ZONES[data.tz || TZ];
   if (!z || !z[2]) return what.concat([ja ? 'レッスン代は前もって（遅くとも ' + payBy_(ch).ja + 'まで）お願いしています。お支払いの方法は、別のメールでお知らせします。' : 'Lessons are paid ahead of time (at the latest by ' + payBy_(ch).en + '). Mari will email you how to pay from where you are.'], travel, rules).join('\n');
@@ -1107,7 +1110,7 @@ function paymentReminders() {
   });
 }
 function sendPayReminder_(data, ch, tag) {
-  if (!data.email || data.noVenmo) return;  // paying another way: Mari arranges it herself
+  if (!data.email || data.noVenmo || data.payWay) return;  // paying another way: Mari arranges it herself
   const ja = data.language === 'ja', when = custWhen_(data, ch, data.len, ja), dl = payBy_(ch);
   const one = data.place === 'FuncPhysio' ? Math.round(rate30_(data) * data.len / 30) : 0, isPack = !!(data.packInfo && data.packInfo.bought);
   const per = isPack ? packPrice_(one, data.packInfo.kind || '5') : one;

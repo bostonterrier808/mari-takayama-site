@@ -262,6 +262,8 @@ footer nav a:hover { color: var(--slate); }
 #interview .qa h3{font-size:22px}
 #interview .qa p{font-size:16px;line-height:1.7}
 @media(max-width:760px){#interview .press-interview-grid .published-interview{padding:14px 16px}#interview .press-interview-grid{gap:14px}}
+.rates-personal { margin: 1.2rem 0 1.6rem; padding: 1rem 1.1rem; border-left: 2px solid var(--gold-line, #d9c9a8); background: #fbf8f2; }
+.rates-personal p { margin: .25rem 0; line-height: 1.7; }
 </style>
 <style id="photo-layout">.grid { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: clamp(40px, 8vw, 160px); gap: 20px; align-items: stretch; } .grid button { min-height: 0; overflow: hidden; } .grid img { height: 100%; } @media (max-width: 760px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; align-items: start; } .grid button { grid-column: span 1 !important; grid-row: auto !important; } .grid img { height: auto !important; aspect-ratio: 3 / 4 !important; } }
 #grid button, .hero-photo, .about .wrap > img, .row-photo, .banner { overflow: hidden; }
@@ -515,9 +517,15 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
     if (!sp || !(sp.per60 > 0)) return;
     const per = m => Math.round(sp.per60 * m / 60), lead = document.querySelector('.credits-lead');
     const tables = [...document.querySelectorAll('.rates-table')];
+    // Japanese wraps only between words (the site keeps words whole), so mark the word edges
+    const seg = window.Intl && Intl.Segmenter ? new Intl.Segmenter('ja', { granularity: 'word' }) : null;
+    const words = (text, el) => { el.textContent = ''; if (!seg) { el.textContent = text; return; } let prev = ''; [...seg.segment(text)].forEach(x => { const w = x.segment; if (prev && (/[、。！？\s]$/.test(prev) || (/^[一-龯々ァ-ヶーa-zA-Z0-9おご]/.test(w) && /[ぁ-ゖ]$/.test(prev)))) el.append(document.createElement('wbr')); el.append(w); prev = w; }); };
+    if (sp.note && lead) { const box = document.createElement('div'); box.className = 'rates-personal'; sp.note.split(/\n+/).forEach(l => { const p = document.createElement('p'); words(l, p); box.append(p); }); lead.after(box); }
+    const how = [...document.querySelectorAll('.credit-work')].find(x => /How|方法/.test(x.textContent));
     const draw = () => {
       const ja = document.documentElement.lang === 'ja';
-      if (lead) lead.textContent = ja ? sp.name + ' さんへの特別料金です。' : 'Special rates for ' + sp.name + '.';
+      if (lead) words(ja ? sp.name + ' さんへの特別料金です。' : 'Special rates for ' + sp.name + '.', lead);
+      if (how && sp.pay && sp.pay !== 'Venmo') { const li = how.parentElement; li.querySelectorAll('.credit-role').forEach((r, i) => { if (i) r.remove(); else r.textContent = sp.pay === '現金' ? (ja ? '現金（前のレッスンのときに次の分を）' : 'Cash (at the lesson before)') : sp.pay; }); }
       const note = [...document.querySelectorAll('.rates-note')][0]; if (note) note.textContent = ja ? '30分 $' + per(30) : '$' + per(30) + ' per 30 minutes';
       tables.forEach(tb => tb.querySelectorAll('tbody tr').forEach(tr => {
         const m = parseInt(tr.cells[0].textContent, 10), head = tb.querySelector('thead th:last-child').textContent, cell = tr.cells[1];
