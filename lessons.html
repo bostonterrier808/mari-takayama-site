@@ -381,6 +381,14 @@
       contact: { en: 'Please write your contact.', ja: '連絡先を入れてください。' },
       area: { en: 'Please write the full address for the lesson.', ja: 'レッスンの住所を入れてください。' },
       space: { en: 'Please choose how much room there is to dance.', ja: '踊れる広さを選んでください。' },
+      heard: { en: 'Please choose how you heard about Mari.', ja: 'Mari を何で知ったか選んでください。' },
+      friend: { en: 'Please write who told you about Mari.', ja: '紹介してくれた方のお名前を入れてください。' },
+      heardNote: { en: 'Please tell us where you heard about Mari.', ja: 'どこで知ったか教えてください。' },
+      place: { en: 'Please choose where the lesson will be.', ja: 'レッスンの場所を選んでください。' },
+      barre: { en: 'Please choose whether there is a barre.', ja: 'バーがあるか選んでください。' },
+      age: { en: 'Please choose who the lesson is for.', ja: 'どなたのレッスンか選んでください。' },
+      level: { en: 'Please choose your ballet experience.', ja: 'バレエ経験を選んでください。' },
+      goals: { en: 'Please choose at least one reason for lessons.', ja: 'レッスンを受けたい理由を1つ以上選んでください。' },
       send: { en: 'Sorry, the request could not be sent. Please try again, or use Instagram DM or email.', ja: '送信できませんでした。もう一度お試しいただくか、Instagram の DM かメールでお送りください。' }
     },
     doneSent: { en: v => 'Your request was sent. Mari will contact you ' + (v === 'email' ? 'by email' : 'on ' + v) + ' within one or two days.', ja: v => 'リクエストを送りました。1〜2日以内に Mari から ' + v + ' で連絡します。' },
@@ -706,10 +714,19 @@
     if (!form.last.value.trim()) return fail(T.errors.last, form.last);
     if (choice.visit === 'First' && !choice.gender) return fail(T.errors.gender);
     if (choice.visit === 'First' && !choice.tongue) return fail(T.errors.tongue);
+    const shown = el => !!el && el.offsetParent !== null, grp = g => form.querySelector('[data-group=' + g + ']'), need = g => shown(grp(g)) && !choice[g];
+    if (need('heard')) return fail(T.errors.heard, grp('heard').querySelector('.chip'));
+    if (choice.heard === 'Friend' && shown(form.friend) && !form.friend.value.trim()) return fail(T.errors.friend, form.friend);
+    if (choice.heard === 'Other' && shown(form.heardnote) && !form.heardnote.value.trim()) return fail(T.errors.heardNote, form.heardnote);
     if (!choice.len) return fail(T.errors.len);
     if (picks.length < (many() ? 2 : 3)) return fail(many() ? T.errors.timesMany : T.errors.times);
     if (choice.place === 'Travel' && !choice.space) return fail(T.errors.space);
     if (choice.place === 'Travel' && !form.area.value.trim()) return fail(T.errors.area, form.area);
+    if (need('place')) return fail(T.errors.place, grp('place').querySelector('.chip'));
+    if (need('barre')) return fail(T.errors.barre, grp('barre').querySelector('.chip'));
+    if (need('age')) return fail(T.errors.age, grp('age').querySelector('.chip'));
+    if (need('level')) return fail(T.errors.level, grp('level').querySelector('.chip'));
+    if (shown(goalBox) && !goals().length) return fail(T.errors.goals, goalBox.querySelector('.chip'));
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.value.trim())) return fail(T.errors.email, form.email);
     if (!choice.via) pick('via', 'Email');
     if (choice.via !== 'Email' && !form.contact.value.trim()) return fail(T.errors.contact, form.contact);
