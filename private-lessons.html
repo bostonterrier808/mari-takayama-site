@@ -446,7 +446,7 @@ body .row-photo.tall[data-box-slot] { height: auto !important; }
     <label class="rates-ask-field"><span>Middle name <small>(optional)</small></span><input name="middle" autocomplete="additional-name" maxlength="50"></label>
     <label class="rates-ask-field"><span>Last name</span><input name="last" autocomplete="family-name" maxlength="50" required></label>
   </div>
-  <label class="rates-ask-field rates-ask-select"><span>Gender <small>(optional)</small></span><select name="gender"><option value="">Choose</option><option value="Female">Female</option><option value="Male">Male</option><option value="Nonbinary">Non-binary</option><option value="Other">Other</option><option value="None">Prefer not to say</option></select></label>
+  <label class="rates-ask-field rates-ask-select"><span>Gender</span><select name="gender" required><option value="">Choose</option><option value="Female">Female</option><option value="Male">Male</option><option value="Nonbinary">Non-binary</option><option value="Other">Other</option><option value="None">Prefer not to say</option></select></label>
   <label class="rates-ask-field"><span>Email</span><input name="email" type="email" autocomplete="email" required></label>
   <input name="hp" tabindex="-1" autocomplete="off" aria-hidden="true" class="rates-ask-hp">
   <button type="submit" class="rates-ask-button">Send me the rates</button>
@@ -471,6 +471,7 @@ body .row-photo.tall[data-box-slot] { height: auto !important; }
     const v = k => f.elements[k].value.trim().replace(/\s+/g, ' '), first = v('first'), middle = v('middle'), last = v('last'), email = v('email');
     const name = [first, middle, last].filter(Boolean).join(' ');
     if (!first || !last || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { st.textContent = ja() ? '名・姓とメールアドレスを入れてください。' : 'Please enter your first name, last name and email.'; return; }
+    if (!f.elements['gender'].value) { st.textContent = ja() ? '性別を選んでください。' : 'Please choose your gender.'; f.elements['gender'].focus(); return; }
     const b = f.querySelector('button'); b.disabled = true; st.textContent = ja() ? '送っています…' : 'Sending…';
     try {
       await fetch(APP, { method: 'POST', body: JSON.stringify({ type: 'rates', name, first, middle, last, email, age: pick.age || '', level: pick.level || '', who: pick.who || '', gender: f.elements['gender'].value, area: pick.area || '', areaOther: pick.area === 'Elsewhere' ? f.elements['areaOther'].value.trim() : '', hp: f.elements['hp'].value, ms: Date.now() - t0, language: ja() ? 'ja' : 'en' }) });
