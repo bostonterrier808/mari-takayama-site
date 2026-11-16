@@ -951,16 +951,17 @@ function ratesReal_(d) {
 }
 function sendRates_(d) {
   const ja = d.language === 'ja', name = clip(d.name, 100), email = String(d.email).trim();
+  const gender = (JA.gender[d.gender] || '') + (d.gender === 'Other' && String(d.genderOther || '').trim() ? '（' + clip(d.genderOther, 60) + '）' : '');
   let body = ja
     ? '# レッスン料金のご案内\n\n' + name + ' 様\n\nお問い合わせいただき、ありがとうございます。髙山まりです。\nレッスンの料金は、こちらのページにまとめています。\n' + RATES_PAGE + '\n\n個人レッスン：60分 $' + RATE_PER_30 * 2 + '（30分 $' + RATE_PER_30 + '）\n5回券（60分）：通常 $' + RATE_PER_30 * 2 * PACK_SIZE + ' → $' + packAmount_(RATE_PER_30 * 2) + '\n\nご予約は、こちらからどうぞ。\n' + BOOKING_PAGE + '\n\nお会いできるのを楽しみにしています。\n髙山まり'
     : '# Lesson rates\n\nHi ' + name + ',\n\nThank you for asking! Here are my lesson rates:\n' + RATES_PAGE + '\n\nPrivate lesson: $' + RATE_PER_30 * 2 + ' for 60 minutes ($' + RATE_PER_30 + ' per 30)\n5-lesson pack (60 min): usually $' + RATE_PER_30 * 2 * PACK_SIZE + ' → $' + packAmount_(RATE_PER_30 * 2) + '\n\nWhen you’re ready, you can book here:\n' + BOOKING_PAGE + '\n\nHope to see you soon!\nMari Takayama';
   MailApp.sendEmail({ to: email, subject: ja ? 'レッスン料金のご案内' : 'Lesson rates — Mari Takayama', body: plain_(body = withAsk_(body)), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
   const me = Session.getEffectiveUser().getEmail();
   if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【料金のお問い合わせ】' + name, body: name + ' さん（' + email + '）に料金表を送りました。',
-    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんが料金を知りたいとのことで、料金表のリンクを自動で送りました。</p>' + infoBox_([['名前', esc_(name)], ['メール', esc_(email)], ['言語', ja ? '日本語' : '英語'], ['対象', esc_(JA.age[d.age] || '－')], ['経験', esc_(JA.level[d.level] || '－')], ['立場', esc_(WHO_JA[d.who] || '－')], ['住んでいる所', esc_((AREA_JA[d.area] || '－') + (d.area === 'Elsewhere' && String(d.areaOther || '').trim() ? '（' + clip(d.areaOther, 80) + '）' : ''))], ['性別', esc_(JA.gender[d.gender] || '－')]]), true) });
+    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんが料金を知りたいとのことで、料金表のリンクを自動で送りました。</p>' + infoBox_([['名前', esc_(name)], ['メール', esc_(email)], ['言語', ja ? '日本語' : '英語'], ['対象', esc_(JA.age[d.age] || '－')], ['経験', esc_(JA.level[d.level] || '－')], ['立場', esc_(WHO_JA[d.who] || '－')], ['住んでいる所', esc_((AREA_JA[d.area] || '－') + (d.area === 'Elsewhere' && String(d.areaOther || '').trim() ? '（' + clip(d.areaOther, 80) + '）' : ''))], ['性別', esc_(gender || '－')]]), true) });
   const age = JA.age[d.age] || '', level = JA.level[d.level] || '', who = WHO_JA[d.who] || '', area = (AREA_JA[d.area] || '') + (d.area === 'Elsewhere' && String(d.areaOther || '').trim() ? '（' + clip(d.areaOther, 80) + '）' : '');
-  try { ratesSheet_().appendRow([new Date(), name, email, ja ? '日本語' : '英語', age || '（未回答）', level || '（未回答）', who || '（未回答）', 'まだ', area || '（未回答）', JA.gender[d.gender] || '（未回答）']); } catch (e) {}
-  log_('料金表の問い合わせ', { name: name, email: email }, null, '', { memo: [age, level, who, area, JA.gender[d.gender] || ''].filter(Boolean).join('・') });
+  try { ratesSheet_().appendRow([new Date(), name, email, ja ? '日本語' : '英語', age || '（未回答）', level || '（未回答）', who || '（未回答）', 'まだ', area || '（未回答）', gender || '（未回答）']); } catch (e) {}
+  log_('料金表の問い合わせ', { name: name, email: email }, null, '', { memo: [age, level, who, area, gender].filter(Boolean).join('・') });
 }
 
 // Mari answers a change request
