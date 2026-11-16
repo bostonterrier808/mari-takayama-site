@@ -476,6 +476,11 @@ body .row-photo.tall[data-box-slot] { height: auto !important; }
     const name = [first, middle, last].filter(Boolean).join(' ');
     if (!first || !last || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { st.textContent = ja() ? '名・姓とメールアドレスを入れてください。' : 'Please enter your first name, last name and email.'; return; }
     if (!f.elements['gender'].value) { st.textContent = ja() ? '性別を選んでください。' : 'Please choose your gender.'; f.elements['gender'].focus(); return; }
+    if (f.elements['gender'].value === 'Other' && !f.elements['genderOther'].value.trim()) { st.textContent = ja() ? '性別をご記入ください。' : 'Please write your gender.'; f.elements['genderOther'].focus(); return; }
+    if (!f.elements['area'].value) { st.textContent = ja() ? 'お住まいを選んでください。' : 'Please choose where you live.'; f.elements['area'].focus(); return; }
+    if (f.elements['area'].value === 'Elsewhere' && !f.elements['areaOther'].value.trim()) { st.textContent = ja() ? 'お住まいの場所をご記入ください。' : 'Please write where you live.'; f.elements['areaOther'].focus(); return; }
+    const miss = [['age', 'どなたのレッスンか', 'who the lesson is for'], ['level', 'バレエ経験', 'your ballet experience'], ['who', '「あなたは」', 'what describes you']].find(([k]) => !pick[k]);
+    if (miss) { st.textContent = ja() ? miss[1] + 'を選んでください。' : 'Please choose ' + miss[2] + '.'; f.querySelector('[data-group=' + miss[0] + '] button').focus(); return; }
     const b = f.querySelector('.rates-ask-button'); b.disabled = true; st.textContent = ja() ? '送っています…' : 'Sending…';
     try {
       await fetch(APP, { method: 'POST', body: JSON.stringify({ type: 'rates', name, first, middle, last, email, age: pick.age || '', level: pick.level || '', who: pick.who || '', gender: f.elements['gender'].value, genderOther: f.elements['gender'].value === 'Other' ? f.elements['genderOther'].value.trim() : '', area: f.elements['area'].value, areaOther: f.elements['area'].value === 'Elsewhere' ? f.elements['areaOther'].value.trim() : '', hp: f.elements['hp'].value, ms: Date.now() - t0, language: ja() ? 'ja' : 'en' }) });
