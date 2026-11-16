@@ -241,7 +241,7 @@ function doGet(e) {
   if (p.pack) return json_({ packs: packsFor_(p.pack) });
   if (p.known) return json_({ known: knownCustomer_(p.known) });
   if (p.cleanup) { cleanupTests_(); return json_({ ok: true }); }
-  if (p.reminders) { const c = CacheService.getScriptCache(); if (!c.get('remind')) { c.put('remind', '1', 6 * 3600); paymentReminders(); try { semiReviewAsks_(); } catch (x) {} } return json_({ ok: true }); }
+  if (p.reminders) { const c = CacheService.getScriptCache(); if (!c.get('remind')) { c.put('remind', '1', 6 * 3600); paymentReminders(); try { semiReviewAsks_(); } catch (x) {} try { newsDaily_(); } catch (x) {} } return json_({ ok: true }); }
   if (p.semi) return json_({ dates: semiDates_() });
   if (p.semiprice) return json_(semiPriceFor_(p.semiprice));
   if (p.act) return actionPage_(p);
@@ -317,6 +317,8 @@ function busyEvents_(start, end) {
 // ---------- Mari's buttons: confirm one time, or decline ----------
 function actionPage_(p) {
   if (p.act === 'review') return semiReviewPage_(p);
+  if (p.act === 'announce') return newsPage_(p);
+  if (p.act === 'unsub') return newsStop_(p);
   const sh = book_().getSheetByName(REQ);
   const ids = sh.getLastRow() > 1 ? sh.getRange(2, C['id'], sh.getLastRow() - 1, 1).getValues().map(r => String(r[0])) : [];
   const i = ids.indexOf(String(p.id));
@@ -1107,6 +1109,84 @@ function semiReviewPage_(p) {
   return page_(ja ? 'ありがとうございます' : 'Thank you!', ja ? '感想をいただき、ありがとうございます。次回のセミプライベートクラスは $' + SEMI_OFF + ' 引きになります。同じメールアドレスでお申し込みください。' : 'Thank you for your review! Your next semi-private class is $' + SEMI_OFF + ' off. Just sign up with the same email.');
 }
 
+// ---------- class announcements: Mari presses a button, everyone who ever signed up gets the next class date ----------
+const NEWS_TAB = 'お知らせ', NEWS_STOP_TAB = 'お知らせ停止', SEMI_PAGE = SITE + 'semi-private.html';
+function newsKey_() { const pr = PropertiesService.getScriptProperties(); let k = pr.getProperty('NEWS_KEY'); if (!k) { k = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, ''); pr.setProperty('NEWS_KEY', k); } return k; }
+function newsSig_(s) { return Utilities.computeHmacSha256Signature(String(s), newsKey_()).map(b => ('0' + (b & 255).toString(16)).slice(-2)).join('').slice(0, 20); }
+function newsTab_(name, head) { const ss = book_(); let sh = ss.getSheetByName(name); if (!sh) { sh = ss.insertSheet(name); sh.getRange(1, 1, 1, head.length).setValues([head]).setFontWeight('bold').setBackground('#ecdfc6'); sh.setFrozenRows(1); } return sh; }
+function newsRows_(name, cols) { const sh = book_().getSheetByName(name); if (!sh || sh.getLastRow() < 2) return []; const w = Math.max.apply(null, cols); return sh.getRange(2, 1, sh.getLastRow() - 1, w).getDisplayValues().map(r => cols.map(c => r[c - 1])); }
+// everyone who booked, asked for the rates, signed up for a class or bought a pack (no tests, no Mari, no one who stopped the emails)
+function newsPeople_() {
+  const me = String(Session.getEffectiveUser().getEmail() || '').toLowerCase(), mine = e => e === me || /^maritakayama\.official(\+[^@]*)?@gmail\.com$/.test(e) || e === REPLY_TO.toLowerCase();
+  const stop = new Set(newsRows_(NEWS_STOP_TAB, [2]).map(r => String(r[0]).trim().toLowerCase()));
+  const seen = {}, out = [];
+  const add = (name, email, lang) => {
+    email = String(email || '').trim().toLowerCase(); name = String(name || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || /\+test/.test(email) || isTest_(name) || mine(email) || stop.has(email) || seen[email]) return;
+    seen[email] = 1; out.push({ name: name, email: email, ja: /ja|日本/.test(String(lang)) || /[぀-ヿ一-鿿]/.test(name) });
+  };
+  newsRows_(REQ, [C['名前'], C['メール'], C['言語']]).forEach(r => add(r[0], r[1], r[2]));
+  newsRows_(SEMI_TAB, [3, 4]).forEach(r => add(r[0], r[1], ''));
+  newsRows_(PK, [2, 3]).forEach(r => add(r[0], r[1], ''));
+  newsRows_(RATES_TAB, [2, 3, 4]).forEach(r => add(r[0], r[1], r[2]));
+  return out;
+}
+function newsSent_(date) { return new Set(newsRows_(NEWS_TAB, [2, 4]).concat(newsRows_(SEMI_TAB, [2, 4])).filter(r => String(r[0]).slice(0, 10) === date).map(r => String(r[1]).trim().toLowerCase())); }  // already told, or already signed up for that day
+function newsUrl_(date) { return ScriptApp.getService().getUrl() + '?act=announce&d=' + date + '&s=' + newsSig_('announce:' + date); }
+function newsWhen_(date, ja) { const day = dateOf_(date); return ja ? (day.getMonth() + 1) + '/' + day.getDate() + '（' + WD_JA[day.getDay()] + '）11:00〜12:30' : Utilities.formatDate(day, TZ, 'EEE, MMM d') + ', 11:00 am–12:30 pm'; }
+function newsSendSome_(date) {
+  const slot = semiDates_().find(x => x.date === date); if (!slot || slot.left < 1) return { sent: 0, left: 0, full: true };
+  const sent = newsSent_(date), todo = newsPeople_().filter(x => !sent.has(x.email)), sh = newsTab_(NEWS_TAB, ['送信日時', 'クラスの日', '名前', 'メール']);
+  let n = 0; const room = Math.max(0, MailApp.getRemainingDailyQuota() - 10);
+  for (const x of todo.slice(0, room)) {
+    const stopUrl = ScriptApp.getService().getUrl() + '?act=unsub&e=' + encodeURIComponent(x.email) + '&s=' + newsSig_('stop:' + x.email);
+    const body = x.ja
+      ? '# 次回のクラスのご案内\n\n' + (x.name ? x.name + ' 様\n\n' : '') + 'こんにちは、髙山まりです。\n最大4人の少人数バレエクラスを、\n月に1回開いています。\n次回のご案内です。\n\n日時：' + newsWhen_(date, true) + '\n場所：FuncPhysio（2 W 45th Street, Suite 1600）\n残り：' + slot.left + '席\n\n' + SEMI_PAGE + '\n\nお待ちしています。\n髙山まり\n\nお知らせが不要な方はこちら\n' + stopUrl
+      : '# Semi-private ballet class\n\nHi' + (x.name ? ' ' + x.name : '') + ',\n\nThis is Mari Takayama. Once a month I teach a small ballet class for up to 4 people.\nHere is the next one:\n\nWhen: ' + newsWhen_(date, false) + '\nWhere: FuncPhysio, 2 W 45th Street, Suite 1600\nSpots left: ' + slot.left + '\n\n' + SEMI_PAGE + '\n\nHope to see you there!\nMari Takayama\n\nDon’t want these emails? You can stop them here.\n' + stopUrl;
+    try { MailApp.sendEmail({ to: x.email, subject: x.ja ? '次回のセミプライベートクラス（' + newsWhen_(date, true).replace(/〜.*/, '〜') + '）' : 'Next semi-private class — ' + newsWhen_(date, false).replace(/,[^,]*$/, ''), body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO }); } catch (e) { break; }
+    sh.appendRow([new Date(), date, x.name, x.email]); n++;
+  }
+  const left = todo.length - n, pr = PropertiesService.getScriptProperties();
+  if (left > 0) pr.setProperty('NEWS_PENDING', date); else pr.deleteProperty('NEWS_PENDING');
+  if (n) log_('お知らせ送信', { name: n + '人', email: '' }, null, '', { memo: date + (left ? '・残り' + left + '人は明日' : '') });
+  return { sent: n, left: left };
+}
+// the "send" button page Mari opens from her email
+function newsPage_(p) {
+  const date = String(p.d || ''); if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || p.s !== newsSig_('announce:' + date)) return page_('開けません', 'このリンクは使えません。');
+  const slot = semiDates_().find(x => x.date === date); if (!slot) return page_('終わったクラスです', 'このクラスの日は過ぎています。');
+  if (slot.left < 1) return page_('満席です', newsWhen_(date, true) + ' のクラスは満席なので、お知らせは送りません。');
+  if (p.go === '1') {
+    const lock = LockService.getScriptLock(); try { lock.waitLock(25000); } catch (x) { return page_('もう一度押してください', '少し待ってから、もう一度押してください。'); }
+    const r = newsSendSome_(date); lock.releaseLock();
+    return page_('送りました', r.sent + '人にお知らせを送りました。' + (r.left ? '<br>残りの' + r.left + '人には、明日自動で送ります（Gmail の1日の送信数に上限があるため）。' : ''));
+  }
+  const sent = newsSent_(date), todo = newsPeople_().filter(x => !sent.has(x.email));
+  if (!todo.length) return page_('送る人はいません', newsWhen_(date, true) + ' のお知らせは、もう全員に送ってあります。');
+  const action = ScriptApp.getService().getUrl();
+  return page_('お知らせを送る', infoBox_([['クラス', newsWhen_(date, true)], ['残り', slot.left + '席'], ['送る人', todo.length + '人']])
+    + '<p style="font-size:15px;color:#555">今までにレッスンの予約、<br>料金表の問い合わせ、<br>クラスの申し込みをした方に送ります。<br>料金は書きません。</p>'
+    + '<form method="get" action="' + action + '" target="_top"><input type="hidden" name="act" value="announce"><input type="hidden" name="d" value="' + date + '"><input type="hidden" name="s" value="' + esc_(p.s) + '"><input type="hidden" name="go" value="1"><button style="width:100%;padding:16px;font-size:17px;background:#2c2a30;color:#fff;border:0;cursor:pointer">' + todo.length + '人に送る</button></form>');
+}
+function newsStop_(p) {
+  const email = String(p.e || '').trim().toLowerCase();
+  if (!email || p.s !== newsSig_('stop:' + email)) return page_('開けません', 'このリンクは使えません。');
+  const sh = newsTab_(NEWS_STOP_TAB, ['日時', 'メール']);
+  if (!newsRows_(NEWS_STOP_TAB, [2]).some(r => String(r[0]).toLowerCase() === email)) sh.appendRow([new Date(), email]);
+  return page_('Done / 停止しました', 'You won’t get class announcements anymore.<br>クラスのお知らせは、もう届きません。');
+}
+// daily: finish a send that hit the Gmail limit, and email Mari the button whenever a new class date opens
+function newsDaily_() {
+  const pr = PropertiesService.getScriptProperties(), pend = pr.getProperty('NEWS_PENDING');
+  if (pend) newsSendSome_(pend);
+  const next = semiDates_().find(x => x.left > 0); if (!next || pr.getProperty('NEWS_OFFERED') === next.date) return;
+  const me = Session.getEffectiveUser().getEmail(); if (!me) return;
+  const sent = newsSent_(next.date), n = newsPeople_().filter(x => !sent.has(x.email)).length;
+  pr.setProperty('NEWS_OFFERED', next.date); if (!n) return;
+  const body = '# 次のクラスのお知らせ\n\n次のセミプライベートクラスのお知らせを、今までの方に送れます。\n\nクラス：' + newsWhen_(next.date, true) + '\n残り：' + next.left + '席\n送る人：' + n + '人\n\n下のボタンを押すと、送る前の確認画面が開きます。\n' + newsUrl_(next.date);
+  MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【お知らせを送る】' + newsWhen_(next.date, true) + ' のセミプライベートクラス', body: plain_(body), htmlBody: pretty_(body) });
+}
+
 // ---------- costume rental requests (costumes.html) ----------
 const COSTUME_TAB = '衣装の貸し出し';
 const COSTUME_JA = { 'Practice tutu': '練習用チュチュ', 'Romantic tutu': 'ロマンティックチュチュ', Either: 'どちらでも' };
@@ -1356,6 +1436,12 @@ function pretty_(text, isHtml) {
     ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:15px 12px;text-align:center;text-decoration:none;font-size:17px;letter-spacing:.04em;background:#2c2a30;color:#ffffff;border:1px solid #2c2a30">' + (jaMail ? 'キャンセルを確認しました' : 'Got it — I’ve seen this') + '</a>'
     : /[?&]act=(pack3?|single)&/.test(u)
     ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:15px 12px;text-align:center;text-decoration:none;font-size:17px;font-weight:600;letter-spacing:.04em;background:#ffffff;color:#2c2a30;border:1px solid #2c2a30">' + (/act=pack3/.test(u) ? (jaMail ? '3回券にして支払う' : 'Get the 3-lesson pack and pay') : /act=pack/.test(u) ? (jaMail ? '5回券にして支払う' : 'Get the 5-lesson pack and pay') : (jaMail ? '1回分にして支払う' : 'Pay for this lesson only')) + '</a>'
+    : u === SEMI_PAGE
+    ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:15px 12px;text-align:center;text-decoration:none;font-size:17px;font-weight:600;letter-spacing:.04em;background:#2c2a30;color:#ffffff;border:1px solid #2c2a30">' + (jaMail ? 'くわしく見る・申し込む' : 'See the class and sign up') + '</a>'
+    : /[?&]act=announce&/.test(u)
+    ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:15px 12px;text-align:center;text-decoration:none;font-size:17px;font-weight:600;letter-spacing:.04em;background:#2c2a30;color:#ffffff;border:1px solid #2c2a30">お知らせを送る（確認画面へ）</a>'
+    : /[?&]act=unsub&/.test(u)
+    ? '<a href="' + u + '" style="color:#8a8590;font-size:13px">' + (jaMail ? 'お知らせを止める' : 'Unsubscribe') + '</a>'
     : /[?&]act=funcans&/.test(u)
     ? '<a href="' + u + '" style="display:inline-block;margin:4px 8px 4px 0;padding:12px 18px;text-decoration:none;font-size:16px;letter-spacing:.04em;' + (/a=yes/.test(u) ? 'background:#2c2a30;color:#ffffff;border:1px solid #2c2a30' : 'background:#ffffff;color:#2c2a30;border:1px solid #2c2a30') + '">' + (/a=yes/.test(u) ? '空いています' : '空いていません') + '</a>'
     : /[?&]act=change&/.test(u)
