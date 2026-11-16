@@ -506,6 +506,31 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
 </footer>
 
 <script>
+// a private link (rates.html?p=...) shows that person's special prices
+(() => {
+  const t = new URLSearchParams(location.search).get('p'); if (!t || !/^[a-f0-9]{10}$/.test(t)) return;
+  const APP = 'https://script.google.com/macros/s/AKfycbyoBjOrilADknvlRF8Mf6vzOootjaOEG_56OdEDFinrhrzaH4o8Z2fzm8niTlL0c6-9oQ/exec';
+  document.querySelectorAll('a[href="lessons.html"]').forEach(a => { a.href = 'lessons.html?p=' + t; });
+  fetch(APP + '?special=' + t).then(r => r.json()).then(sp => {
+    if (!sp || !(sp.per60 > 0)) return;
+    const per = m => Math.round(sp.per60 * m / 60), lead = document.querySelector('.credits-lead');
+    const tables = [...document.querySelectorAll('.rates-table')];
+    const draw = () => {
+      const ja = document.documentElement.lang === 'ja';
+      if (lead) lead.textContent = ja ? sp.name + ' さんへの特別料金です。' : 'Special rates for ' + sp.name + '.';
+      const note = [...document.querySelectorAll('.rates-note')][0]; if (note) note.textContent = ja ? '30分 $' + per(30) : '$' + per(30) + ' per 30 minutes';
+      tables.forEach(tb => tb.querySelectorAll('tbody tr').forEach(tr => {
+        const m = parseInt(tr.cells[0].textContent, 10), head = tb.querySelector('thead th:last-child').textContent, cell = tr.cells[1];
+        if (!m) return;
+        if (/5/.test(head)) cell.innerHTML = '<s class="was">$' + per(m) * 5 + '</s> $' + Math.round(per(m) * 5 - per(m) / 2);
+        else if (/3/.test(head)) cell.textContent = '$' + per(m) * 3;
+        else cell.textContent = '$' + per(m);
+      }));
+    };
+    let last = ''; const redraw = () => { const l = document.documentElement.lang; if (l === last) return; last = l; draw(); };
+    redraw(); new MutationObserver(() => setTimeout(redraw, 0)).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+  }).catch(() => {});
+})();
 // メールアドレスのコピー
 document.getElementById('copy-mail').addEventListener('click', async (e) => {
   const btn = e.currentTarget;
