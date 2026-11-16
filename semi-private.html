@@ -410,14 +410,15 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
   <section class="credits-page rates-page semi-page" aria-labelledby="semi-title">
     <div class="wrap">
       <h1 id="semi-title">Semi-private class</h1>
-      <p class="credits-lead">A small ballet class for up to 4 people, once a month. More attention than a group class, in a relaxed small group.</p>
+      <p class="credits-lead">A small ballet class for up to 4 people, once a month. More attention than a group class, at a lighter price than a private lesson.</p>
 
       <ul class="credit-list">
         <li><span class="credit-work">When</span><span class="credit-role">Third Sunday of each month, 11:00–12:30 (90 minutes)</span><span class="credit-note" id="semi-next"></span></li>
         <li><span class="credit-work">Where</span><span class="credit-role">FuncPhysio Physical Therapy, 2 W 45th Street, Suite 1600</span><span class="credit-note"></span></li>
         <li><span class="credit-work">Size</span><span class="credit-role">Up to 4 people</span><span class="credit-note"></span></li>
         <li><span class="credit-work">Who</span><span class="credit-role">Beginners, dancers coming back, and dancers who want to get better</span><span class="credit-note"></span></li>
-        <li><span class="credit-work">Reviews</span><span class="credit-role">After class, write a short review and your next class is discounted.</span><span class="credit-note"></span></li>
+        <li><span class="credit-work">Price</span><span class="credit-role" id="semi-price">$60</span><span class="credit-note"></span></li>
+        <li><span class="credit-work">Reviews</span><span class="credit-role">After class, write a short review and your next class is $10 off.</span><span class="credit-note"></span></li>
       </ul>
 
       <h2>Sign up</h2>
@@ -430,7 +431,7 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
         <label class="rates-ask-field rates-ask-select"><span>Which Sunday?</span><select name="date"><option value="">Choose</option></select></label>
         <label class="rates-ask-field rates-ask-select"><span>Ballet experience</span><select name="level"><option value="">Choose</option><option value="New">New to ballet</option><option value="Some">Some classes</option><option value="Back">Coming back after a break</option><option value="Regular">Taking classes now</option></select></label>
         <label class="rates-ask-field"><span>Message <small>(optional)</small></span><input name="note" maxlength="300"></label>
-        <p class="rates-note" id="semi-pay">Paid ahead by Venmo. The price and details come by email.</p>
+        <p class="rates-note" id="semi-pay">$60, paid ahead by Venmo. The details come by email.</p>
         <input name="hp" tabindex="-1" autocomplete="off" aria-hidden="true" class="rates-ask-hp">
         <button type="submit" class="rates-ask-button">Sign up</button>
         <p class="rates-ask-status" id="semi-ask-status" role="status"></p>
@@ -477,15 +478,19 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
   const APP = 'https://script.google.com/macros/s/AKfycbyoBjOrilADknvlRF8Mf6vzOootjaOEG_56OdEDFinrhrzaH4o8Z2fzm8niTlL0c6-9oQ/exec';
   const ja = () => (window.mariSiteLanguage || document.documentElement.lang) === 'ja';
   const WD = ['日', '月', '火', '水', '木', '金', '土'], WE = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], ME = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  let dates = [];
+  let dates = [], price = 60;
   const label = x => { const [y, m, d] = x.date.split('-').map(Number), w = new Date(y, m - 1, d).getDay(); return (ja() ? m + '/' + d + '（' + WD[w] + '）11:00〜' : WE[w] + ', ' + ME[m - 1] + ' ' + d + ', 11:00') + (x.left < 1 ? (ja() ? '　満席' : ' — full') : (ja() ? '　残り' + x.left + '席' : ' — ' + x.left + (x.left > 1 ? ' spots' : ' spot') + ' left')); };
   const draw = () => {
     const sel = f.elements['date'], keep = sel.value; sel.length = 1;
     dates.forEach(x => { const o = new Option(label(x), x.date); o.disabled = x.left < 1; sel.add(o); }); sel.value = keep;
     const nx = dates.find(x => x.left > 0), n = document.getElementById('semi-next'); if (n) n.textContent = nx ? (ja() ? '次回：' : 'Next: ') + label(nx).replace(/[　 ]—?.*$/, '').replace(/　.*$/, '') : '';
+    const pr = price < 60 ? (ja() ? '$' + price + '（レビューのお礼で $10 引き）' : '$' + price + ' ($10 off, thank you for your review)') : '$60';
+    document.getElementById('semi-price').textContent = pr;
+    document.getElementById('semi-pay').textContent = ja() ? pr.replace(/（.*/, '') + '。Venmo で前払いです。くわしくはメールでお知らせします。' : pr.replace(/ \(.*/, '') + ', paid ahead by Venmo. The details come by email.';
   };
   fetch(APP + '?semi=1').then(r => r.json()).then(j => { dates = j.dates || []; draw(); }).catch(() => {});
   new MutationObserver(() => setTimeout(draw, 0)).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+  f.elements['email'].addEventListener('change', () => { const e = f.elements['email'].value.trim(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return; fetch(APP + '?semiprice=' + encodeURIComponent(e)).then(r => r.json()).then(j => { price = j.price || 60; draw(); }).catch(() => {}); });
   f.addEventListener('submit', async e => {
     e.preventDefault();
     const v = k => f.elements[k].value.trim(), say = (j, en, k) => { st.textContent = ja() ? j : en; if (k) f.elements[k].focus(); };
