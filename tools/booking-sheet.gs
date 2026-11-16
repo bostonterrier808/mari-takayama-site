@@ -223,6 +223,7 @@ function notifyMari_(d, c, len, id, key) {
   const html = '<div style="color:#2c2a30;font-size:15px;line-height:1.6">'
     + '<p><b>レッスンのリクエストが届きました。</b>確定する時間のボタンを押すと、お客さんに確定メールが届き、Google カレンダーにも入ります。' + (d.tz !== TZ ? '<br>ボタンの時間はニューヨーク時間です（お客さんの時間は下にあります）。' : '') + '</p>'
     + rows
+    + (d.place === 'FuncPhysio' ? '<p style="margin:16px 0 6px">' + btn(url + '?act=funcask&id=' + id + '&k=' + key, 'FuncPhysio にスタジオの空きを聞く', false) + '</p>' : '')
     + '<p style="margin:16px 0 6px">' + btn(url + '?act=propose&id=' + id + '&k=' + key, '時間を変えて提案する（例：30分ずらす）', false) + '</p>'
     + '<p style="margin:6px 0 16px">' + btn(url + '?act=decline&id=' + id + '&k=' + key, 'どの時間も無理なので、お断りする（ほかの日を選び直してもらう）', false) + '</p>'
     + '<table style="margin-top:14px;font-size:14px">' + info + '</table>'
@@ -324,10 +325,12 @@ function actionPage_(p) {
   if (p.act === 'take' || p.act === 'decl') return offerAnswer_(p, sh, r, data);
   if (p.act === 'ack') return ackPage_(p, sh, r, data);
   if (p.act === 'pack' || p.act === 'pack3' || p.act === 'single') return payChoice_(p, sh, r, data);
+  if (p.act === 'funcans') return funcAnswer_(p, sh, r, data);
   if (String(sh.getRange(r, C['key']).getValue()) !== String(p.k)) return page_('開けません', 'このボタンは使えません。');
   if (p.act === 'move' || p.act === 'keep') return moveAnswer_(p, sh, r, data);
   if (p.act === 'mmove' || p.act === 'mcancel') return mariChange_(p, sh, r, data);
   if (p.act === 'refunded') return refundedPage_(p, sh, r, data);
+  if (p.act === 'funcask') return funcAsk_(p, sh, r, data);
   if (status === '予約確定' || status === 'お断り') return page_('対応済みです', 'このリクエストはもう「' + status + '」になっています。' + (status === '予約確定' ? '<br>確定した日時：' + esc_(sh.getRange(r, C['確定した日時']).getDisplayValue()) : ''));
   const self = ScriptApp.getService().getUrl() + '?act=' + encodeURIComponent(p.act) + '&id=' + encodeURIComponent(p.id) + '&k=' + encodeURIComponent(p.k) + (p.c != null ? '&c=' + encodeURIComponent(p.c) : '');
   if (p.act === 'confirm') {
@@ -966,6 +969,39 @@ function payChoice_(p, sh, r, data) {
   return page_(want === '1' ? (ja ? '1回ずつにしました' : 'Switched to one lesson') : (ja ? want + '回券にしました' : 'Switched to a ' + want + '-lesson pack'), payBox(want));
 }
 
+// ---------- ask FuncPhysio whether the studio is free (Mari presses a button; Func answers with buttons) ----------
+const FUNC_EMAIL = 'admin@funcphysio.com';
+function funcAsk_(p, sh, r, data) {
+  const list = data.choices || []; if (!list.length) return page_('見つかりません', '希望日時が見つかりませんでした。');
+  const self = ScriptApp.getService().getUrl() + '?act=funcask&id=' + encodeURIComponent(p.id) + '&k=' + encodeURIComponent(p.k) + '&go=1';
+  if (!p.go) return page_('FuncPhysio に空きを聞きますか？', '<b>' + esc_(data.name) + '</b> さんの希望日時を、' + FUNC_EMAIL + ' にメールで聞きます。<br><br>' + list.map((x, i) => (data.multi ? (i + 1) + '回目：' : '第' + (i + 1) + '希望：') + choiceJa_(x, data.len)).join('<br>') + '<p>Func の方は、日時ごとに「空いています／空いていません」を押すだけで返事ができます。返事は Mari さんにメールで届きます。</p>', self, 'FuncPhysio に聞く');
+  data.fkey = data.fkey || Utilities.getUuid().replace(/-/g, '').slice(0, 16); data.func = data.func || {};
+  sh.getRange(r, C['data']).setValue(JSON.stringify(data));
+  const base = ScriptApp.getService().getUrl() + '?act=funcans&id=' + encodeURIComponent(data.id || p.id) + '&f=' + data.fkey;
+  const lines = ['# スタジオの空き状況のご確認', '', 'FuncPhysio ご担当者様', '', 'いつもお世話になっております。髙⁠山⁠ま⁠りです。', '下記の日時に、スタジオでバレエのレッスンをさせていただきたいと考えております。', '空いているかどうか、それぞれのボタンでお知らせいただけますと幸いです。', ''];
+  list.forEach((x, i) => { lines.push('## ' + (data.multi ? (i + 1) + '回目' : '第' + (i + 1) + '希望') + '：' + choiceJa_(x, data.len), base + '&c=' + i + '&a=yes', base + '&c=' + i + '&a=no', ''); });
+  lines.push('お忙しいところ恐れ入りますが、どうぞよろしくお願いいたします。', '', '髙山まり');
+  const body = lines.join('\n');
+  MailApp.sendEmail({ to: FUNC_EMAIL, subject: '【スタジオの空き確認】髙山まり ' + choiceJa_(list[0], data.len) + (list.length > 1 ? ' ほか' : ''), body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+  log_('Func に空き確認', data, list[0], data.len, { memo: list.length + 'つの日時' });
+  return page_('聞きました', 'FuncPhysio（' + FUNC_EMAIL + '）に、' + list.length + 'つの日時の空きを聞きました。返事が来たら、メールでお知らせします。');
+}
+function funcAnswer_(p, sh, r, data) {
+  if (!data.fkey || String(p.f) !== data.fkey) return page_('開けません', 'このボタンは使えません。');
+  const ch = (data.choices || [])[+p.c]; if (!ch) return page_('見つかりません', '日時が見つかりませんでした。');
+  const yes = p.a === 'yes', when = choiceJa_(ch, data.len);
+  if (!p.go) return page_(yes ? 'この日時は空いていますか？' : 'この日時は空いていませんか？', when, ScriptApp.getService().getUrl() + '?act=funcans&id=' + encodeURIComponent(p.id) + '&f=' + encodeURIComponent(p.f) + '&c=' + p.c + '&a=' + p.a + '&go=1', yes ? '空いています' : '空いていません');
+  data.func = data.func || {}; data.func[p.c] = yes ? 'yes' : 'no'; sh.getRange(r, C['data']).setValue(JSON.stringify(data));
+  log_(yes ? 'Func：空いている' : 'Func：空いていない', data, ch, data.len);
+  const me = Session.getEffectiveUser().getEmail(), key = String(sh.getRange(r, C['key']).getValue());
+  const confirm = ScriptApp.getService().getUrl() + '?act=confirm&id=' + encodeURIComponent(p.id) + '&k=' + encodeURIComponent(key) + '&c=' + p.c;
+  const done = /予約確定|お断り/.test(String(sh.getRange(r, C['状況']).getValue()));
+  if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【Func】' + when + (yes ? ' 空いています' : ' 空いていません') + '（' + data.name + ' さん）',
+    body: 'FuncPhysio から返事がありました。' + when + '：' + (yes ? '空いています' : '空いていません'),
+    htmlBody: pretty_('<p>FuncPhysio から返事がありました。</p>' + infoBox_([['日時', when], ['スタジオ', yes ? '<b>空いています</b>' : '空いていません'], ['お客さん', esc_(data.name)]]) + (yes && !done && !data.multi ? '<p style="margin:16px 0">' + custBtn_(confirm, 'この日時でレッスンを確定する', true) + '</p>' : ''), true) });
+  return page_('ありがとうございます', (yes ? '「空いています」' : '「空いていません」') + 'と Mari にお伝えしました。<br>' + when);
+}
+
 // ---------- costume rental requests (costumes.html) ----------
 const COSTUME_TAB = '衣装の貸し出し';
 const COSTUME_JA = { 'Practice tutu': '練習用チュチュ', 'Romantic tutu': 'ロマンティックチュチュ', Either: 'どちらでも' };
@@ -1215,6 +1251,8 @@ function pretty_(text, isHtml) {
     ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:15px 12px;text-align:center;text-decoration:none;font-size:17px;letter-spacing:.04em;background:#2c2a30;color:#ffffff;border:1px solid #2c2a30">' + (jaMail ? 'キャンセルを確認しました' : 'Got it — I’ve seen this') + '</a>'
     : /[?&]act=(pack3?|single)&/.test(u)
     ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:15px 12px;text-align:center;text-decoration:none;font-size:17px;font-weight:600;letter-spacing:.04em;background:#ffffff;color:#2c2a30;border:1px solid #2c2a30">' + (/act=pack3/.test(u) ? (jaMail ? '3回券にして支払う' : 'Get the 3-lesson pack and pay') : /act=pack/.test(u) ? (jaMail ? '5回券にして支払う' : 'Get the 5-lesson pack and pay') : (jaMail ? '1回分にして支払う' : 'Pay for this lesson only')) + '</a>'
+    : /[?&]act=funcans&/.test(u)
+    ? '<a href="' + u + '" style="display:inline-block;margin:4px 8px 4px 0;padding:12px 18px;text-decoration:none;font-size:16px;letter-spacing:.04em;' + (/a=yes/.test(u) ? 'background:#2c2a30;color:#ffffff;border:1px solid #2c2a30' : 'background:#ffffff;color:#2c2a30;border:1px solid #2c2a30') + '">' + (/a=yes/.test(u) ? '空いています' : '空いていません') + '</a>'
     : /[?&]act=change&/.test(u)
     ? '<a href="' + u + '" style="display:block;margin:6px 0;padding:14px 12px;text-align:center;text-decoration:none;font-size:16px;letter-spacing:.04em;background:#ffffff;color:#2c2a30;border:1px solid #2c2a30">' + (jaMail ? '別の日を選ぶ' : 'Choose another time') + '</a>'
     : /[?&]act=mine/.test(u)
