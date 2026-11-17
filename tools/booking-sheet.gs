@@ -605,7 +605,7 @@ function sendCustomer_(data, kind, ch, note) {
       : (data.place === 'FuncPhysio' ? funcArrive_(ja) + '\n\n' : '') + (ja ? '動きやすい服装でお越しください。バレエシューズがあればお持ちください（靴下でも大丈夫です）。' : 'Please wear comfortable clothes you can move in, and bring ballet slippers if you have them (socks are fine too).');
     subject = data.free ? (ja ? '無料の Zoom 相談が確定しました（' + when + '）' : 'Your free Zoom call is confirmed — ' + when) : ja ? 'レッスンのご予約が確定しました（' + when + '）' : 'Your ballet lesson is confirmed — ' + when;
     body = ja
-      ? '# ' + (data.free ? '無料相談' : 'ご予約') + '確定のお知らせ\n\n' + data.name + ' 様\n\nご予約ありがとうございます。' + (data.free ? '無料相談' : 'レッスン') + 'の日時が確定しました。\n\n日時：' + full + '\n場所：' + place + (data.area && !zoom ? '（' + data.area + '）' : '') + '\n' + (data.free ? '相談' : 'レッスン') + '：' + data.len + '分\n\n' + payNote_(data, ch, true) + '\n\n' + (data.free ? (ZOOM_LINK ? '' : 'Zoom のリンクは、当日までにお送りします。\n') + '今どこで踊っているか、目指していることなどを、気軽にお話しください。' : prep) + manageLine_(data, true) + '\n\nお会いできるのを楽しみにしています。\n髙山まり'
+      ? '# ' + (data.free ? '無料相談' : 'ご予約') + '確定のお知らせ\n\n' + data.name + ' 様\n\nご予約ありがとうございます。' + (data.free ? '無料相談' : 'レッスン') + 'の日時が確定しました。\n\n日時：' + full + '\n場所：' + place + (data.area && !zoom ? '（' + data.area + '）' : '') + '\n' + (data.free ? '相談' : 'レッスン') + '：' + data.len + '分\n\n' + payNote_(data, ch, true) + '\n\n' + (data.free ? (ZOOM_LINK ? '' : 'Zoom のリンクは、当日までにお送りします。\n') + '今どこで踊っているか、目指していることなどを、気軽にお話しください。' : prep) + manageLine_(data, true) + '\n\nお会いできるのを\n楽しみにしています。\n髙山まり'
       : '# ' + (data.free ? 'Your free call is confirmed' : 'Your lesson is confirmed') + '\n\nHi ' + data.name + ',\n\nThank you for booking — your ' + (data.free ? 'free call' : 'lesson') + ' is confirmed.\n\nWhen: ' + full + '\nWhere: ' + place + (data.area && !zoom ? ' (' + data.area + ')' : '') + '\n' + (data.free ? 'Call' : 'Lesson') + ': ' + data.len + ' minutes\n\n' + payNote_(data, ch, false) + '\n\n' + (data.free ? (ZOOM_LINK ? '' : 'Mari will send you the Zoom link before the call.\n') + 'Come ready to talk about where you dance now and what you are working toward.' : prep) + manageLine_(data, false) + '\n\nSee you soon!\nMari Takayama';
   } else if (kind === 'propose') {
     const when = whenIn_(ch, ch.len, data.tz || TZ, ja), full = custWhen_(data, ch, ch.len, ja);
@@ -1025,8 +1025,8 @@ function funcAnswer_(p, sh, r, data) {
 // how to get into FuncPhysio (added to confirmation emails for lessons there)
 function funcArrive_(ja) {
   return ja
-    ? '## FuncPhysio への入り方\n・5分前には着くように、お⁠願⁠い⁠し⁠ま⁠す\n・ビルに入るときは ID が必要です\n・エレベーターで16階、降⁠り⁠て⁠左⁠で⁠す\n・扉が閉まっていたら、廊下でお⁠待⁠ち⁠く⁠だ⁠さ⁠い\n・Mari は15分前に入ります'
-    : '## Getting into FuncPhysio\n• Please arrive 5 minutes early\n• Bring an ID to enter the building\n• Take the elevator to the 16th floor and turn left\n• If the door is locked, please wait in the hallway; Mari arrives 15 minutes early';
+    ? '## スタジオへの入り方\n・5分前には着くように、お⁠願⁠い⁠し⁠ま⁠す\n・ビルに入るときは ID が必要です\n・エレベーターで16階、降⁠り⁠て⁠左⁠で⁠す\n・扉が閉まっていたら、廊下でお⁠待⁠ち⁠く⁠だ⁠さ⁠い\n・Mari は15分前に入ります'
+    : '## Getting into the studio\n• Please arrive 5 minutes early\n• Bring an ID to enter the building\n• Take the elevator to the 16th floor and turn left\n• If the door is locked, please wait in the hallway; Mari arrives 15 minutes early';
 }
 // ---------- semi-private class: 3rd Sunday of each month, 11:00-12:30 at FuncPhysio, up to 4 people ----------
 const SEMI_TAB = 'セミプライベート', SEMI_REVIEW_TAB = 'レビュー';
@@ -1073,7 +1073,7 @@ function semiWhen_(date, ja) { const day = dateOf_(date); return ja ? (day.getMo
 function semiConfirmMail_(x) {
   const ja = /[぀-ヿ一-鿿]/.test(x.name) || x.ja;
   const body = ja
-    ? '# お席が確定しました\n\n' + x.name + ' 様\n\nお支払いを確認しました。ありがとうございます。\nセミプライベートグループレッスンのお席が確定しました。\n\n日時：' + semiWhen_(x.date, true) + '（ニューヨーク時間）\n場所：FuncPhysio Physical Therapy（2 W 45th Street, Suite 1600）\n\n' + funcArrive_(true) + '\n\nバレエシューズで、動きやすい服装でお越しください。\nお会いできるのを楽しみにしています。\n髙山まり'
+    ? '# お席が確定しました\n\n' + x.name + ' 様\n\nお支払いを確認しました。\nありがとうございます。\nお席が確定しました。\n\n日時：' + semiWhen_(x.date, true) + '（ニューヨーク時間）\n場所：FuncPhysio Physical Therapy（2 W 45th Street, Suite 1600）\n\n' + funcArrive_(true) + '\n\nバレエシューズで、\n動きやすい服装でお越しください。\nお会いできるのを\n楽しみにしています。\n髙山まり'
     : '# Your spot is confirmed\n\nHi ' + x.name + ',\n\nThank you, your payment came through. Your spot in the semi-private group lesson is confirmed.\n\nWhen: ' + semiWhen_(x.date, false) + ' (New York time)\nWhere: FuncPhysio Physical Therapy, 2 W 45th Street, Suite 1600\n\n' + funcArrive_(false) + '\n\nPlease bring ballet flats and wear something easy to move in.\nSee you soon!\nMari Takayama';
   MailApp.sendEmail({ to: x.email, subject: ja ? 'お席が確定しました（' + semiWhen_(x.date, true) + '）' : 'Your spot is confirmed — ' + semiWhen_(x.date, false), body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
 }
@@ -1211,8 +1211,8 @@ function newsSendSome_(date) {
   for (const x of todo.slice(0, room)) {
     const stopUrl = ScriptApp.getService().getUrl() + '?act=unsub&e=' + encodeURIComponent(x.email) + '&s=' + newsSig_('stop:' + x.email);
     const body = x.ja
-      ? '# 次回のクラスのご案内\n\n' + (x.name ? x.name + ' 様\n\n' : '') + 'こんにちは、髙山まりです。\n最大4人の少人数バレエクラスを、\n月に1回開いています。\n次回のご案内です。\n\n日時：' + newsWhen_(date, true) + '\n場所：FuncPhysio（2 W 45th Street, Suite 1600）\n残り：' + slot.left + '席\n\n' + SEMI_PAGE + '\n\nお待ちしています。\n髙山まり\n\nお知らせが不要な方はこちら\n' + stopUrl
-      : '# Semi-private group lesson\n\nHi' + (x.name ? ' ' + x.name : '') + ',\n\nThis is Mari Takayama. Once a month I teach a small ballet class for up to 4 people.\nHere is the next one:\n\nWhen: ' + newsWhen_(date, false) + '\nWhere: FuncPhysio, 2 W 45th Street, Suite 1600\nSpots left: ' + slot.left + '\n\n' + SEMI_PAGE + '\n\nHope to see you there!\nMari Takayama\n\nDon’t want these emails? You can stop them here.\n' + stopUrl;
+      ? '# 次回のクラスのご案内\n\n' + (x.name ? x.name + ' 様\n\n' : '') + 'こんにちは、髙山まりです。\n最大4人の少人数バレエクラスを、\n月に1回開いています。\n次回のご案内です。\n\n日時：' + newsWhen_(date, true) + '\n場所：FuncPhysio Physical Therapy（2 W 45th Street, Suite 1600）\n残り：' + slot.left + '席\n\n' + SEMI_PAGE + '\n\nお待ちしています。\n髙山まり\n\nお知らせが不要な方はこちら\n' + stopUrl
+      : '# Semi-private group lesson\n\nHi' + (x.name ? ' ' + x.name : '') + ',\n\nThis is Mari Takayama. Once a month I teach a small ballet class for up to 4 people.\nHere is the next one:\n\nWhen: ' + newsWhen_(date, false) + '\nWhere: FuncPhysio Physical Therapy, 2 W 45th Street, Suite 1600\nSpots left: ' + slot.left + '\n\n' + SEMI_PAGE + '\n\nHope to see you there!\nMari Takayama\n\nDon’t want these emails? You can stop them here.\n' + stopUrl;
     try { MailApp.sendEmail({ to: x.email, subject: x.ja ? '次回のセミプライベートグループレッスン（' + newsWhen_(date, true).replace(/〜.*/, '〜') + '）' : 'Next semi-private group lesson — ' + newsWhen_(date, false).replace(/,[^,]*$/, ''), body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO }); } catch (e) { break; }
     sh.appendRow([new Date(), date, x.name, x.email]); n++;
   }
@@ -1454,7 +1454,7 @@ function sendRates_(d) {
   const ja = d.language === 'ja', name = clip(d.name, 100), email = String(d.email).trim();
   const gender = (JA.gender[d.gender] || '') + (d.gender === 'Other' && String(d.genderOther || '').trim() ? '（' + clip(d.genderOther, 60) + '）' : '');
   let body = ja
-    ? '# レッスン料金のご案内\n\n' + name + ' 様\n\nお問い合わせいただき、ありがとうございます。髙山まりです。\nレッスンの料金は、こちらのページにまとめています。\n' + RATES_PAGE + '\n\n個人レッスン：60分 $' + RATE_PER_30 * 2 + '（30分 $' + RATE_PER_30 + '）\n3回券（60分）：$' + RATE_PER_30 * 6 + '（2か月以内）\n5回券（60分）：通常 $' + RATE_PER_30 * 2 * PACK_SIZE + ' → $' + packAmount_(RATE_PER_30 * 2) + '\n\nご予約は、こちらからどうぞ。\n' + BOOKING_PAGE + '\n\nお会いできるのを楽しみにしています。\n髙山まり'
+    ? '# レッスン料金のご案内\n\n' + name + ' 様\n\nお問い合わせいただき、ありがとうございます。髙山まりです。\nレッスンの料金は、こちらのページにまとめています。\n' + RATES_PAGE + '\n\n個人レッスン：60分 $' + RATE_PER_30 * 2 + '（30分 $' + RATE_PER_30 + '）\n3回券（60分）：$' + RATE_PER_30 * 6 + '（2か月以内）\n5回券（60分）：通常 $' + RATE_PER_30 * 2 * PACK_SIZE + ' → $' + packAmount_(RATE_PER_30 * 2) + '\n\nご予約は、こちらからどうぞ。\n' + BOOKING_PAGE + '\n\nお会いできるのを\n楽しみにしています。\n髙山まり'
     : '# Lesson rates\n\nHi ' + name + ',\n\nThank you for asking! Here are my lesson rates:\n' + RATES_PAGE + '\n\nPrivate lesson: $' + RATE_PER_30 * 2 + ' for 60 minutes ($' + RATE_PER_30 + ' per 30)\n3-lesson pack (60 min): $' + RATE_PER_30 * 6 + ' (use within 2 months)\n5-lesson pack (60 min): usually $' + RATE_PER_30 * 2 * PACK_SIZE + ' → $' + packAmount_(RATE_PER_30 * 2) + '\n\nWhen you’re ready, you can book here:\n' + BOOKING_PAGE + '\n\nHope to see you soon!\nMari Takayama';
   MailApp.sendEmail({ to: email, subject: ja ? 'レッスン料金のご案内' : 'Lesson rates — Mari Takayama', body: plain_(body = withAsk_(body)), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
   const me = Session.getEffectiveUser().getEmail();
@@ -1492,7 +1492,7 @@ function moveAnswer_(p, sh, r, data) {
   const paid = sh.getRange(r, C['支払い']).getValue();
   const payPart = paid === false ? payNote_(data, bk, ja) : (ja ? 'お支払いは、そのまま新しい日時に引き継がれます。' : 'Your payment carries over to the new time.');
   let body = ja
-    ? '# レッスン日時変更のお知らせ\n\n' + data.name + ' 様\n\nレッスンの日時の変更が確定しました。\n\n日時：' + custWhen_(data, bk, bk.len, true) + '\n場所：' + placeText_(data, true) + '\nレッスン：' + bk.len + '分\n\n（変更前：' + whenIn_(old, bk.len, data.tz || TZ, true) + '）\n\n' + payPart + manageLine_(data, true) + '\n\nお会いできるのを楽しみにしています。\n髙山まり'
+    ? '# レッスン日時変更のお知らせ\n\n' + data.name + ' 様\n\nレッスンの日時の変更が確定しました。\n\n日時：' + custWhen_(data, bk, bk.len, true) + '\n場所：' + placeText_(data, true) + '\nレッスン：' + bk.len + '分\n\n（変更前：' + whenIn_(old, bk.len, data.tz || TZ, true) + '）\n\n' + payPart + manageLine_(data, true) + '\n\nお会いできるのを\n楽しみにしています。\n髙山まり'
     : '# Your lesson has been moved\n\nHi ' + data.name + ',\n\nYour lesson has been moved.\n\nWhen: ' + custWhen_(data, bk, bk.len, false) + '\nWhere: ' + placeText_(data, false) + '\nLesson: ' + bk.len + ' minutes\n\n(Before: ' + whenIn_(old, bk.len, data.tz || TZ, false) + ')\n\n' + payPart + manageLine_(data, false) + '\n\nSee you soon!\nMari Takayama';
   MailApp.sendEmail({ to: data.email, subject: ja ? 'レッスンの日時を変更しました（' + whenIn_(bk, bk.len, data.tz || TZ, true) + '）' : 'Your lesson has been moved — ' + whenIn_(bk, bk.len, data.tz || TZ, false), body: plain_(body = withAsk_(body)), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO, attachments: [ics_(data, bk, bk.len)] });
   return page_('変更しました', esc_(data.name) + ' さんのレッスンを ' + choiceJa_(bk, bk.len) + ' に変更しました。Google カレンダーも移しました。');
@@ -1606,6 +1606,8 @@ function log_(kind, data, ch, len, extra) {
 }
 function plain_(s) { return String(s).replace(/^#{1,2} /gm, ''); }
 function sendPretty_(m) { m.htmlBody = pretty_(m.body); m.body = plain_(m.body); m.body += '\n\n' + SITE; MailApp.sendEmail(m); }
+// keep "FuncPhysio Physical Therapy" and the street address from breaking across lines in emails
+function keepName_(t) { return String(t).replace(/FuncPhysio Physical Therapy(?:（|, )2 W 45th Street, Suite 1600(?:, New York)?）?/g, m => 'FuncPhysio Physical\u00a0Therapy<br>2\u00a0W\u00a045th\u00a0Street, Suite\u00a01600' + (/New York/.test(m) ? ', New\u00a0York' : '')).replace(/FuncPhysio Physical Therapy/g, 'FuncPhysio Physical\u00a0Therapy'); }
 function pretty_(text, isHtml) {
   // English emails start with "Hi …" (after an optional title), so a Japanese name doesn't switch the buttons to Japanese
   const jaMail = isHtml ? /[\u3040-\u30ff]/.test(text) : !/^(# [^\n]*\n\n)?Hi /.test(String(text));
@@ -1657,7 +1659,7 @@ function pretty_(text, isHtml) {
     let body = lines.map(l => /^[・•]/.test(l) ? '<div style="padding-left:1em;text-indent:-1em;margin:2px 0">' + fmt(l) + '</div>' : fmt(l)).join('<br>').replace(/<\/div><br>/g, '</div>');
     return '<div style="margin:0 0 20px">' + head + body + '</div>';
   };
-  const inner = isHtml ? text : text.split(/\n\n+/).map(block).join('');
+  const inner = keepName_(isHtml ? text : text.split(/\n\n+/).map(block).join(''));
   return '<div style="background:#faf7f1;padding:24px 10px"><div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e6dac3;padding:30px 24px;font-family:-apple-system,BlinkMacSystemFont,\'Hiragino Sans\',\'Hiragino Kaku Gothic ProN\',\'Yu Gothic\',YuGothic,Meiryo,\'Helvetica Neue\',Arial,sans-serif;font-size:17px;line-height:1.9;letter-spacing:.02em;color:#222222">'
     + '<div style="text-align:center;margin:0 0 24px;padding-bottom:16px;border-bottom:1px solid #e6dac3"><div style="font-family:Georgia,\'Times New Roman\',serif;font-size:24px;letter-spacing:.08em;color:#2c2a30">Mari Takayama</div><div style="font-size:11px;letter-spacing:.32em;color:#8a7140;text-transform:uppercase;margin-top:4px">Ballet · New York</div></div>'
     + inner + '<div style="text-align:center;margin-top:28px;padding-top:18px;border-top:1px solid #e6dac3"><a href="' + SITE + '" style="font-family:Georgia,\'Times New Roman\',serif;font-size:15px;letter-spacing:.12em;color:#7a6233;text-decoration:none">Mari Takayama &middot; Website &rarr;</a></div></div></div>';
