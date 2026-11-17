@@ -1276,7 +1276,7 @@ function semiQuestion_(d) {
   return { ok: true };
 }
 
-// ---------- referral discounts: the friend who refers gets $10 off their next lesson, the new friend gets $10 off their first ----------
+// ---------- referral discounts: the new friend gets $10 off their first lesson; once that lesson has happened, the friend who referred them gets $10 off their next one ----------
 const REF_TAB = '紹介割引', REF_GIVER = 10, REF_NEW = 10;
 const REF_HEAD = ['日時', '名前', 'メール', '金額', '理由', '状態'];
 function refSheet_() { const ss = book_(); let sh = ss.getSheetByName(REF_TAB); if (!sh) { sh = ss.insertSheet(REF_TAB); sh.getRange(1, 1, 1, 6).setValues([REF_HEAD]).setFontWeight('bold').setBackground('#ecdfc6'); sh.setFrozenRows(1); } return sh; }
@@ -1302,16 +1302,11 @@ function referralUse_(data, amount) {
     data.refDone = true;
     const ref = findReferrer_(data.friend, email);
     if (ref) {
-      sh.appendRow([new Date(), ref.name, ref.email, REF_GIVER, '紹介：' + data.name, '未使用']);
+      sh.appendRow([new Date(), ref.name, ref.email, REF_GIVER, '紹介：' + data.name, '保留（' + (data.id || '') + '#' + data._b + '）']);
       sh.appendRow([new Date(), data.name, email, REF_NEW, '紹介された（' + ref.name + ' さん）', '未使用']);
       data.refBy = ref.name;
-      const ja = /[぀-ヿ一-鿿]/.test(ref.name) || data.language === 'ja';
-      const body = ja
-        ? '# ご紹介のお礼\n\n' + ref.name + ' 様\n\n' + data.name + ' さんを\nご紹介いただき、\nありがとうございます。\n\nお礼に、次回のレッスンが\n$' + REF_GIVER + ' 引きになります。\nご予約のときに、自動で\nお引きします。\n\n' + BOOKING_PAGE + '\n\n髙山まり'
-        : '# Thank you for the referral\n\nHi ' + ref.name + ',\n\nThank you for introducing ' + data.name + '!\nAs a thank-you, your next lesson is $' + REF_GIVER + ' off. It comes off automatically when you book.\n\n' + BOOKING_PAGE + '\n\nMari Takayama';
-      try { MailApp.sendEmail({ to: ref.email, subject: ja ? 'ご紹介ありがとうございます（次回 $' + REF_GIVER + ' 引き）' : 'Thank you — $' + REF_GIVER + ' off your next lesson', body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO }); } catch (x) {}
-      out.mari += '\n紹介：' + ref.name + ' さん（' + ref.email + '）の紹介です。' + ref.name + ' さんの次回に $' + REF_GIVER + ' 引き、' + data.name + ' さんの今回に $' + REF_NEW + ' 引きをつけました（「紹介割引」タブ）。';
-    } else out.mari += '\n紹介：「' + data.friend + '」さんの紹介です。だれか特定できなかったので、割引はまだつけていません。分かったら「紹介割引」タブに足してください（紹介した人 $' + REF_GIVER + '・この人 $' + REF_NEW + '、状態は「未使用」）。';
+      out.mari += '\n紹介：' + ref.name + ' さん（' + ref.email + '）の紹介です。' + data.name + ' さんの今回に $' + REF_NEW + ' 引きをつけました。' + data.name + ' さんがレッスンに来たら、次の日に ' + ref.name + ' さんの次回 $' + REF_GIVER + ' 引きが自動でつき、お礼のメールが届きます（「紹介割引」タブ）。';
+    } else out.mari += '\n紹介：「' + data.friend + '」さんの紹介です。だれか特定できなかったので、割引はまだつけていません。分かったら「紹介割引」タブに足してください（この人 $' + REF_NEW + '、紹介した人は来てくれたあとに $' + REF_GIVER + '。状態は「未使用」）。';
   }
   if (data.packInfo && !data.packInfo.bought) return out;  // nothing to pay this time: keep the credit for later
   if (sh.getLastRow() < 2) return out;
@@ -1324,6 +1319,27 @@ function referralUse_(data, amount) {
   });
   if (out.off) { out.note = data.refBy ? 'ref-new' : 'ref'; out.mari += '\n紹介割引：$' + out.off + ' 引き' + (amount > 0 ? '（お支払い $' + Math.max(0, amount - out.off) + '）' : '（金額を送るときに $' + out.off + ' 引いてください）'); }
   return out;
+}
+// daily: once a referred friend's first lesson has happened, the referrer's $10 becomes usable and they get a thank-you email
+function referralRelease_() {
+  const sh = book_().getSheetByName(REF_TAB); if (!sh || sh.getLastRow() < 2) return;
+  const rq = book_().getSheetByName(REQ); if (!rq || rq.getLastRow() < 2) return;
+  const today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'), v = sh.getRange(2, 1, sh.getLastRow() - 1, 6).getValues();
+  const rows = rq.getRange(2, 1, rq.getLastRow() - 1, HEAD.length).getValues();
+  v.forEach((r, i) => {
+    const m = String(r[5]).match(/^保留（(.+)#(\d+)）$/); if (!m) return;
+    const row = rows.find(x => String(x[C['id'] - 1]) === m[1]); if (!row) return;
+    let data; try { data = JSON.parse(row[C['data'] - 1]); } catch (x) { return; }
+    const bk = (data.booked || [])[+m[2]]; if (!bk) return;
+    if (bk.cancelled) { sh.getRange(i + 2, 6).setValue('取り消し（' + data.name + ' さんがキャンセル）'); return; }
+    if (bk.date >= today) return;
+    sh.getRange(i + 2, 6).setValue('未使用');
+    const name = String(r[1]), ja = /[぀-ヿ一-鿿]/.test(name) || data.language === 'ja';
+    const body = ja
+      ? '# ご紹介のお礼\n\n' + name + ' 様\n\n' + data.name + ' さんが\nレッスンに来てくださいました。\nご紹介、ありがとうございます。\n\nお礼に、次回のレッスンが\n$' + (+r[3] || REF_GIVER) + ' 引きになります。\nご予約のときに、自動で\nお引きします。\n\n' + BOOKING_PAGE + '\n\n髙山まり'
+      : '# Thank you for the referral\n\nHi ' + name + ',\n\n' + data.name + ' came to their first lesson. Thank you for introducing them!\nAs a thank-you, your next lesson is $' + (+r[3] || REF_GIVER) + ' off. It comes off automatically when you book.\n\n' + BOOKING_PAGE + '\n\nMari Takayama';
+    try { MailApp.sendEmail({ to: String(r[2]), subject: ja ? 'ご紹介のお礼（次回 $' + (+r[3] || REF_GIVER) + ' 引き）' : 'Thank you — $' + (+r[3] || REF_GIVER) + ' off your next lesson', body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO }); } catch (x) {}
+  });
 }
 // a cancelled lesson gives its referral credit back
 function referralRestore_(data, b) {
@@ -1490,6 +1506,7 @@ function cleanupTests_() {
 }
 function paymentReminders() {
   try { semiTick_(); } catch (x) {}
+  try { referralRelease_(); } catch (x) {}
   const sh = book_().getSheetByName(REQ); if (!sh || sh.getLastRow() < 2) return;
   heardStats_();
   const v = sh.getRange(2, 1, sh.getLastRow() - 1, HEAD.length).getValues();
