@@ -1607,7 +1607,8 @@ function log_(kind, data, ch, len, extra) {
 function plain_(s) { return String(s).replace(/^#{1,2} /gm, ''); }
 function sendPretty_(m) { m.htmlBody = pretty_(m.body); m.body = plain_(m.body); m.body += '\n\n' + SITE; MailApp.sendEmail(m); }
 // keep "FuncPhysio Physical Therapy" and the street address from breaking across lines in emails
-function keepName_(t) { return String(t).replace(/FuncPhysio Physical Therapy(?:（|, )2 W 45th Street, Suite 1600(?:, New York)?）?/g, m => 'FuncPhysio Physical\u00a0Therapy<br>2\u00a0W\u00a045th\u00a0Street, Suite\u00a01600' + (/New York/.test(m) ? ', New\u00a0York' : '')).replace(/FuncPhysio Physical Therapy/g, 'FuncPhysio Physical\u00a0Therapy'); }
+const FUNC_MAP = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('FuncPhysio Physical Therapy, 2 W 45th St Suite 1600, New York, NY 10036');
+function keepName_(t) { return String(t).replace(/FuncPhysio Physical Therapy(?:（|, )2 W 45th Street, Suite 1600(?:, New York)?）?/g, m => 'FuncPhysio Physical\u00a0Therapy<br><a href="' + FUNC_MAP + '" style="color:#7a6233">2\u00a0W\u00a045th\u00a0Street, Suite\u00a01600' + (/New York/.test(m) ? ', New\u00a0York' : '') + '</a>').replace(/FuncPhysio Physical Therapy(?!<br>|\u00a0)/g, 'FuncPhysio Physical\u00a0Therapy'); }
 function pretty_(text, isHtml) {
   // English emails start with "Hi …" (after an optional title), so a Japanese name doesn't switch the buttons to Japanese
   const jaMail = isHtml ? /[\u3040-\u30ff]/.test(text) : !/^(# [^\n]*\n\n)?Hi /.test(String(text));
