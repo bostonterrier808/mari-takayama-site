@@ -1276,8 +1276,8 @@ function semiQuestion_(d) {
   return { ok: true };
 }
 
-// ---------- referral discounts: the friend who refers gets $20 off their next lesson, the new friend gets $10 off their first ----------
-const REF_TAB = '紹介割引', REF_GIVER = 20, REF_NEW = 10;
+// ---------- referral discounts: the friend who refers gets $10 off their next lesson, the new friend gets $10 off their first ----------
+const REF_TAB = '紹介割引', REF_GIVER = 10, REF_NEW = 10;
 const REF_HEAD = ['日時', '名前', 'メール', '金額', '理由', '状態'];
 function refSheet_() { const ss = book_(); let sh = ss.getSheetByName(REF_TAB); if (!sh) { sh = ss.insertSheet(REF_TAB); sh.getRange(1, 1, 1, 6).setValues([REF_HEAD]).setFontWeight('bold').setBackground('#ecdfc6'); sh.setFrozenRows(1); } return sh; }
 function offOf_(data, bk) { return Math.max(0, +((bk || (data.booked || [])[data._b] || {}).off) || 0); }
