@@ -1072,8 +1072,8 @@ function semiWhen_(date, ja) { const day = dateOf_(date); return ja ? (day.getMo
 function semiConfirmMail_(x) {
   const ja = /[぀-ヿ一-鿿]/.test(x.name) || x.ja;
   const body = ja
-    ? '# お席が確定しました\n\n' + x.name + ' 様\n\nお支払いを確認しました。ありがとうございます。\nセミプライベートクラスのお席が確定しました。\n\n日時：' + semiWhen_(x.date, true) + '（ニューヨーク時間）\n場所：FuncPhysio Physical Therapy（2 W 45th Street, Suite 1600）\n\n' + funcArrive_(true) + '\n\nバレエシューズで、動きやすい服装でお越しください。\nお会いできるのを楽しみにしています。\n髙山まり'
-    : '# Your spot is confirmed\n\nHi ' + x.name + ',\n\nThank you, your payment came through. Your spot in the semi-private class is confirmed.\n\nWhen: ' + semiWhen_(x.date, false) + ' (New York time)\nWhere: FuncPhysio Physical Therapy, 2 W 45th Street, Suite 1600\n\n' + funcArrive_(false) + '\n\nPlease bring ballet flats and wear something easy to move in.\nSee you soon!\nMari Takayama';
+    ? '# お席が確定しました\n\n' + x.name + ' 様\n\nお支払いを確認しました。ありがとうございます。\nセミプライベートグループレッスンのお席が確定しました。\n\n日時：' + semiWhen_(x.date, true) + '（ニューヨーク時間）\n場所：FuncPhysio Physical Therapy（2 W 45th Street, Suite 1600）\n\n' + funcArrive_(true) + '\n\nバレエシューズで、動きやすい服装でお越しください。\nお会いできるのを楽しみにしています。\n髙山まり'
+    : '# Your spot is confirmed\n\nHi ' + x.name + ',\n\nThank you, your payment came through. Your spot in the semi-private group lesson is confirmed.\n\nWhen: ' + semiWhen_(x.date, false) + ' (New York time)\nWhere: FuncPhysio Physical Therapy, 2 W 45th Street, Suite 1600\n\n' + funcArrive_(false) + '\n\nPlease bring ballet flats and wear something easy to move in.\nSee you soon!\nMari Takayama';
   MailApp.sendEmail({ to: x.email, subject: ja ? 'お席が確定しました（' + semiWhen_(x.date, true) + '）' : 'Your spot is confirmed — ' + semiWhen_(x.date, false), body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
 }
 // releases unpaid seats after 24 hours, and sends the "confirmed" email when Mari ticks 支払い in the sheet
@@ -1088,9 +1088,9 @@ function semiTick_() {
     if (x.coupon) { const rs = book_().getSheetByName(SEMI_REVIEW_TAB); if (rs && rs.getLastRow() > 1) { const v = rs.getRange(2, 1, rs.getLastRow() - 1, 6).getValues(), i = v.findIndex(r => String(r[2]).trim().toLowerCase() === x.email && String(r[5]) === '使用済み（' + x.date + '）'); if (i >= 0) rs.getRange(i + 2, 6).setValue('未使用'); } }
     const ja = x.ja || /[぀-ヿ一-鿿]/.test(x.name);
     const body = ja
-      ? '# お席の取り消しのお知らせ\n\n' + x.name + ' 様\n\nセミプライベートクラス（' + semiWhen_(x.date, true) + '）のお申し込みについて、24時間以内にお支払いの確認ができなかったため、お席の確保を取り消しました。\nご不便をおかけして申し訳ありません。\n\nまだ参加をご希望の場合は、もう一度お申し込みください。\n' + SEMI_PAGE + '\n\n髙山まり'
-      : '# About your semi-private class spot\n\nHi ' + x.name + ',\n\nWe didn’t receive payment within 24 hours, so your spot for ' + semiWhen_(x.date, false) + ' has been released. I’m sorry for any inconvenience.\n\nIf you’d still like to join, please sign up again:\n' + SEMI_PAGE + '\n\nMari Takayama';
-    MailApp.sendEmail({ to: x.email, subject: ja ? 'セミプライベートクラスのお席について' : 'About your semi-private class spot', body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+      ? '# お席の取り消しのお知らせ\n\n' + x.name + ' 様\n\nセミプライベートグループレッスン（' + semiWhen_(x.date, true) + '）のお申し込みについて、24時間以内にお支払いの確認ができなかったため、お席の確保を取り消しました。\nご不便をおかけして申し訳ありません。\n\nまだ参加をご希望の場合は、もう一度お申し込みください。\n' + SEMI_PAGE + '\n\n髙山まり'
+      : '# About your semi-private lesson spot\n\nHi ' + x.name + ',\n\nWe didn’t receive payment within 24 hours, so your spot for ' + semiWhen_(x.date, false) + ' has been released. I’m sorry for any inconvenience.\n\nIf you’d still like to join, please sign up again:\n' + SEMI_PAGE + '\n\nMari Takayama';
+    MailApp.sendEmail({ to: x.email, subject: ja ? 'セミプライベートグループレッスンのお席について' : 'About your semi-private lesson spot', body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
     if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【未払いで取り消し】' + x.name + '（' + semiWhen_(x.date, true) + '）', body: x.name + ' さんのお席を、24時間お支払いがなかったので取り消しました。', htmlBody: pretty_('<p><b>' + esc_(x.name) + '</b> さんは24時間以内にお支払いがなかったので、お席を取り消して本人にお知らせしました。</p><p>あとで支払いが届いた場合は、「セミプライベート」タブの「支払い」にチェックを入れ、「お席」を空にしてください。確定のメールが送られます。</p>', true) });
   });
 }
@@ -1132,15 +1132,15 @@ function semiSignup_(d) {
   sh.getRange(at, 8).insertCheckboxes();
   const day = dateOf_(d.date), md = (day.getMonth() + 1) + '/' + day.getDate(), wd = WD_JA[day.getDay()];
   const whenJa = md + '（' + wd + '）' + SEMI_START + '〜12:30', whenEn = Utilities.formatDate(day, TZ, 'EEE, MMM d') + ', 11:00 am–12:30 pm';
-  const pay = venmoLink_(price, 'Semi-private class ' + md);
+  const pay = venmoLink_(price, 'Semi-private lesson ' + md);
   let body = ja
     ? '# 仮予約を受け付けました\n\n' + name + ' 様\n\nありがとうございます。\n髙山まりです。\nお席を24時間、\nお取りしています。\nお支払いを確認したら、\n確定のメールをお送りします。\n\n日時：' + whenJa + '（ニューヨーク時間）\n場所：FuncPhysio Physical Therapy（2 W 45th Street, Suite 1600）\n料金：$' + price + (cRow ? '（レビューのお礼で $' + SEMI_OFF + ' 引き）' : '') + '\n\n24時間以内に、\nVenmo でお支払いください。\n' + pay + '\n\nお支払いがない場合は、\nお席の確保を取り消します。\n\n髙山まり'
     : '# Your spot is held for 24 hours\n\nHi ' + name + ',\n\nThank you for signing up! Your spot is held for 24 hours and confirmed once you pay.\n\nWhen: ' + whenEn + ' (New York time)\nWhere: FuncPhysio Physical Therapy, 2 W 45th Street, Suite 1600\nPrice: $' + price + (cRow ? ' ($' + SEMI_OFF + ' off — thank you for your review)' : '') + '\n\nPlease pay with Venmo within 24 hours:\n' + pay + '\n\nIf payment doesn’t come in, the spot is released. Once it’s confirmed, I’ll email you how to get in.\nMari Takayama';
-  MailApp.sendEmail({ to: email, subject: ja ? '【24時間以内にお支払いを】セミプライベートクラス（' + whenJa + '）' : 'Please pay within 24 hours — semi-private class ' + whenEn, body: plain_(body = withAsk_(body)), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+  MailApp.sendEmail({ to: email, subject: ja ? '【24時間以内にお支払いを】セミプライベートグループレッスン（' + whenJa + '）' : 'Please pay within 24 hours — semi-private group lesson ' + whenEn, body: plain_(body = withAsk_(body)), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
   const me = Session.getEffectiveUser().getEmail(), left = slot.left - 1;
   if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', replyTo: email, subject: '【セミプライベート】' + name + '（' + whenJa + '・残り' + left + '席）',
     body: name + ' さんが申し込みました。',
-    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんがセミプライベートクラスに申し込みました。</p>' + infoBox_([['日時', whenJa], ['料金', '$' + price + (cRow ? '（レビュー割引）' : '')], ['レベル', esc_(SEMI_LEVEL_JA[d.level] || '－')], ['メール', esc_(email)], ['残り', left + '席'], ['メッセージ', esc_(clip(d.note, 300)) || '－']]) + '<p>お席は24時間だけ取ってあります。Venmo にお支払いが届いたら、下のボタンを押してください。確定のメールが本人に届きます。</p>'+'<p><a href="' + ScriptApp.getService().getUrl() + '?act=semipaid&id=' + id + '&s=' + newsSig_('paid:' + id) + '" style="display:block;margin:6px 0;padding:15px 12px;text-align:center;text-decoration:none;font-size:17px;font-weight:600;background:#2c2a30;color:#ffffff">支払いを確認した（お席を確定する）</a></p><p style="font-size:14px;color:#555">24時間お支払いがなければ、自動でお席を取り消して本人にお知らせします。</p>', true) });
+    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんがセミプライベートグループレッスンに申し込みました。</p>' + infoBox_([['日時', whenJa], ['料金', '$' + price + (cRow ? '（レビュー割引）' : '')], ['レベル', esc_(SEMI_LEVEL_JA[d.level] || '－')], ['メール', esc_(email)], ['残り', left + '席'], ['メッセージ', esc_(clip(d.note, 300)) || '－']]) + '<p>お席は24時間だけ取ってあります。Venmo にお支払いが届いたら、下のボタンを押してください。確定のメールが本人に届きます。</p>'+'<p><a href="' + ScriptApp.getService().getUrl() + '?act=semipaid&id=' + id + '&s=' + newsSig_('paid:' + id) + '" style="display:block;margin:6px 0;padding:15px 12px;text-align:center;text-decoration:none;font-size:17px;font-weight:600;background:#2c2a30;color:#ffffff">支払いを確認した（お席を確定する）</a></p><p style="font-size:14px;color:#555">24時間お支払いがなければ、自動でお席を取り消して本人にお知らせします。</p>', true) });
   log_('セミプライベート申し込み', { name: name, email: email }, null, '', { memo: d.date + '・$' + price, amount: price });
   return { ok: true, price: price, left: left, pay: pay };
 }
@@ -1153,8 +1153,8 @@ function semiReviewAsks_() {
     const url = ScriptApp.getService().getUrl() + '?act=review&id=' + r[10] + '&e=' + encodeURIComponent(r[3]);
     const ja = r[12] === 'ja' || /[぀-ヿ一-鿿]/.test(r[2]);
     let body = ja
-      ? '# クラスに来てくれてありがとう\n\n' + r[2] + ' 様\n\nセミプライベートクラスに来てくださり、ありがとうございました。\nよろしければ、短い感想を書いていただけますか？\n書いてくださった方は、次回のクラスが $' + SEMI_OFF + ' 引きになります。\n\n' + url + '\n\n髙山まり'
-      : '# Thank you for coming\n\nHi ' + r[2] + ',\n\nThank you for coming to the semi-private class!\nWould you write a short review? If you do, your next class is $' + SEMI_OFF + ' off.\n\n' + url + '\n\nMari Takayama';
+      ? '# クラスに来てくれてありがとう\n\n' + r[2] + ' 様\n\nセミプライベートグループレッスンに来てくださり、ありがとうございました。\nよろしければ、短い感想を書いていただけますか？\n書いてくださった方は、次回のクラスが $' + SEMI_OFF + ' 引きになります。\n\n' + url + '\n\n髙山まり'
+      : '# Thank you for coming\n\nHi ' + r[2] + ',\n\nThank you for coming to the semi-private group lesson!\nWould you write a short review? If you do, your next class is $' + SEMI_OFF + ' off.\n\n' + url + '\n\nMari Takayama';
     MailApp.sendEmail({ to: r[3], subject: ja ? 'クラスの感想をお聞かせください（次回 $' + SEMI_OFF + ' 引き）' : 'How was the class? ($' + SEMI_OFF + ' off next time)', body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
     sh.getRange(i + 2, 10).setValue(Utilities.formatDate(new Date(), TZ, 'M/d') + ' 送信');
   });
@@ -1173,9 +1173,9 @@ function semiReviewPage_(p) {
   let r2 = rs; if (!r2) { r2 = book_().insertSheet(SEMI_REVIEW_TAB); r2.getRange(1, 1, 1, 7).setValues([['日時', '名前', 'メール', 'クラスの日', '感想', '次回の割引', 'id']]).setFontWeight('bold').setBackground('#ecdfc6'); r2.setFrozenRows(1); }
   r2.appendRow([new Date(), row[2], row[3], String(row[1]).slice(0, 10), clip(text, 1500), '未使用', row[10]]);
   const me = Session.getEffectiveUser().getEmail();
-  if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【レビュー】' + row[2], body: row[2] + ' さんから感想が届きました。\n\n' + text, htmlBody: pretty_('<p><b>' + esc_(row[2]) + '</b> さんから感想が届きました。</p><p style="white-space:pre-wrap">' + esc_(text) + '</p><p>次回のセミプライベートクラスは自動で $' + SEMI_OFF + ' 引きになります。「レビュー」タブに記録しました。</p>', true) });
+  if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【レビュー】' + row[2], body: row[2] + ' さんから感想が届きました。\n\n' + text, htmlBody: pretty_('<p><b>' + esc_(row[2]) + '</b> さんから感想が届きました。</p><p style="white-space:pre-wrap">' + esc_(text) + '</p><p>次回のセミプライベートグループレッスンは自動で $' + SEMI_OFF + ' 引きになります。「レビュー」タブに記録しました。</p>', true) });
   log_('レビュー', { name: row[2], email: row[3] }, null, '', { memo: String(row[1]).slice(0, 10) });
-  return page_(ja ? 'ありがとうございます' : 'Thank you!', ja ? '感想をいただき、ありがとうございます。次回のセミプライベートクラスは $' + SEMI_OFF + ' 引きになります。同じメールアドレスでお申し込みください。' : 'Thank you for your review! Your next semi-private class is $' + SEMI_OFF + ' off. Just sign up with the same email.');
+  return page_(ja ? 'ありがとうございます' : 'Thank you!', ja ? '感想をいただき、ありがとうございます。次回のセミプライベートグループレッスンは $' + SEMI_OFF + ' 引きになります。同じメールアドレスでお申し込みください。' : 'Thank you for your review! Your next semi-private group lesson is $' + SEMI_OFF + ' off. Just sign up with the same email.');
 }
 
 // ---------- class announcements: Mari presses a button, everyone who ever signed up gets the next class date ----------
@@ -1211,8 +1211,8 @@ function newsSendSome_(date) {
     const stopUrl = ScriptApp.getService().getUrl() + '?act=unsub&e=' + encodeURIComponent(x.email) + '&s=' + newsSig_('stop:' + x.email);
     const body = x.ja
       ? '# 次回のクラスのご案内\n\n' + (x.name ? x.name + ' 様\n\n' : '') + 'こんにちは、髙山まりです。\n最大4人の少人数バレエクラスを、\n月に1回開いています。\n次回のご案内です。\n\n日時：' + newsWhen_(date, true) + '\n場所：FuncPhysio（2 W 45th Street, Suite 1600）\n残り：' + slot.left + '席\n\n' + SEMI_PAGE + '\n\nお待ちしています。\n髙山まり\n\nお知らせが不要な方はこちら\n' + stopUrl
-      : '# Semi-private ballet class\n\nHi' + (x.name ? ' ' + x.name : '') + ',\n\nThis is Mari Takayama. Once a month I teach a small ballet class for up to 4 people.\nHere is the next one:\n\nWhen: ' + newsWhen_(date, false) + '\nWhere: FuncPhysio, 2 W 45th Street, Suite 1600\nSpots left: ' + slot.left + '\n\n' + SEMI_PAGE + '\n\nHope to see you there!\nMari Takayama\n\nDon’t want these emails? You can stop them here.\n' + stopUrl;
-    try { MailApp.sendEmail({ to: x.email, subject: x.ja ? '次回のセミプライベートクラス（' + newsWhen_(date, true).replace(/〜.*/, '〜') + '）' : 'Next semi-private class — ' + newsWhen_(date, false).replace(/,[^,]*$/, ''), body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO }); } catch (e) { break; }
+      : '# Semi-private group lesson\n\nHi' + (x.name ? ' ' + x.name : '') + ',\n\nThis is Mari Takayama. Once a month I teach a small ballet class for up to 4 people.\nHere is the next one:\n\nWhen: ' + newsWhen_(date, false) + '\nWhere: FuncPhysio, 2 W 45th Street, Suite 1600\nSpots left: ' + slot.left + '\n\n' + SEMI_PAGE + '\n\nHope to see you there!\nMari Takayama\n\nDon’t want these emails? You can stop them here.\n' + stopUrl;
+    try { MailApp.sendEmail({ to: x.email, subject: x.ja ? '次回のセミプライベートグループレッスン（' + newsWhen_(date, true).replace(/〜.*/, '〜') + '）' : 'Next semi-private group lesson — ' + newsWhen_(date, false).replace(/,[^,]*$/, ''), body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO }); } catch (e) { break; }
     sh.appendRow([new Date(), date, x.name, x.email]); n++;
   }
   const left = todo.length - n, pr = PropertiesService.getScriptProperties();
@@ -1252,11 +1252,11 @@ function newsDaily_() {
   const me = Session.getEffectiveUser().getEmail(); if (!me) return;
   const sent = newsSent_(next.date), n = newsPeople_().filter(x => !sent.has(x.email)).length;
   pr.setProperty('NEWS_OFFERED', next.date); if (!n) return;
-  const body = '# 次のクラスのお知らせ\n\n次のセミプライベートクラスのお知らせを、今までの方に送れます。\n\nクラス：' + newsWhen_(next.date, true) + '\n残り：' + next.left + '席\n送る人：' + n + '人\n\n下のボタンを押すと、送る前の確認画面が開きます。\n' + newsUrl_(next.date);
-  MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【お知らせを送る】' + newsWhen_(next.date, true) + ' のセミプライベートクラス', body: plain_(body), htmlBody: pretty_(body) });
+  const body = '# 次のクラスのお知らせ\n\n次のセミプライベートグループレッスンのお知らせを、今までの方に送れます。\n\nクラス：' + newsWhen_(next.date, true) + '\n残り：' + next.left + '席\n送る人：' + n + '人\n\n下のボタンを押すと、送る前の確認画面が開きます。\n' + newsUrl_(next.date);
+  MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【お知らせを送る】' + newsWhen_(next.date, true) + ' のセミプライベートグループレッスン', body: plain_(body), htmlBody: pretty_(body) });
 }
 
-// ---------- questions about the semi-private class (semi-private.html) ----------
+// ---------- questions about the semi-private group lesson (semi-private.html) ----------
 function semiQuestion_(d) {
   if (!d || d.hp || (typeof d.ms === 'number' && d.ms < 3000)) return { ok: true };
   const email = String(d.email || '').trim().toLowerCase(), name = clip(d.name, 100), q = String(d.question || '').trim().slice(0, 2000), ja = d.language === 'ja';
@@ -1267,11 +1267,11 @@ function semiQuestion_(d) {
   const me = Session.getEffectiveUser().getEmail();
   if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', replyTo: email, subject: '【セミプライベートの質問】' + name,
     body: name + '（' + email + '）\n\n' + q,
-    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんから、セミプライベートクラスについて質問が届きました。</p><p style="white-space:pre-wrap;background:#faf7f1;border:1px solid #eee3cf;padding:12px 14px">' + esc_(q) + '</p><p>このメールに返信すると、' + esc_(name) + ' さんに届きます。</p>', true) });
+    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんから、セミプライベートグループレッスンについて質問が届きました。</p><p style="white-space:pre-wrap;background:#faf7f1;border:1px solid #eee3cf;padding:12px 14px">' + esc_(q) + '</p><p>このメールに返信すると、' + esc_(name) + ' さんに届きます。</p>', true) });
   const body = ja
     ? '# ご質問を受け付けました\n\n' + name + ' 様\n\nご質問ありがとうございます。\n髙山まりです。\nお返事はこのメールアドレスに\nお送りします。\n\n' + SEMI_PAGE + '\n\n髙山まり'
     : '# Thanks for your question\n\nHi ' + name + ',\n\nThank you for your question! I’ll reply to this email address soon.\n\n' + SEMI_PAGE + '\n\nMari Takayama';
-  MailApp.sendEmail({ to: email, subject: ja ? 'ご質問を受け付けました（セミプライベートクラス）' : 'Thanks for your question — semi-private class', body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
+  MailApp.sendEmail({ to: email, subject: ja ? 'ご質問を受け付けました（セミプライベートグループレッスン）' : 'Thanks for your question — semi-private group lesson', body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO });
   log_('セミプライベートの質問', { name: name, email: email }, null, '', { memo: q.slice(0, 200) });
   return { ok: true };
 }
