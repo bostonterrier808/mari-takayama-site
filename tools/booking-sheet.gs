@@ -159,6 +159,7 @@ function doPost(e) {
   const lock = LockService.getScriptLock(); lock.waitLock(20000);
   try {
     const d = JSON.parse(e.postData.contents);
+    if (d.type === 'taisoline') return ContentService.createTextOutput(JSON.stringify(taisoLine_(d))).setMimeType(ContentService.MimeType.JSON);
     if (d.type === 'semiq') return ContentService.createTextOutput(JSON.stringify(semiQuestion_(d))).setMimeType(ContentService.MimeType.JSON);
     if (d.type === 'semi') return ContentService.createTextOutput(JSON.stringify(semiSignup_(d))).setMimeType(ContentService.MimeType.JSON);
     if (d.type === 'costume') { if (costumeReal_(d)) costumeRequest_(d); return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON); }
@@ -1346,6 +1347,26 @@ function referralRestore_(data, b) {
   const sh = book_().getSheetByName(REF_TAB); if (!sh || sh.getLastRow() < 2) return;
   const tag = '使用済み（' + (data.id || '') + '#' + b + '）', v = sh.getRange(2, 6, sh.getLastRow() - 1, 1).getValues();
   v.forEach((r, i) => { if (String(r[0]) === tag) sh.getRange(i + 2, 6).setValue('未使用'); });
+}
+
+// ---------- Radio Taiso: requests to join the LINE group (radio-taiso.html) ----------
+const TAISO_EMAIL = 'radiotaisonyc@gmail.com';
+function taisoLine_(d) {
+  if (!d || d.hp || (typeof d.ms === 'number' && d.ms < 3000)) return { ok: true };
+  const email = String(d.email || '').trim().toLowerCase(), name = clip(d.name, 100), note = String(d.note || '').trim().slice(0, 1000), ja = d.language === 'ja';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name.trim()) return { ok: false };
+  const cache = CacheService.getScriptCache(), k = 'tl:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 3600);
+  const all = +(cache.get('tl:all') || 0) + 1; cache.put('tl:all', String(all), 3600);
+  if (n > 2 || all > 30) return { ok: true };
+  MailApp.sendEmail({ to: TAISO_EMAIL, name: 'Radio Taiso', replyTo: email, subject: '【LINE グループ参加希望】' + name,
+    body: name + '（' + email + '）\n\n' + note,
+    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんが、ラジオ体操の LINE グループに入りたいそうです。</p>' + infoBox_([['名前', esc_(name)], ['メール', esc_(email)], ['ひとこと', esc_(note) || '－']]) + '<p>このメールに返信すると、' + esc_(name) + ' さんに届きます。LINE グループの招待リンクを送ってください。</p>', true) });
+  const body = ja
+    ? '# 受け付けました\n\n' + name + ' 様\n\nラジオ体操の LINE グループへの\nお申し込み、ありがとうございます。\n招待をメールでお送りします。\n\n日曜の朝、セントラルパークで\nお会いしましょう。'
+    : '# Thanks for signing up\n\nHi ' + name + ',\n\nThank you for asking to join the Radio Taiso LINE group. We will email you an invitation.\n\nSee you on Sunday morning in Central Park!';
+  MailApp.sendEmail({ to: email, subject: ja ? 'ラジオ体操 LINE グループ' : 'Radio Taiso LINE group', body: plain_(body), htmlBody: pretty_(body), name: 'Radio Taiso NYC', replyTo: TAISO_EMAIL });
+  log_('ラジオ体操 LINE 希望', { name: name, email: email }, null, '', { memo: note.slice(0, 200) });
+  return { ok: true };
 }
 
 // ---------- costume rental requests (costumes.html) ----------
