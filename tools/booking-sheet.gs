@@ -1354,16 +1354,17 @@ const TAISO_EMAIL = 'radiotaisonyc@gmail.com';
 function taisoLine_(d) {
   if (!d || d.hp || (typeof d.ms === 'number' && d.ms < 3000)) return { ok: true };
   const email = String(d.email || '').trim().toLowerCase(), name = clip(d.name, 100), note = String(d.note || '').trim().slice(0, 1000), ja = d.language === 'ja';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name.trim()) return { ok: false };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name.trim() || note.length < 10) return { ok: false };
+  const came = d.came === 'Yes' ? '参加したことがある' : 'まだない', who = clip(d.who, 120);
   const cache = CacheService.getScriptCache(), k = 'tl:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 3600);
   const all = +(cache.get('tl:all') || 0) + 1; cache.put('tl:all', String(all), 3600);
   if (n > 2 || all > 30) return { ok: true };
   MailApp.sendEmail({ to: TAISO_EMAIL, name: 'Radio Taiso', replyTo: email, subject: '【LINE グループ参加希望】' + name,
-    body: name + '（' + email + '）\n\n' + note,
-    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんが、ラジオ体操の LINE グループに入りたいそうです。</p>' + infoBox_([['名前', esc_(name)], ['メール', esc_(email)], ['ひとこと', esc_(note) || '－']]) + '<p>このメールに返信すると、' + esc_(name) + ' さんに届きます。LINE グループの招待リンクを送ってください。</p>', true) });
+    body: name + '（' + email + '）\n参加：' + came + '\nだれから：' + who + '\n\n' + note,
+    htmlBody: pretty_('<p><b>' + esc_(name) + '</b> さんが、ラジオ体操の LINE グループに入りたいそうです。</p>' + infoBox_([['名前', esc_(name)], ['メール', esc_(email)], ['参加', came], ['だれから', esc_(who) || '－'], ['自己紹介', esc_(note)]]) + '<p>知っている人か確かめてから、このメールに返信して招待リンクを送ってください。送らなければ、何もしなくて大丈夫です。</p>', true) });
   const body = ja
-    ? '# 受け付けました\n\n' + name + ' 様\n\nラジオ体操の LINE グループへの\nお申し込み、ありがとうございます。\n招待をメールでお送りします。\n\n日曜の朝、セントラルパークで\nお会いしましょう。'
-    : '# Thanks for signing up\n\nHi ' + name + ',\n\nThank you for asking to join the Radio Taiso LINE group. We will email you an invitation.\n\nSee you on Sunday morning in Central Park!';
+    ? '# 受け付けました\n\n' + name + ' 様\n\nラジオ体操の LINE グループへの\nお申し込み、ありがとうございます。\n内容を確認して、メールで\nご連絡します。\n\n日曜の朝、セントラルパークで\nお会いしましょう。'
+    : '# Thanks for signing up\n\nHi ' + name + ',\n\nThank you for asking to join the Radio Taiso LINE group. We will read your request and get back to you by email.\n\nSee you on Sunday morning in Central Park!';
   MailApp.sendEmail({ to: email, subject: ja ? 'ラジオ体操 LINE グループ' : 'Radio Taiso LINE group', body: plain_(body), htmlBody: pretty_(body), name: 'Radio Taiso NYC', replyTo: TAISO_EMAIL });
   log_('ラジオ体操 LINE 希望', { name: name, email: email }, null, '', { memo: note.slice(0, 200) });
   return { ok: true };

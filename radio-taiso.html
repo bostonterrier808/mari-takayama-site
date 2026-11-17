@@ -434,13 +434,15 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
             </dl>
             <form class="rates-ask taiso-line" id="taiso-line" novalidate>
               <div class="rates-ask-title">Join the LINE group</div>
-              <p class="rates-ask-copy">For people living in or connected to New York.</p>
+              <p class="rates-ask-copy">We read every request and send an invitation once we know you.</p>
               <div class="rates-ask-names">
                 <label class="rates-ask-field"><span>First name</span><input name="first" autocomplete="given-name" maxlength="50" required></label>
                 <label class="rates-ask-field"><span>Last name</span><input name="last" autocomplete="family-name" maxlength="50" required></label>
               </div>
               <label class="rates-ask-field"><span>Email</span><input name="email" type="email" autocomplete="email" maxlength="120" required></label>
-              <label class="rates-ask-field"><span>A few words about you</span><textarea name="note" rows="3" maxlength="1000"></textarea></label>
+              <label class="rates-ask-field rates-ask-select"><span>Have you come to Radio Taiso?</span><select name="came" required><option value="">Choose</option><option value="Yes">Yes</option><option value="Not yet">Not yet</option></select></label>
+              <label class="rates-ask-field"><span>Who told you about it?</span><input name="who" maxlength="120" required></label>
+              <label class="rates-ask-field"><span>About you</span><textarea name="note" rows="3" maxlength="1000" required></textarea></label>
               <input name="hp" tabindex="-1" autocomplete="off" aria-hidden="true" class="rates-ask-hp">
               <button type="submit" class="rates-ask-button">Send</button>
               <p class="rates-ask-status" id="taiso-line-status" role="status"></p>
@@ -510,10 +512,13 @@ document.getElementById('copy-mail').addEventListener('click', async (e) => {
     const v = k => f.elements[k].value.trim(), say = (j, en, k) => { st.textContent = ja() ? j : en; if (k) f.elements[k].focus(); };
     if (!v('first') || !v('last')) return say('名・姓を入れてください。', 'Please enter your first and last name.', v('first') ? 'last' : 'first');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email'))) return say('メールアドレスを入れてください。', 'Please enter your email.', 'email');
+    if (!v('came')) return say('参加したことがあるか選んでください。', 'Please tell us if you have come.', 'came');
+    if (!v('who')) return say('どなたから聞いたか書いてください。', 'Please tell us who told you.', 'who');
+    if (v('note').length < 10) return say('自己紹介を少し書いてください。', 'Please write a little about yourself.', 'note');
     const b = f.querySelector('button.rates-ask-button'); b.disabled = true; st.textContent = ja() ? '送っています…' : 'Sending…';
     try {
-      const r = await fetch(APP, { method: 'POST', body: JSON.stringify({ type: 'taisoline', name: v('first') + ' ' + v('last'), email: v('email'), note: v('note'), hp: v('hp'), ms: Date.now() - t0, language: ja() ? 'ja' : 'en' }) }).then(x => x.json());
-      if (r && r.ok) { const J = ja(), done = document.createElement('div'); done.className = 'semi-done taiso-done'; done.innerHTML = '<div class="semi-done-title">' + (J ? '受け付けました' : 'Thank you!') + '</div><p class="semi-done-note">' + (J ? 'LINE グループの招待をメールでお送りします。' : 'We will email you an invitation to the LINE group.') + '</p>'; f.replaceWith(done); return; }
+      const r = await fetch(APP, { method: 'POST', body: JSON.stringify({ type: 'taisoline', came: v('came'), who: v('who'), name: v('first') + ' ' + v('last'), email: v('email'), note: v('note'), hp: v('hp'), ms: Date.now() - t0, language: ja() ? 'ja' : 'en' }) }).then(x => x.json());
+      if (r && r.ok) { const J = ja(), done = document.createElement('div'); done.className = 'semi-done taiso-done'; done.innerHTML = '<div class="semi-done-title">' + (J ? '受け付けました' : 'Thank you!') + '</div><p class="semi-done-note">' + (J ? '内容を確認して、メールでご連絡します。' : 'We will read it and get back to you by email.') + '</p>'; f.replaceWith(done); return; }
       st.textContent = ja() ? '送れませんでした。もう一度お試しください。' : 'Sorry, it could not be sent. Please try again.';
     } catch (x) { st.textContent = ja() ? '送れませんでした。もう一度お試しください。' : 'Sorry, it could not be sent. Please try again.'; }
     b.disabled = false;
