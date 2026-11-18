@@ -61,7 +61,7 @@ function rate30_(data) { return +(data && data.rate30) || RATE_PER_30; }
 function specialSheet_() {
   const ss = book_(); let sh = ss.getSheetByName(SP_TAB); if (sh) return sh;
   sh = ss.insertSheet(SP_TAB);
-  sh.getRange(1, 1, 1, 7).setValues([['名前', 'メール', '60分の料金（$）', '支払い方法', '本人へのメッセージ（専用ページに出る）', '専用リンク（自動）', 'メモ（Mari だけ）']]).setFontWeight('bold').setBackground('#ecdfc6');
+  sh.getRange(1, 1, 1, 8).setValues([['名前', 'メール', '60分の料金（$）', '支払い方法', '本人へのメッセージ（専用ページに出る）', '専用リンク（自動）', 'メモ（Mari だけ）', 'いつもの長さ（分）']]).setFontWeight('bold').setBackground('#ecdfc6');
   sh.setFrozenRows(1); sh.setColumnWidth(5, 360); sh.setColumnWidth(6, 380);
   sh.getRange(2, 4, 200, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['Venmo', 'Zelle', '現金'], true).build());
   sh.getRange('I1').setValue('名前と60分の料金を書くと、F列に専用リンクができます。そのリンクを本人に送ってください。メールも書いておくと、普通の予約ページから予約しても特別料金になります。料金を消すと、普通の料金に戻ります。');
@@ -75,9 +75,9 @@ function fillSpecialLinks_() {
 }
 function specialFor_(token, email) {
   const sh = book_().getSheetByName(SP_TAB); if (!sh || sh.getLastRow() < 2) return null;
-  const t = String(token || '').trim(), em = String(email || '').trim().toLowerCase(), v = sh.getRange(2, 1, sh.getLastRow() - 1, 6).getValues();
+  const t = String(token || '').trim(), em = String(email || '').trim().toLowerCase(), v = sh.getRange(2, 1, sh.getLastRow() - 1, 8).getValues();
   const row = (/^[a-f0-9]{10}$/.test(t) && v.find(r => String(r[5]).indexOf('p=' + t) >= 0)) || (em && v.find(r => String(r[1]).trim().toLowerCase() === em));
-  return row && +row[2] > 0 ? { name: String(row[0]).trim(), per60: +row[2], pay: /^(Zelle|現金)$/.test(String(row[3]).trim()) ? String(row[3]).trim() : 'Venmo', note: String(row[4] || '').trim().slice(0, 1200) } : null;
+  return row && +row[2] > 0 ? { name: String(row[0]).trim(), per60: +row[2], pay: /^(Zelle|現金)$/.test(String(row[3]).trim()) ? String(row[3]).trim() : 'Venmo', note: String(row[4] || '').trim().slice(0, 1200), len: [60, 90, 120, 150].includes(+row[7]) ? +row[7] : 0 } : null;
 }
 function onEdit(e) { try { if (e && e.range && e.range.getSheet().getName() === SP_TAB) fillSpecialLinks_(); } catch (x) {} }
 const PACKS = { '4': { n: 4, months: 2 }, '5': { n: 5, months: 3 }, '3': { n: 3, months: 2 } };  // 4-lesson pack (the only one sold now, 2026-11-18): no discount, use within 2 months, longer when Mari is away. 3 and 5 stay only for packs bought before.
@@ -257,7 +257,7 @@ function notifyMari_(d, c, len, id, key) {
 // ---------- the website asks for free times, or Mari taps a button ----------
 function doGet(e) {
   const p = (e && e.parameter) || {};
-  if (p.special) { const sp = specialFor_(p.special, ''); return json_(sp ? { name: sp.name, per60: sp.per60, pay: sp.pay, note: sp.note, qr: sp.pay === 'Zelle' && ZELLE_QR_SP ? 'data:image/png;base64,' + ZELLE_QR_SP : '', zelleTo: sp.pay === 'Zelle' ? ZELLE_TO_SP : '' } : {}); }
+  if (p.special) { const sp = specialFor_(p.special, ''); return json_(sp ? { name: sp.name, per60: sp.per60, pay: sp.pay, note: sp.note, len: sp.len, qr: sp.pay === 'Zelle' && ZELLE_QR_SP ? 'data:image/png;base64,' + ZELLE_QR_SP : '', zelleTo: sp.pay === 'Zelle' ? ZELLE_TO_SP : '' } : {}); }
   if (p.slots) { const c = CacheService.getScriptCache(); if (!c.get('splink')) { c.put('splink', '1', 300); try { fillSpecialLinks_(); } catch (x) {} } if (!c.get('semitick')) { c.put('semitick', '1', 600); try { semiTick_(); } catch (x) {} } return json_({ days: freeTimes_() }); }
   if (p.availability) return json_({ days: {} });
   if (p.pack) return json_({ packs: packsFor_(p.pack) });
