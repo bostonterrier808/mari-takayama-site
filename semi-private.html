@@ -467,7 +467,18 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
         <button type="submit" class="rates-ask-button">Sign up</button>
         <p class="rates-ask-status" id="semi-ask-status" role="status"></p>
       </form>
-      <p class="credits-lead"><a href="mailto:maritakayama.official@gmail.com">Questions? Email Mari.</a></p>
+      <h2 id="semi-question">Questions</h2>
+      <form class="rates-ask semi-ask" id="semi-q" novalidate>
+        <div class="rates-ask-names">
+          <label class="rates-ask-field"><span>First name</span><input name="first" autocomplete="given-name" maxlength="50" required></label>
+          <label class="rates-ask-field"><span>Last name</span><input name="last" autocomplete="family-name" maxlength="50" required></label>
+        </div>
+        <label class="rates-ask-field"><span>Email</span><input name="email" type="email" autocomplete="email" maxlength="120" required></label>
+        <label class="rates-ask-field"><span>Your question</span><textarea name="question" rows="4" maxlength="2000" required></textarea></label>
+        <input name="hp" tabindex="-1" autocomplete="off" aria-hidden="true" class="rates-ask-hp">
+        <button type="submit" class="rates-ask-button">Send</button>
+        <p class="rates-ask-status" id="semi-q-status" role="status"></p>
+      </form>
     </div>
   </section>
 </main>
@@ -535,6 +546,26 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
       if (r && r.ok) { const done = document.createElement('div'); done.className = 'semi-done'; const J = ja(); done.innerHTML = '<div class="semi-done-title">' + (J ? '仮予約を受け付けました' : 'Your spot is held') + '</div><ol class="semi-done-steps"><li>' + (J ? '下のボタンから Venmo でお支払い' : 'Pay with Venmo below') + '</li><li>' + (J ? '24時間以内にお願いします' : 'Within 24 hours') + '</li><li>' + (J ? '確定のメールが届きます' : 'You’ll get a confirmation email') + '</li></ol>' + (r.pay ? '<a class="semi-done-pay" target="_blank" rel="noopener" href="' + r.pay + '">' + (J ? 'Venmo で支払う（$' + r.price + '）' : 'Pay with Venmo ($' + r.price + ')') + '</a>' : '') + '<p class="semi-done-note">' + (J ? 'メールもお送りしました。' : 'We also sent you an email.') + '</p>'; done.setAttribute('data-no-translate', ''); f.replaceWith(done); done.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
       else st.textContent = r && r.error === 'full' ? (ja() ? 'すみません、この日は満席になりました。ほかの日をお選びください。' : 'Sorry, that Sunday just filled up. Please choose another.') : r && r.error === 'already' ? (ja() ? 'この日はもうお申し込みいただいています。' : 'You are already signed up for that Sunday.') : (ja() ? '送れませんでした。もう一度お試しください。' : 'Sorry, it could not be sent. Please try again.');
     } catch (x) { st.textContent = ja() ? '送れませんでした。もう一度お試しいただくか、メールでご連絡ください。' : 'Sorry, it could not be sent. Please try again, or email Mari.'; }
+    b.disabled = false;
+  });
+})();
+// semi-private class questions
+(() => {
+  const f = document.getElementById('semi-q'), st = document.getElementById('semi-q-status'), t0 = Date.now();
+  const APP = 'https://script.google.com/macros/s/AKfycbyoBjOrilADknvlRF8Mf6vzOootjaOEG_56OdEDFinrhrzaH4o8Z2fzm8niTlL0c6-9oQ/exec';
+  const ja = () => (window.mariSiteLanguage || document.documentElement.lang) === 'ja';
+  f.addEventListener('submit', async e => {
+    e.preventDefault();
+    const v = k => f.elements[k].value.trim(), say = (j, en, k) => { st.textContent = ja() ? j : en; if (k) f.elements[k].focus(); };
+    if (!v('first') || !v('last')) return say('名・姓を入れてください。', 'Please enter your first and last name.', v('first') ? 'last' : 'first');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email'))) return say('メールアドレスを入れてください。', 'Please enter your email.', 'email');
+    if (!v('question')) return say('ご質問を書いてください。', 'Please write your question.', 'question');
+    const b = f.querySelector('button.rates-ask-button'); b.disabled = true; st.textContent = ja() ? '送っています…' : 'Sending…';
+    try {
+      const r = await fetch(APP, { method: 'POST', body: JSON.stringify({ type: 'semiq', name: v('first') + ' ' + v('last'), email: v('email'), question: v('question'), hp: v('hp'), ms: Date.now() - t0, language: ja() ? 'ja' : 'en' }) }).then(x => x.json());
+      if (r && r.ok) { const J = ja(), done = document.createElement('div'); done.className = 'semi-done'; done.innerHTML = '<div class="semi-done-title">' + (J ? 'ご質問を受け付けました' : 'Thanks for your question') + '</div><p class="semi-done-note">' + (J ? 'お返事はメールでお送りします。' : 'Mari will reply by email.') + '</p>'; f.replaceWith(done); return; }
+      st.textContent = ja() ? '送れませんでした。もう一度お試しください。' : 'Sorry, it could not be sent. Please try again.';
+    } catch (x) { st.textContent = ja() ? '送れませんでした。もう一度お試しください。' : 'Sorry, it could not be sent. Please try again.'; }
     b.disabled = false;
   });
 })();
