@@ -189,7 +189,8 @@ function doPost(e) {
 // quietly drop bot or flood submissions (the visitor still sees "sent", so bots learn nothing)
 function looksReal_(d) {
   if (!d || d.hp) return false;                                   // hidden field filled = a bot
-  if (typeof d.ms === 'number' && d.ms < 4000) return false;      // filled in under 4 seconds = a bot
+  if (!(typeof d.ms === 'number' && d.ms >= 4000)) return false;   // no timer, or filled in under 4 seconds = a bot
+  if (looksSpam_(d)) return false;                                // links or code in the name = spam
   const email = String(d.email || '').trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120) return false;
   if (!String(d.name || '').trim() || String(d.name).length > 100) return false;
@@ -197,7 +198,8 @@ function looksReal_(d) {
   const cache = CacheService.getScriptCache();
   const bump = (k, max, secs) => { const n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), secs); return n <= max; };
   if (!bump('m:' + email, 3, 3600)) return false;                  // same email: at most 3 an hour
-  if (!bump('all', 30, 3600)) return false;                        // everyone together: at most 30 an hour
+  if (!bump('all', 15, 3600)) return false;                        // everyone together: at most 15 an hour
+  if (!visitorMailOk_()) return false;                             // daily email budget
   return true;
 }
 function notifyMari_(d, c, len, id, key) {
@@ -559,11 +561,22 @@ function creditFriend_(data) {
 }
 // remaining lessons on someone's packs (only numbers and dates go back to the page)
 // has this email booked through the form before (or bought a pack)?
+// ---------- protection against bots and misuse ----------
+// names with web links, code or very long words are spam
+function looksSpam_(d) {
+  const t = [d.name, d.first, d.last, d.nickname].map(x => String(x || '')).join(' ');
+  return /https?:|www\.|<|>|\[url|\{|\}/i.test(t) || /\S{41,}/.test(t);
+}
+// emails started by visitors: at most 40 a day for everyone together, so nobody can use up Mari's daily Gmail limit
+function visitorMailOk_() {
+  const p = PropertiesService.getScriptProperties(), k = 'mb:' + Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'), n = +(p.getProperty(k) || 0) + 1;
+  p.setProperty(k, String(n)); return n <= 40;
+}
 // email lookups from the public pages: at most 200 an hour for everyone together, so nobody can test long lists of emails
-function lookupOk_() { const c = CacheService.getScriptCache(), n = +(c.get('lk:all') || 0) + 1; c.put('lk:all', String(n), 3600); return n <= 200; }
+function lookupOk_() { const c = CacheService.getScriptCache(), n = +(c.get('lk:all') || 0) + 1; c.put('lk:all', String(n), 3600); return n <= 60; }
 function knownCustomer_(email) {
   email = String(email || '').trim().toLowerCase(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
-  const cache = CacheService.getScriptCache(), k = 'kn:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 600); if (n > 10) return true;
+  const cache = CacheService.getScriptCache(), k = 'kn:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 3600); if (n > 6) return true;
   if (!lookupOk_()) return false;
   const ss = book_(), same = sh => !!sh && sh.getLastRow() > 1 && sh.getRange(2, sh === req ? C['メール'] : 3, sh.getLastRow() - 1, 1).getValues().some(v => String(v[0]).trim().toLowerCase() === email);
   const req = ss.getSheetByName(REQ);
@@ -571,7 +584,7 @@ function knownCustomer_(email) {
 }
 function packsFor_(email) {
   email = String(email || '').trim().toLowerCase(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return [];
-  const cache = CacheService.getScriptCache(), k = 'pk:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 600); if (n > 10) return [];
+  const cache = CacheService.getScriptCache(), k = 'pk:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 3600); if (n > 6) return [];
   if (!lookupOk_()) return [];
   const sh = book_().getSheetByName(PK); if (!sh || sh.getLastRow() < 2) return [];
   const now = Date.now();
@@ -1122,10 +1135,10 @@ function semiPriceFor_(email) {
   return semiCoupon_(email) ? { price: SEMI_PRICE - SEMI_OFF, off: SEMI_OFF } : { price: SEMI_PRICE, off: 0 };
 }
 function semiSignup_(d) {
-  if (!d || d.hp || (typeof d.ms === 'number' && d.ms < 3000)) return { ok: true };
+  if (!d || d.hp || !(typeof d.ms === 'number' && d.ms >= 3000) || looksSpam_(d)) return { ok: true };
   const email = String(d.email || '').trim().toLowerCase(), name = clip(d.name, 100), ja = d.language === 'ja';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120 || !name.trim()) return { ok: false };
-  { const c = CacheService.getScriptCache(), n = +(c.get('ss:' + email) || 0) + 1, all = +(c.get('ss:all') || 0) + 1; c.put('ss:' + email, String(n), 3600); c.put('ss:all', String(all), 3600); if (n > 3 || all > 12) return { ok: false, error: 'busy' }; }  // stop fake signups filling the class
+  { const c = CacheService.getScriptCache(), n = +(c.get('ss:' + email) || 0) + 1, all = +(c.get('ss:all') || 0) + 1; c.put('ss:' + email, String(n), 3600); c.put('ss:all', String(all), 3600); if (n > 2 || all > 6 || !visitorMailOk_()) return { ok: false, error: 'busy' }; }  // stop fake signups filling the class
   const lock = LockService.getScriptLock(); try { lock.waitLock(20000); } catch (x) {}
   const dates = semiDates_(), slot = dates.find(x => x.date === d.date); if (!slot) return { ok: false, error: 'date' };
   if (slot.left < 1) return { ok: false, error: 'full' };
@@ -1264,12 +1277,12 @@ function newsDaily_() {
 
 // ---------- questions about the semi-private group lesson (semi-private.html) ----------
 function semiQuestion_(d) {
-  if (!d || d.hp || (typeof d.ms === 'number' && d.ms < 3000)) return { ok: true };
+  if (!d || d.hp || !(typeof d.ms === 'number' && d.ms >= 3000) || looksSpam_(d)) return { ok: true };
   const email = String(d.email || '').trim().toLowerCase(), name = clip(d.name, 100), q = String(d.question || '').trim().slice(0, 2000), ja = d.language === 'ja';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name.trim() || !q) return { ok: false };
   const cache = CacheService.getScriptCache(), k = 'sq:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 3600);
   const all = +(cache.get('sq:all') || 0) + 1; cache.put('sq:all', String(all), 3600);
-  if (n > 3 || all > 30) return { ok: true };
+  if (n > 3 || all > 10 || !visitorMailOk_()) return { ok: true };
   const me = Session.getEffectiveUser().getEmail();
   if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', replyTo: email, subject: '【セミプライベートの質問】' + name,
     body: name + '（' + email + '）\n\n' + q,
@@ -1357,7 +1370,7 @@ function referralRestore_(data, b) {
 // ---------- Radio Taiso: requests to join the LINE group (radio-taiso.html) ----------
 const TAISO_EMAIL = 'radiotaisonyc@gmail.com';
 function taisoLine_(d) {
-  if (!d || d.hp || (typeof d.ms === 'number' && d.ms < 3000)) return { ok: true };
+  if (!d || d.hp || !(typeof d.ms === 'number' && d.ms >= 3000) || looksSpam_(d)) return { ok: true };
   const email = String(d.email || '').trim().toLowerCase(), name = clip(d.name, 100), note = String(d.note || '').trim().slice(0, 1000), ja = d.language === 'ja';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name.trim()) return { ok: false };
   const who = clip(d.who, 120);
@@ -1389,12 +1402,12 @@ function costumePrice_(costume, days, use) {
   return rom ? 170 : 150;
 }
 function costumeReal_(d) {
-  if (!d || d.hp || (typeof d.ms === 'number' && d.ms < 3000)) return false;
+  if (!d || d.hp || !(typeof d.ms === 'number' && d.ms >= 3000) || looksSpam_(d)) return false;
   const email = String(d.email || '').trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !String(d.name || '').trim() || !COSTUME_JA[d.costume] || !/^\d{4}-\d\d-\d\d$/.test(d.from) || !/^\d{4}-\d\d-\d\d$/.test(d.until)) return false;
   const cache = CacheService.getScriptCache(), k = 'cs:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 3600);
   const all = +(cache.get('cs:all') || 0) + 1; cache.put('cs:all', String(all), 3600);
-  return all <= 20 && n <= 3;
+  return all <= 6 && n <= 3 && visitorMailOk_();
 }
 function costumeRequest_(d) {
   const ja = d.language === 'ja', name = clip(d.name, 100), email = String(d.email).trim();
@@ -1449,12 +1462,12 @@ function markRatesBooked_(email, text) {
   } catch (e) {}
 }
 function ratesReal_(d) {
-  if (!d || d.hp || (typeof d.ms === 'number' && d.ms < 3000)) return false;
+  if (!d || d.hp || !(typeof d.ms === 'number' && d.ms >= 3000) || looksSpam_(d)) return false;
   const email = String(d.email || '').trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120 || !String(d.name || '').trim() || String(d.name).length > 100) return false;
   const cache = CacheService.getScriptCache(), k = 'rt:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 3600);
   const all = +(cache.get('rt:all') || 0) + 1; cache.put('rt:all', String(all), 3600);
-  return n <= 2 && all <= 30;
+  return n <= 2 && all <= 10 && visitorMailOk_();
 }
 function sendRates_(d) {
   const ja = d.language === 'ja', name = clip(d.name, 100), email = String(d.email).trim();
