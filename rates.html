@@ -531,7 +531,7 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
       const ja = document.documentElement.lang === 'ja';
       if (lead) words(ja ? sp.name + ' さんへの特別料金です。' : 'Special rates for ' + sp.name + '.', lead);
       if (how && sp.pay && sp.pay !== 'Venmo') { const li = how.parentElement; li.querySelectorAll('.credit-role').forEach((r, i) => { if (i) r.remove(); else r.textContent = sp.pay === '現金' ? (ja ? '現金（前のレッスンのときに次の分を）' : 'Cash (at the lesson before)') : sp.pay; }); }
-      if (qrCap) qrCap.textContent = ja ? '銀行のアプリで読み取ってください。' : 'Zelle: scan this QR code in your banking app.';
+      if (qrCap) qrCap.textContent = ja ? '銀行のアプリで読み取ると、送り先が自動で入ります。金額（60分 $' + sp.per60 + '）を入れて送ってください。' : 'Scan this in your banking app and Mari is filled in for you. Enter the amount ($' + sp.per60 + ' for 60\u00a0min) and send.';
       const note = [...document.querySelectorAll('.rates-note')][0]; if (note) note.textContent = ja ? '30分 $' + per(30) : '$' + per(30) + ' per 30 minutes';
       tables.forEach(tb => tb.querySelectorAll('tbody tr').forEach(tr => {
         const m = parseInt(tr.cells[0].textContent, 10), head = tb.querySelector('thead th:last-child').textContent, cell = tr.cells[1];
