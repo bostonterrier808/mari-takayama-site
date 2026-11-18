@@ -29,6 +29,8 @@ const VENMO = 'maritakayama_ballet';
 const ZELLE_QR_B64 = '';
 // Zelle QR shown only to special-price people who pay by Zelle (their own rates link). Filled in Mari's Apps Script copy only — never in the repo.
 const ZELLE_QR_SP = '';
+// Zelle phone number shown (with a copy button) only to special-price people who pay by Zelle. Filled in Mari's Apps Script copy only — never in the repo.
+const ZELLE_TO_SP = '';
 // Mari's Zoom meeting link for online lessons (put it only in her own copy of the script). Empty = the email says she will send it.
 const ZOOM_LINK = '';
 const RATE_PER_30 = 65;
@@ -241,7 +243,7 @@ function notifyMari_(d, c, len, id, key) {
 // ---------- the website asks for free times, or Mari taps a button ----------
 function doGet(e) {
   const p = (e && e.parameter) || {};
-  if (p.special) { const sp = specialFor_(p.special, ''); return json_(sp ? { name: sp.name, per60: sp.per60, pay: sp.pay, note: sp.note, qr: sp.pay === 'Zelle' && ZELLE_QR_SP ? 'data:image/png;base64,' + ZELLE_QR_SP : '' } : {}); }
+  if (p.special) { const sp = specialFor_(p.special, ''); return json_(sp ? { name: sp.name, per60: sp.per60, pay: sp.pay, note: sp.note, qr: sp.pay === 'Zelle' && ZELLE_QR_SP ? 'data:image/png;base64,' + ZELLE_QR_SP : '', zelleTo: sp.pay === 'Zelle' ? ZELLE_TO_SP : '' } : {}); }
   if (p.slots) { const c = CacheService.getScriptCache(); if (!c.get('splink')) { c.put('splink', '1', 300); try { fillSpecialLinks_(); } catch (x) {} } if (!c.get('semitick')) { c.put('semitick', '1', 600); try { semiTick_(); } catch (x) {} } return json_({ days: freeTimes_() }); }
   if (p.availability) return json_({ days: {} });
   if (p.pack) return json_({ packs: packsFor_(p.pack) });
