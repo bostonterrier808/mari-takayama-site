@@ -538,7 +538,7 @@ function usePack_(data, ch, len) {
   }
   const P = PACKS[data.pack]; if (!P) return null;
   const until = new Date(day); until.setMonth(until.getMonth() + P.months);
-  sh.appendRow([new Date(), data.name, data.email, len, P.n, 1, until, data.pack === '3' ? '3回券' : '']);
+  sh.appendRow([new Date(), clip(data.name, 100), clip(data.email, 120), len, P.n, 1, until, data.pack === '3' ? '3回券' : '']);
   return { bought: true, left: P.n - 1, until: md(until), row: sh.getLastRow(), kind: data.pack };
 }
 // "Bring a friend": the first lesson of someone a friend sent adds one lesson to that friend's pack
@@ -559,9 +559,12 @@ function creditFriend_(data) {
 }
 // remaining lessons on someone's packs (only numbers and dates go back to the page)
 // has this email booked through the form before (or bought a pack)?
+// email lookups from the public pages: at most 200 an hour for everyone together, so nobody can test long lists of emails
+function lookupOk_() { const c = CacheService.getScriptCache(), n = +(c.get('lk:all') || 0) + 1; c.put('lk:all', String(n), 3600); return n <= 200; }
 function knownCustomer_(email) {
   email = String(email || '').trim().toLowerCase(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
   const cache = CacheService.getScriptCache(), k = 'kn:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 600); if (n > 10) return true;
+  if (!lookupOk_()) return false;
   const ss = book_(), same = sh => !!sh && sh.getLastRow() > 1 && sh.getRange(2, sh === req ? C['メール'] : 3, sh.getLastRow() - 1, 1).getValues().some(v => String(v[0]).trim().toLowerCase() === email);
   const req = ss.getSheetByName(REQ);
   return same(req) || same(ss.getSheetByName(PK));
@@ -569,6 +572,7 @@ function knownCustomer_(email) {
 function packsFor_(email) {
   email = String(email || '').trim().toLowerCase(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return [];
   const cache = CacheService.getScriptCache(), k = 'pk:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 600); if (n > 10) return [];
+  if (!lookupOk_()) return [];
   const sh = book_().getSheetByName(PK); if (!sh || sh.getLastRow() < 2) return [];
   const now = Date.now();
   return sh.getDataRange().getValues().slice(1).filter(v => String(v[2]).trim().toLowerCase() === email && +v[5] < +v[4] && (!v[6] || new Date(v[6]).getTime() + 86400000 > now))
@@ -976,7 +980,7 @@ function payChoice_(p, sh, r, data) {
   if (bk.pack) { ps.getRange(bk.pack, 5).setValue(0); ps.getRange(bk.pack, 8).setValue((want === '1' ? '1回ずつ' : want + '回券') + 'に変更（使わない）'); }
   if (want !== '1') {
     const P = PACKS[want], until = new Date(d); until.setMonth(until.getMonth() + P.months);
-    ps.appendRow([new Date(), data.name, data.email, bk.len, P.n, 1, until, 'お客さんが確定メールで' + want + '回券に変更']);
+    ps.appendRow([new Date(), clip(data.name, 100), clip(data.email, 120), bk.len, P.n, 1, until, 'お客さんが確定メールで' + want + '回券に変更']);
     bk.pack = ps.getLastRow(); data.pack = want; data.packInfo = { bought: true, left: P.n - 1, until: md2(until), row: bk.pack, kind: want };
   } else { bk.pack = 0; data.pack = ''; data.packInfo = null; }
   sh.getRange(r, C['data']).setValue(JSON.stringify(data));
@@ -1120,7 +1124,8 @@ function semiPriceFor_(email) {
 function semiSignup_(d) {
   if (!d || d.hp || (typeof d.ms === 'number' && d.ms < 3000)) return { ok: true };
   const email = String(d.email || '').trim().toLowerCase(), name = clip(d.name, 100), ja = d.language === 'ja';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name.trim()) return { ok: false };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 120 || !name.trim()) return { ok: false };
+  { const c = CacheService.getScriptCache(), n = +(c.get('ss:' + email) || 0) + 1, all = +(c.get('ss:all') || 0) + 1; c.put('ss:' + email, String(n), 3600); c.put('ss:all', String(all), 3600); if (n > 3 || all > 12) return { ok: false, error: 'busy' }; }  // stop fake signups filling the class
   const lock = LockService.getScriptLock(); try { lock.waitLock(20000); } catch (x) {}
   const dates = semiDates_(), slot = dates.find(x => x.date === d.date); if (!slot) return { ok: false, error: 'date' };
   if (slot.left < 1) return { ok: false, error: 'full' };
@@ -1129,7 +1134,7 @@ function semiSignup_(d) {
   const cRow = semiCoupon_(email), price = cRow ? SEMI_PRICE - SEMI_OFF : SEMI_PRICE, id = 's' + Utilities.getUuid().slice(0, 7);
   if (cRow) book_().getSheetByName(SEMI_REVIEW_TAB).getRange(cRow, 6).setValue('使用済み（' + d.date + '）');
   const colB = sh.getRange('B:B').getValues(); let at = 2; while (at <= colB.length && String(colB[at - 1][0]).trim()) at++;  // first empty row (the checkbox column runs far down)
-  sh.getRange(at, 1, 1, 13).setValues([[new Date(), d.date + ' ' + SEMI_START, name, email, SEMI_LEVEL_JA[d.level] || '', price, cRow ? '$' + SEMI_OFF + ' 引き' : '', false, clip(d.note, 300), '', id, '', ja ? 'ja' : 'en']]);
+  sh.getRange(at, 1, 1, 13).setValues([[new Date(), d.date + ' ' + SEMI_START, name, clip(email, 120), SEMI_LEVEL_JA[d.level] || '', price, cRow ? '$' + SEMI_OFF + ' 引き' : '', false, clip(d.note, 300), '', id, '', ja ? 'ja' : 'en']]);
   sh.getRange(at, 8).insertCheckboxes();
   const day = dateOf_(d.date), md = (day.getMonth() + 1) + '/' + day.getDate(), wd = WD_JA[day.getDay()];
   const whenJa = md + '（' + wd + '）' + SEMI_START + '〜12:30', whenEn = Utilities.formatDate(day, TZ, 'EEE, MMM d') + ', 11:00 am–12:30 pm';
@@ -1172,7 +1177,7 @@ function semiReviewPage_(p) {
     return page_(ja ? 'クラスの感想' : 'Your review', '<form method="get" action="' + action + '" target="_top"><input type="hidden" name="act" value="review"><input type="hidden" name="id" value="' + esc_(row[10]) + '"><input type="hidden" name="e" value="' + esc_(row[3]) + '"><textarea name="text" rows="6" required style="width:100%;box-sizing:border-box;padding:10px;font:inherit;font-size:16px;border:1px solid #c9b48c" placeholder="' + (ja ? 'よかったこと、楽しかったことなど' : 'What you liked, what you learned…') + '"></textarea><p><button style="padding:14px 22px;font-size:16px;background:#2c2a30;color:#fff;border:0;cursor:pointer">' + (ja ? '送る' : 'Send') + '</button></p><p style="color:#6a6670;font-size:14px">' + (ja ? '送ると、次回のクラスが $' + SEMI_OFF + ' 引きになります。' : 'When you send it, your next class is $' + SEMI_OFF + ' off.') + '</p></form>');
   }
   let r2 = rs; if (!r2) { r2 = book_().insertSheet(SEMI_REVIEW_TAB); r2.getRange(1, 1, 1, 7).setValues([['日時', '名前', 'メール', 'クラスの日', '感想', '次回の割引', 'id']]).setFontWeight('bold').setBackground('#ecdfc6'); r2.setFrozenRows(1); }
-  r2.appendRow([new Date(), row[2], row[3], String(row[1]).slice(0, 10), clip(text, 1500), '未使用', row[10]]);
+  r2.appendRow([new Date(), clip(row[2], 100), clip(row[3], 120), String(row[1]).slice(0, 10), clip(text, 1500), '未使用', row[10]]);
   const me = Session.getEffectiveUser().getEmail();
   if (me) MailApp.sendEmail({ to: me, name: 'Lesson booking', subject: '【レビュー】' + row[2], body: row[2] + ' さんから感想が届きました。\n\n' + text, htmlBody: pretty_('<p><b>' + esc_(row[2]) + '</b> さんから感想が届きました。</p><p style="white-space:pre-wrap">' + esc_(text) + '</p><p>次回のセミプライベートグループレッスンは自動で $' + SEMI_OFF + ' 引きになります。「レビュー」タブに記録しました。</p>', true) });
   log_('レビュー', { name: row[2], email: row[3] }, null, '', { memo: String(row[1]).slice(0, 10) });
@@ -1214,7 +1219,7 @@ function newsSendSome_(date) {
       ? '# 次回のクラスのご案内\n\n' + (x.name ? x.name + ' 様\n\n' : '') + 'こんにちは、髙山まりです。\n最大4人の少人数バレエクラスを、\n月に1回開いています。\n次回のご案内です。\n\n日時：' + newsWhen_(date, true) + '\n場所：FuncPhysio Physical Therapy（2 W 45th Street, Suite 1600）\n残り：' + slot.left + '席\n\n' + SEMI_PAGE + '\n\nお待ちしています。\n髙山まり\n\nお知らせが不要な方はこちら\n' + stopUrl
       : '# Semi-private group lesson\n\nHi' + (x.name ? ' ' + x.name : '') + ',\n\nThis is Mari Takayama. Once a month I teach a small ballet class for up to 4 people.\nHere is the next one:\n\nWhen: ' + newsWhen_(date, false) + '\nWhere: FuncPhysio Physical Therapy, 2 W 45th Street, Suite 1600\nSpots left: ' + slot.left + '\n\n' + SEMI_PAGE + '\n\nHope to see you there!\nMari Takayama\n\nDon’t want these emails? You can stop them here.\n' + stopUrl;
     try { MailApp.sendEmail({ to: x.email, subject: x.ja ? '次回のセミプライベートグループレッスン（' + newsWhen_(date, true).replace(/〜.*/, '〜') + '）' : 'Next semi-private group lesson — ' + newsWhen_(date, false).replace(/,[^,]*$/, ''), body: plain_(body), htmlBody: pretty_(body), name: SENDER_NAME, replyTo: REPLY_TO }); } catch (e) { break; }
-    sh.appendRow([new Date(), date, x.name, x.email]); n++;
+    sh.appendRow([new Date(), date, clip(x.name, 100), clip(x.email, 120)]); n++;
   }
   const left = todo.length - n, pr = PropertiesService.getScriptProperties();
   if (left > 0) pr.setProperty('NEWS_PENDING', date); else pr.deleteProperty('NEWS_PENDING');
@@ -1242,7 +1247,7 @@ function newsStop_(p) {
   const email = String(p.e || '').trim().toLowerCase();
   if (!email || p.s !== newsSig_('stop:' + email)) return page_('開けません', 'このリンクは使えません。');
   const sh = newsTab_(NEWS_STOP_TAB, ['日時', 'メール']);
-  if (!newsRows_(NEWS_STOP_TAB, [2]).some(r => String(r[0]).toLowerCase() === email)) sh.appendRow([new Date(), email]);
+  if (!newsRows_(NEWS_STOP_TAB, [2]).some(r => String(r[0]).toLowerCase() === email)) sh.appendRow([new Date(), clip(email, 120)]);
   return page_('Done / 停止しました', 'You won’t get class announcements anymore.<br>クラスのお知らせは、もう届きません。');
 }
 // daily: finish a send that hit the Gmail limit, and email Mari the button whenever a new class date opens
@@ -1303,8 +1308,8 @@ function referralUse_(data, amount) {
     data.refDone = true;
     const ref = findReferrer_(data.friend, email);
     if (ref) {
-      sh.appendRow([new Date(), ref.name, ref.email, REF_GIVER, '紹介：' + data.name, '保留（' + (data.id || '') + '#' + data._b + '）']);
-      sh.appendRow([new Date(), data.name, email, REF_NEW, '紹介された（' + ref.name + ' さん）', '未使用']);
+      sh.appendRow([new Date(), clip(ref.name, 100), clip(ref.email, 120), REF_GIVER, '紹介：' + clip(data.name, 100), '保留（' + (data.id || '') + '#' + data._b + '）']);
+      sh.appendRow([new Date(), clip(data.name, 100), clip(email, 120), REF_NEW, '紹介された（' + clip(ref.name, 100) + ' さん）', '未使用']);
       data.refBy = ref.name;
       out.mari += '\n紹介：' + ref.name + ' さん（' + ref.email + '）の紹介です。' + data.name + ' さんの今回に $' + REF_NEW + ' 引きをつけました。' + data.name + ' さんがレッスンに来たら、次の日に ' + ref.name + ' さんの次回 $' + REF_GIVER + ' 引きが自動でつき、お礼のメールが届きます（「紹介割引」タブ）。';
     } else out.mari += '\n紹介：「' + data.friend + '」さんの紹介です。だれか特定できなかったので、割引はまだつけていません。分かったら「紹介割引」タブに足してください（この人 $' + REF_NEW + '、紹介した人は来てくれたあとに $' + REF_GIVER + '。状態は「未使用」）。';
@@ -1388,7 +1393,8 @@ function costumeReal_(d) {
   const email = String(d.email || '').trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !String(d.name || '').trim() || !COSTUME_JA[d.costume] || !/^\d{4}-\d\d-\d\d$/.test(d.from) || !/^\d{4}-\d\d-\d\d$/.test(d.until)) return false;
   const cache = CacheService.getScriptCache(), k = 'cs:' + email, n = +(cache.get(k) || 0) + 1; cache.put(k, String(n), 3600);
-  return n <= 3;
+  const all = +(cache.get('cs:all') || 0) + 1; cache.put('cs:all', String(all), 3600);
+  return all <= 20 && n <= 3;
 }
 function costumeRequest_(d) {
   const ja = d.language === 'ja', name = clip(d.name, 100), email = String(d.email).trim();
@@ -1396,7 +1402,7 @@ function costumeRequest_(d) {
   const price = costumePrice_(d.costume, days, d.use), when = d.from === d.until ? d.from : d.from + ' 〜 ' + d.until;
   const ss = book_(); let sh = ss.getSheetByName(COSTUME_TAB);
   if (!sh) { sh = ss.insertSheet(COSTUME_TAB); sh.getRange(1, 1, 1, 11).setValues([['受付日時', '名前', 'メール', '衣装', '使う目的', '借りる日', '返す日', '日数', '目安の料金', '身長', 'メッセージ']]).setFontWeight('bold').setBackground('#ecdfc6'); sh.setFrozenRows(1); }
-  sh.appendRow([new Date(), name, email, COSTUME_JA[d.costume], COSTUME_USE_JA[d.use] || '', d.from, d.until, days, '$' + price, clip(d.height, 30), clip(d.note, 300)]);
+  sh.appendRow([new Date(), clip(name, 100), clip(email, 120), COSTUME_JA[d.costume], COSTUME_USE_JA[d.use] || '', d.from, d.until, days, '$' + price, clip(d.height, 30), clip(d.note, 300)]);
   let body = ja
     ? '# 衣装のお申し込みを受け付けました\n\n' + name + ' 様\n\nお申し込みありがとうございます。髙山まりです。\n空いているかを確認して、あらためてメールでご連絡します。\n\n衣装：' + COSTUME_JA[d.costume] + '\n日にち：' + when + '（' + days + '日）\n目安の料金：$' + price + '（クリーニング代込み）\n\nまだ予約は確定していません。\n\n髙山まり'
     : '# We got your costume request\n\nHi ' + name + ',\n\nThank you for asking! I’ll check that the costume is free and email you back.\n\nCostume: ' + d.costume + '\nDates: ' + when + ' (' + days + (days > 1 ? ' days' : ' day') + ')\nAbout: $' + price + ' (cleaning included)\n\nIt isn’t booked yet.\n\nMari Takayama';
