@@ -510,6 +510,10 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
   fetch(APP + '?special=' + t).then(r => r.json()).then(sp => {
     if (!sp || !(sp.per60 > 0)) return;
     const per = m => Math.round(sp.per60 * m / 60), lead = document.querySelector('.credits-lead');
+    // special prices: no lesson pack, and a short referral line
+    const packH = [...document.querySelectorAll('h2')].find(h => /4-lesson pack|4回券/.test(h.textContent));
+    let refNote = null;
+    if (packH) { let n = packH; const drop = []; while (n && !(n !== packH && n.tagName === 'H2')) { if (n.classList && n.classList.contains('rates-note') && /friend|紹介/.test(n.textContent)) refNote = n; else drop.push(n); n = n.nextElementSibling; } drop.forEach(x => x.remove()); }
     const tables = [...document.querySelectorAll('.rates-table')];
     // Japanese wraps only between words (the site keeps words whole), so mark the word edges
     const seg = window.Intl && Intl.Segmenter ? new Intl.Segmenter('ja', { granularity: 'word' }) : null;
@@ -529,6 +533,7 @@ html[lang=ja] header.top #site-menu a { font-size: 0.95rem; letter-spacing: 0.06
       if (qrCap) qrCap.textContent = ja ? '銀行のアプリで読み取ると、送り先が自動で入ります。金額（' + (sp.len || 60) + '分 $' + per(sp.len || 60) + '）を入れて送ってください。' : 'Scan this in your banking app and Mari is filled in for you. Enter the amount ($' + per(sp.len || 60) + ' for ' + (sp.len || 60) + '\u00a0min) and send.';
       if (qrSave) qrSave.textContent = ja ? 'QR コードを保存' : 'Save the QR code';
       if (qrCopy) qrCopy.textContent = qrCopied ? (ja ? 'コピーしました' : 'Copied') : (ja ? '電話番号をコピー' : 'Copy the phone number');
+      if (refNote) refNote.textContent = ja ? 'お友達紹介で $10 引き。' : 'Refer a friend: $10 off.';
       const note = [...document.querySelectorAll('.rates-note')][0]; if (note) { if (sp.len) note.hidden = true; else note.textContent = ja ? '30分 $' + per(30) : '$' + per(30) + ' per 30 minutes'; }
       tables.forEach(tb => tb.querySelectorAll('tbody tr').forEach(tr => {
         const m = parseInt(tr.cells[0].textContent, 10), head = tb.querySelector('thead th:last-child').textContent, cell = tr.cells[1];
